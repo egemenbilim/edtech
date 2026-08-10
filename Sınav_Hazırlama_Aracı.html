@@ -1,0 +1,2370 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Egemen's Testmaker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Noto Sans',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .inp{width:100%;border:1px solid #e2e8f0;border-radius:.5rem;padding:.4rem .6rem;font-size:.8125rem;outline:none;background:#fff;transition:border-color .15s,box-shadow .15s}
+  .inp:focus{border-color:#0f172a;box-shadow:0 0 0 3px rgba(15,23,42,.06)}
+  .inp::placeholder{color:#cbd5e1}
+  .btn-mini{background:#fff;border-radius:.375rem;padding:.15rem .4rem;font-size:.7rem;box-shadow:0 1px 3px rgba(0,0,0,.12);border:1px solid #e2e8f0;cursor:pointer;transition:.12s}
+  .btn-mini:hover{background:#f8fafc;transform:translateY(-1px)}
+  .card:hover .tools{opacity:1}
+  .tools{opacity:0;transition:.15s}
+  .lbl{display:block;font-size:.6875rem;font-weight:500;color:#64748b;letter-spacing:.01em}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px;border:3px solid transparent;background-clip:content-box}
+  ::-webkit-scrollbar-thumb:hover{background:#94a3b8;background-clip:content-box;border:3px solid transparent}
+  input[type=range]{accent-color:#0f172a}
+  input[type=checkbox]{accent-color:#0f172a;width:.9rem;height:.9rem}
+  .fade-in{animation:fade .2s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-md">
+  <div class="mx-auto flex max-w-[1500px] flex-wrap items-center gap-4 px-5 py-3">
+    <span class="flex items-center gap-2 text-[15px] font-semibold tracking-tight text-slate-900">
+      <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white">ET</span>
+      <span><a href="https://www.instagram.com/egemenbilim/" target="_blank" rel="noopener noreferrer" style="color:#06b6d4" class="transition hover:underline hover:brightness-110">Egemen</a>'s Testmaker</span>
+    </span>
+    <button id="openGuide" class="rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900">Kullanım Kılavuzu</button>
+    <span class="ml-auto hidden text-[13px] italic text-slate-400 lg:block">“Milletleri kurtaranlar yalnız ve ancak öğretmenlerdir.”</span>
+  </div>
+</header>
+
+<div class="mx-auto flex max-w-[1500px] flex-col gap-5 p-5 lg:flex-row">
+  <!-- SOL PANEL -->
+  <aside class="w-full shrink-0 lg:w-[19rem]">
+    <div class="sticky top-[4.5rem] space-y-5 rounded-2xl border border-slate-200 bg-white p-5">
+      <div>
+        <h2 class="text-[13px] font-semibold tracking-wide text-slate-900">Test Ayarları</h2>
+        <div id="typeTabs" class="mt-3 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 text-xs">
+          <button data-t="yazili" class="rounded-lg py-1.5">Yazılı Kağıdı</button>
+          <button data-t="yaprak" class="rounded-lg py-1.5">Konu Denemesi</button>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <label class="lbl">Test Adı
+          <input id="title" class="inp mt-1.5" placeholder="Türk Dili ve Edebiyatı - Tanzimat Dönemi" value=""></label>
+        <label id="konuRow" class="lbl hidden">Konu Kapsamı <span class="font-normal text-slate-300">· opsiyonel, virgülle ayırın</span>
+          <input id="konuKapsami" class="inp mt-1.5" placeholder="Şiir Bilgisi, Roman, Hikâye"></label>
+        <label id="denemeRow" class="lbl hidden">Deneme Numarası <span class="font-normal text-slate-300">· opsiyonel</span>
+          <input id="denemeNo" class="inp mt-1.5" placeholder="Örn: 3"></label>
+        <label class="lbl">Okul / Kurum
+          <input id="school" class="inp mt-1.5" placeholder="Bilim Akademi" value=""></label>
+        <label class="lbl">Üst Bilgi
+          <input id="lesson" class="inp mt-1.5" value="2025-2026 EĞİTİM ÖĞRETİM YILI"></label>
+        <label class="lbl">Açıklama
+          <textarea id="description" class="inp mt-1.5 h-16 leading-relaxed">Aşağıdaki soruları dikkatlice okuyunuz. Her soru 10 Puan olmakla birlikte sınav süreniz 40 dakikadır.</textarea></label>
+        <label class="lbl">Kitapçık Sayısı
+          <select id="groups" class="inp mt-1.5">
+            <option value="1">Tek kitapçık (A)</option>
+            <option value="2">A - B</option>
+            <option value="4">A - B - C - D</option>
+          </select></label>
+      </div>
+
+      <div class="space-y-2.5 border-t border-slate-100 pt-4">
+        <label class="flex items-center gap-2.5 text-[13px] text-slate-700"><input type="checkbox" id="optic"> Optik form ekle</label>
+        <label class="flex items-center gap-2.5 text-[13px] text-slate-700"><input type="checkbox" id="spacing"> Sorular arasına boşluk bırak</label>
+        <div id="spacingBox" class="hidden pl-6 text-[11px] text-slate-500">Boşluk <b class="text-slate-700" id="spVal">10</b> mm
+          <input type="range" id="spacingValue" min="5" max="30" value="10" class="mt-1 w-full"></div>
+        <label class="flex items-center gap-2.5 text-[13px] text-slate-700"><input type="checkbox" id="showAnswerKey" checked> Cevap anahtarı <span class="text-slate-400">(<span id="ansCount">0</span>)</span></label>
+      </div>
+
+      <div class="border-t border-slate-100 pt-4">
+        <button id="advBtn" class="flex w-full items-center justify-between rounded-lg px-1 py-1 text-[13px] font-medium text-slate-600 transition hover:text-slate-900">
+          <span>Gelişmiş Ayarlar</span><span id="advArrow" class="text-slate-400">＋</span>
+        </button>
+        <div id="advBox" class="mt-3 hidden space-y-3 rounded-xl bg-slate-50 p-4">
+          <label class="flex items-center gap-2.5 text-[13px] text-slate-700"><input type="checkbox" id="smartLayout"> Akıllı soru yerleşimi</label>
+          <label class="lbl">Filigran Metni<input id="watermark" class="inp mt-1.5" placeholder="Bilim Akademi"></label>
+          <label class="lbl">Filigran Açısı <span class="float-right font-semibold text-slate-700" id="wmAngleVal">45°</span>
+            <input type="range" id="watermarkAngle" min="-90" max="90" step="15" value="45" class="mt-1 w-full"></label>
+          <label class="lbl">Filigran Boyutu <span class="float-right font-semibold text-slate-700"><span id="wmSizeVal">44</span>pt</span>
+            <input type="range" id="watermarkSize" min="12" max="80" step="2" value="44" class="mt-1 w-full"></label>
+          <label class="flex items-start gap-2.5 text-[12px] leading-snug text-slate-600">
+            <input type="checkbox" id="watermarkDivider" class="mt-0.5"> Filigranı yalnızca orta çizgide dikey göster
+          </label>
+          <label class="lbl">Tasarım Rengi<input type="color" id="themeColor" value="#1d4ed8" class="mt-1.5 h-8 w-full cursor-pointer rounded-lg border border-slate-200"></label>
+          <div class="grid grid-cols-2 gap-2.5">
+            <label class="lbl">Sayfa
+              <select id="pageSize" class="inp mt-1.5"><option value="a4">A4</option><option value="a5">A5</option><option value="letter">Letter</option></select></label>
+            <label class="lbl">Yön
+              <select id="orientation" class="inp mt-1.5"><option value="portrait">Dikey</option><option value="landscape">Yatay</option></select></label>
+            <label class="lbl">Sütun
+              <select id="columns" class="inp mt-1.5"><option>1</option><option selected>2</option><option>3</option></select></label>
+            <label class="lbl">Kenar <span class="float-right font-semibold text-slate-700"><span id="mgVal">12</span>mm</span>
+              <input type="range" id="margin" min="5" max="30" value="12" class="mt-2 w-full"></label>
+          </div>
+        </div>
+      </div>
+
+      <button id="makeBtn" class="w-full rounded-xl bg-slate-900 py-3 text-[13px] font-semibold text-white transition hover:bg-slate-700">
+        Kağıdı Hazırla · PDF
+      </button>
+    </div>
+  </aside>
+
+  <!-- ANA ALAN -->
+  <main class="min-w-0 flex-1 space-y-5">
+    <div id="dropzone" class="rounded-2xl border-2 border-dashed border-slate-300 bg-white px-8 py-10 text-center transition-all duration-300 hover:border-sky-400 hover:bg-sky-50/30 hover:shadow-[0_0_30px_rgba(56,189,248,0.22)]">
+      <p class="text-[15px] font-medium text-slate-800">Soruları buraya sürükleyip bırakın</p>
+      <p class="mt-1.5 text-[13px] text-slate-400">JPG, PNG, GIF · en fazla 100 soru · .db taslak dosyası</p>
+      <div class="mt-5 flex flex-wrap justify-center gap-2.5">
+        <button id="pickBtn" class="flex items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all duration-150 hover:bg-blue-500 hover:shadow-md hover:shadow-blue-500/20 active:scale-[0.98]">
+          <span>📁</span> Soru Seçin
+        </button>
+        <button id="textBtn" class="flex items-center gap-1.5 rounded-xl bg-[#0b1329] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all duration-150 hover:bg-[#152347] hover:shadow-md hover:shadow-slate-900/30 active:scale-[0.98]">
+          <span>✍️</span> Yazılı Soru Ekleyin
+        </button>
+        <button id="openCrop" class="flex items-center gap-1.5 rounded-xl bg-slate-500 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all duration-150 hover:bg-slate-600 hover:shadow-md hover:shadow-slate-500/20 active:scale-[0.98]">
+          <span>✂️</span> Görselden Soru Kesin
+        </button>
+      </div>
+      <input id="fileInput" type="file" multiple accept="image/jpeg,image/png,image/gif,.db" class="hidden">
+    </div>
+
+    <div class="flex items-center gap-3 px-1">
+      <h2 class="text-[13px] font-semibold text-slate-900">Sorular <span class="ml-0.5 font-normal text-slate-400"><span id="qCount">0</span> / 100</span></h2>
+      <span class="hidden text-xs text-slate-400 sm:block">Sıralamak için sürükleyin</span>
+      <button id="clearAll" class="ml-auto text-xs text-slate-400 transition hover:text-rose-600">Tümünü sil</button>
+    </div>
+
+    <div id="grid" class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+      <div id="emptyState" class="col-span-full flex items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white px-6 py-20 text-center">
+        <div>
+          <p class="text-[15px] font-medium text-slate-700">Henüz soru oluşturmadınız</p>
+          <p class="mt-1.5 text-[13px] leading-relaxed text-slate-400">
+            Dilerseniz yukarıdaki seçenekleri kullanarak<br><b class="text-slate-600">Yazılı Kağıdı</b> veya <b class="text-slate-600">Konu Denemesi</b> oluşturabilirsiniz
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer class="pb-10 pt-6 text-center">
+  <span class="text-xs text-slate-400">Egemen Bilim'in Eğitim Teknolojileri</span>
+</footer>
+
+<!-- Sağ alt -->
+<div class="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2">
+  <div id="progress" class="hidden rounded-xl bg-slate-900 px-3.5 py-2.5 text-xs text-white shadow-lg"></div>
+  <button id="saveDraft" title="Çalışmayı kaydet (.db)" class="group flex items-center gap-2 rounded-full border border-slate-200 bg-white py-2 pl-4 pr-2.5 shadow-lg transition hover:border-slate-900 hover:shadow-xl">
+    <span class="text-[13px] font-medium text-slate-600 transition group-hover:text-slate-900">Soruları Kaydet</span>
+    <span class="text-2xl leading-none">💾</span>
+  </button>
+</div>
+
+<!-- Önizleme -->
+<div id="preview" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60 p-6 backdrop-blur-sm"><div id="previewBody" class="fade-in max-h-full max-w-3xl overflow-auto rounded-2xl bg-white p-6 shadow-2xl"></div></div>
+
+<!-- Gruplama -->
+<div id="groupModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+  <div class="fade-in max-h-[85vh] w-full max-w-2xl overflow-auto rounded-2xl bg-white p-6 shadow-2xl">
+    <h3 class="text-[15px] font-semibold text-slate-900">Soruları Grupla</h3>
+    <p class="mt-1 text-[13px] text-slate-500">Bu soruya bağlanacak soruları seçin. Gruplanan sorular kitapçıklarda birbirinden ayrılmaz.</p>
+    <textarea id="gStem" class="inp mt-4 h-20 leading-relaxed" placeholder="Ortak paragraf / soru kökü (isteğe bağlı)"></textarea>
+    <div id="gGrid" class="mt-4 grid grid-cols-4 gap-2"></div>
+    <div class="mt-5 flex justify-end gap-2 border-t border-slate-100 pt-4">
+      <button id="gCancel" class="rounded-lg px-4 py-2 text-[13px] font-medium text-slate-500 transition hover:bg-slate-100">İptal</button>
+      <button id="gSave" class="rounded-lg bg-slate-900 px-5 py-2 text-[13px] font-medium text-white transition hover:bg-slate-700">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Metin soru editörü -->
+<div id="textModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+  <div class="fade-in max-h-[90vh] w-full max-w-2xl overflow-auto rounded-2xl bg-white p-6 shadow-2xl">
+    <h3 id="txtTitle" class="text-[15px] font-semibold text-slate-900">Yazılı Soru Ekle</h3>
+    <p class="mt-1 text-[13px] text-slate-500">
+      Hazır bir soruyu kutulara yapıştırırsanız şıklar ve soru kökü otomatik ayrılır.
+    </p>
+
+    <!-- Soru Tipi Seçici -->
+    <div class="mt-4 grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 text-xs">
+      <button data-qk="coktan" class="qkind rounded-lg py-2 font-medium">Çoktan Seçmeli</button>
+      <button data-qk="bosluk" class="qkind rounded-lg py-2 font-medium">Boşluk Doldurma</button>
+      <button data-qk="klasik" class="qkind rounded-lg py-2 font-medium">Klasik</button>
+    </div>
+
+    <!-- Boşluk Doldurma Paneli -->
+    <div id="blankPanel" class="mt-4 hidden rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <label class="lbl">Kelime Havuzu <span class="font-normal text-slate-300">· isteğe bağlı, virgülle ayırın</span>
+        <input id="txtWordBank" class="inp mt-1.5" placeholder="Şemsettin Sami, Namık Kemal, Ahmet Mithat">
+      </label>
+
+      <div class="mt-4 mb-2 flex items-center justify-between">
+        <span class="lbl">Sorular</span>
+        <span class="text-[11px] text-slate-400">Boşluk için <code class="rounded bg-slate-200 px-1 text-slate-600">...</code> yazın</span>
+      </div>
+      <div id="blankQList" class="space-y-2"></div>
+
+      <button id="blankAddBtn" type="button" class="mt-2.5 w-full rounded-lg border border-dashed border-slate-300 py-2 text-[13px] font-medium text-slate-500 transition hover:border-slate-900 hover:text-slate-900">
+        + Soru Ekle
+      </button>
+
+      <!-- Boşluk Doldurma: Görsel İçeren Soru -->
+      <div class="mt-4 border-t border-slate-200 pt-3">
+        <label class="flex items-center gap-2 text-[13px] font-medium text-slate-700">
+          <input type="checkbox" id="blankHasImage">
+          <span>Görsel İçeren Soru <span class="font-normal text-slate-400">(Coğrafya, Matematik vb. dersler için)</span></span>
+        </label>
+        <div id="blankImgPanel" class="mt-3 hidden">
+          <div class="flex items-center gap-2">
+            <label class="flex-1 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white px-3 py-6 text-center transition hover:border-slate-900">
+              <div id="blankImgPlaceholder">
+                <div class="text-slate-400">📷 Görsel seçin</div>
+                <div class="mt-1 text-[11px] text-slate-300">JPG, PNG veya GIF</div>
+              </div>
+              <img id="blankImgPreview" class="mx-auto hidden max-h-28 rounded-lg">
+              <input id="blankImgFile" type="file" accept="image/*" class="hidden">
+            </label>
+            <button id="blankImgRemove" type="button" class="hidden rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-400 transition hover:border-rose-300 hover:text-rose-600">✕</button>
+          </div>
+          <p class="mt-2 text-[11px] text-slate-400">Görsel, ilk boşluk doldurma sorusunun üstüne eklenir.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Öncül / Metin (Normal Font) -->
+    <!-- Görsel İçeren Soru -->
+    <div id="commonImgBlock" class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+      <label class="flex items-center gap-2 text-[13px] font-medium text-slate-700">
+        <input type="checkbox" id="txtHasImage">
+        <span>Görsel İçeren Soru <span class="font-normal text-slate-400">(Coğrafya, Matematik vb. dersler için)</span></span>
+      </label>
+      <div id="imgUploadPanel" class="mt-3 hidden">
+        <div class="flex items-center gap-2">
+          <label class="flex-1 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white px-3 py-6 text-center transition hover:border-slate-900">
+            <div id="imgUploadPlaceholder">
+              <div class="text-slate-400">📷 Görsel seçin</div>
+              <div class="mt-1 text-[11px] text-slate-300">JPG, PNG veya GIF</div>
+            </div>
+            <img id="imgPreview" class="mx-auto hidden max-h-28 rounded-lg">
+            <input id="txtImgFile" type="file" accept="image/*" class="hidden">
+          </label>
+          <button id="txtImgRemove" type="button" class="hidden rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-400 transition hover:border-rose-300 hover:text-rose-600">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Girdi Düzeni Bilgisi: Çoktan Seçmeli'de görünür ve varsayılan kapalıdır -->
+    <details id="aiPromptPanel" class="group mt-3 overflow-hidden rounded-xl border border-slate-200 bg-slate-50/70">
+      <summary class="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-[13px] font-medium text-slate-700 transition hover:bg-slate-100">
+        <span>Girdi Düzeni Hk.</span>
+        <span class="text-slate-400 transition group-open:rotate-45">＋</span>
+      </summary>
+      <div class="border-t border-slate-200 px-4 pb-4 pt-3">
+        <p class="text-[12px] leading-relaxed text-slate-500">
+          Sorularınızı şu promptu kullanarak yapay zeka araçlarına göndererek en uygun forma sokabilirsiniz.
+          Soru kökünü <b class="text-slate-800">* ile başlayıp * ile biten</b> yazarsanız otomatik algılanır.
+        </p>
+        <div class="mt-2.5 flex items-start gap-2">
+          <pre id="aiPrompt" class="flex-1 select-all whitespace-pre-wrap rounded-lg border border-slate-200 bg-white p-3 text-[11px] leading-relaxed text-slate-700">Yüklenen soruları analiz et ve öncül / soru kökü / şık ayrımı yap. Soru kökünün ilk sözcüğü önüne ve son sözcüğü bittikten sonra * koyarak çıktıyı ver. Bu formatı asla bozma ve bu şekilde indirilebilir pdf halinde soruları sırala. Cevapları ) ile belirt. A) B) C) D) E) gibi olmalıdır. A.   B. olanları da A) şekline çevir. Soru numarası başta sadece numara olarak bulunsun.</pre>
+          <button id="copyPrompt" type="button" class="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-medium text-slate-600 transition hover:border-slate-900 hover:text-slate-900">Kopyala</button>
+        </div>
+      </div>
+    </details>
+
+    <div id="preamblePanel" class="mt-4">
+      <label class="lbl">Öncül / Bilgi Metni / Paragraf <span class="font-normal text-slate-400">(İsteğe bağlı • Normal Font)</span></label>
+      <textarea id="txtPreamble" class="inp mt-1.5 h-20 leading-relaxed" placeholder="I. TBMM'nin açılması&#10;II. Saltanatın kaldırılması&#10;III. Cumhuriyetin ilanı"></textarea>
+    </div>
+
+    <!-- Soru Kökü (Bold Font) -->
+    <div id="rootPanel" class="mt-3">
+      <label class="lbl">Soru Kökü / Yönerge Cümlesi <span class="font-normal text-slate-400">(PDF'te KALIN / BOLD yazılır)</span></label>
+      <textarea id="txtRoot" class="inp mt-1.5 h-14 font-medium leading-relaxed" placeholder="Yukarıdaki gelişmelerin kronolojik sıralaması aşağıdakilerden hangisidir?"></textarea>
+    </div>
+
+    <!-- Şıklar (Tek alan) -->
+    <div id="optionsPanel" class="mt-4">
+      <span class="lbl">Seçenekler <span class="font-normal text-slate-400">(Opsiyonel: Doğru şıkkı seçiniz)</span></span>
+      <input id="txtAns" type="hidden" value="">
+      <div class="mt-1.5 grid grid-cols-1 divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div class="flex items-center gap-2 px-2.5 py-1.5 transition focus-within:bg-slate-50">
+          <button type="button" data-opt-answer="A" class="opt-answer w-7 shrink-0 rounded-md py-1 text-xs font-bold text-slate-400 transition">A)</button>
+          <input id="opt0" class="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-300" placeholder="Birinci seçenek">
+        </div>
+        <div class="flex items-center gap-2 px-2.5 py-1.5 transition focus-within:bg-slate-50">
+          <button type="button" data-opt-answer="B" class="opt-answer w-7 shrink-0 rounded-md py-1 text-xs font-bold text-slate-400 transition">B)</button>
+          <input id="opt1" class="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-300" placeholder="İkinci seçenek">
+        </div>
+        <div class="flex items-center gap-2 px-2.5 py-1.5 transition focus-within:bg-slate-50">
+          <button type="button" data-opt-answer="C" class="opt-answer w-7 shrink-0 rounded-md py-1 text-xs font-bold text-slate-400 transition">C)</button>
+          <input id="opt2" class="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-300" placeholder="Üçüncü seçenek">
+        </div>
+        <div class="flex items-center gap-2 px-2.5 py-1.5 transition focus-within:bg-slate-50">
+          <button type="button" data-opt-answer="D" class="opt-answer w-7 shrink-0 rounded-md py-1 text-xs font-bold text-slate-400 transition">D)</button>
+          <input id="opt3" class="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-300" placeholder="Dördüncü seçenek">
+        </div>
+        <div class="flex items-center gap-2 px-2.5 py-1.5 transition focus-within:bg-slate-50">
+          <button type="button" data-opt-answer="E" class="opt-answer w-7 shrink-0 rounded-md py-1 text-xs font-bold text-slate-400 transition">E)</button>
+          <input id="opt4" class="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-300" placeholder="Beşinci seçenek">
+        </div>
+      </div>
+    </div>
+
+    <!-- Düzen Seçenekleri -->
+    <div class="mt-4 grid grid-cols-2 gap-2.5 border-t border-slate-100 pt-4">
+      <label id="layoutPanel" class="lbl">Şık Dizilimi
+        <select id="txtLayout" class="inp mt-1.5">
+          <option value="v">Alt alta</option>
+          <option value="h">Yan yana</option>
+        </select>
+      </label>
+      <label class="lbl">Cevap Boşluğu
+        <select id="txtBlank" class="inp mt-1.5">
+          <option value="0">Yok</option>
+          <option value="15">Küçük · 3 satır</option>
+          <option value="25">Orta · 5 satır</option>
+          <option value="40">Büyük · 8 satır</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="mt-5 flex justify-end gap-2 border-t border-slate-100 pt-4">
+      <button id="txtCancel" class="rounded-lg px-4 py-2 text-[13px] font-medium text-slate-500 transition hover:bg-slate-100">İptal</button>
+      <button id="txtSaveNew" class="rounded-lg border border-slate-200 px-4 py-2 text-[13px] font-medium text-slate-700 transition hover:border-slate-900">Kaydet ve Devam</button>
+      <button id="txtSave" class="rounded-lg bg-slate-900 px-5 py-2 text-[13px] font-medium text-white transition hover:bg-slate-700">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF sonuç -->
+<div id="resultModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+  <div class="fade-in w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+    <h3 class="text-[15px] font-semibold text-slate-900">PDF Hazır</h3>
+    <p class="mt-1 text-[13px] text-slate-500">İndirme başlamadıysa aşağıdaki butonları kullanın.</p>
+    <div id="resultList" class="mt-4 space-y-2"></div>
+    <div class="mt-5 flex justify-end border-t border-slate-100 pt-4">
+      <button id="resultClose" class="rounded-lg px-4 py-2 text-[13px] font-medium text-slate-500 transition hover:bg-slate-100">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<!-- Kırpma aracı -->
+<div id="cropTool" class="fixed inset-0 z-50 hidden flex-col bg-slate-900 text-white">
+  <div class="flex flex-wrap items-center gap-3 border-b border-white/10 px-5 py-3">
+    <span class="text-[13px] font-semibold">Görselden Soru Kes</span>
+    <label class="cursor-pointer rounded-lg bg-white/10 px-3.5 py-1.5 text-[13px] font-medium transition hover:bg-white/20">Görsel Yükle
+      <input id="cropFile" type="file" accept="image/*" class="hidden"></label>
+    <label class="flex items-center gap-2 text-[13px] text-white/70"><input type="checkbox" id="autoTrim" checked class="!accent-white"> Boşlukları temizle</label>
+    <div class="flex items-center gap-1.5 text-[13px] text-white/70">Cevap <span id="cropAns" class="flex gap-1"></span></div>
+    <button id="cutBtn" class="rounded-lg bg-white px-3.5 py-1.5 text-[13px] font-medium text-slate-900 transition hover:bg-slate-200">Kes</button>
+    <div class="ml-auto flex gap-2">
+      <button id="cropUpload" class="rounded-lg bg-white/10 px-3.5 py-1.5 text-[13px] font-medium transition hover:bg-white/20">Yükle · <span id="cutCount">0</span></button>
+      <button id="cropClose" class="rounded-lg px-3 py-1.5 text-[13px] text-white/50 transition hover:text-white">Kapat</button>
+    </div>
+  </div>
+  <div class="flex min-h-0 flex-1">
+    <div id="cropWrap" class="relative flex-1 overflow-auto bg-slate-800 p-5">
+      <div id="cropStage" class="relative inline-block select-none">
+        <img id="cropImg" class="max-w-none hidden rounded" draggable="false">
+        <div id="cropRect" class="pointer-events-none absolute hidden border-2 border-white bg-white/15"></div>
+      </div>
+      <button id="cropAddBtn" onclick="document.getElementById('cutBtn').click(); hideCropAdd();"
+        class="absolute z-20 hidden rounded-lg bg-white px-4 py-2 text-[13px] font-semibold text-slate-900 shadow-xl transition hover:bg-slate-100">
+        Ekle
+      </button>
+      <div id="cropHint" class="p-12 text-center text-[13px] leading-relaxed text-white/40">
+        Bir görsel yükleyin, fareyle soruyu çerçeveleyin<br>ve çıkan <b class="text-white/70">Ekle</b> butonuna basın.
+      </div>
+    </div>
+    <div id="cutList" class="w-56 overflow-auto border-l border-white/10 p-3"></div>
+  </div>
+</div>
+
+<!-- Kılavuz -->
+<div id="guide" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+  <div class="fade-in flex max-h-[86vh] w-full max-w-2xl flex-col rounded-2xl bg-white shadow-2xl">
+    <div class="flex items-center justify-between border-b border-slate-100 px-7 py-5">
+      <h2 class="text-[15px] font-semibold text-slate-900">Kullanım Kılavuzu</h2>
+      <button id="guideClose" class="rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-400 transition hover:bg-slate-100 hover:text-slate-900">Kapat</button>
+    </div>
+    <div id="guideBody" class="overflow-auto px-7 py-6"></div>
+  </div>
+</div>
+
+<script>
+const LETTERS = ['A','B','C','D','E'], MAX = 100;
+const $ = id => document.getElementById(id);
+let questions = [];
+const S = { testType:'yazili', groups:1, columns:2, pageSize:'a4', orientation:'portrait', margin:12,
+  spacing:false, spacingValue:10, smartLayout:false,
+  watermark:'', watermarkAngle:45, watermarkSize:44, watermarkDivider:false,
+  themeColor:'#1d4ed8', optic:false, showAnswerKey:true, konuKapsami:'', denemeNo:'',
+  title:'', school:'', lesson:'2025-2026 EĞİTİM ÖĞRETİM YILI',
+  description:'Aşağıdaki soruları dikkatlice okuyunuz. Her soru 10 Puan olmakla birlikte sınav süreniz 40 dakikadır.' };
+
+/* ---------- KILAVUZ (SADE) ---------- */
+const GUIDE = [
+  { s: '🚀 Hızlı Başlangıç', items: [
+    ['Üç adımda test hazırlama', 'Önce sorularınızı ekleyin, ardından soldaki bölümden test ayarlarını yapın ve son olarak <b>Kağıdı Hazırla</b> butonuna basın. PDF dosyanız hazırdır.'],
+    ['Soru ekleme yöntemleri', 'Soru eklemenin üç yolu vardır:<br>• <b>Soru Seçin</b> — bilgisayarınızdaki soru görsellerini yükleyin.<br>• <b>Yazılı Soru Ekleyin</b> — Soru yazın yahut metin bloğu olarak soruyu şıkları ile yapıştırın.<br>• <b>Görselden Soru Kesin</b> — Soruyu yüklediğiniz görselden keserek seçin.'],
+  ]},
+
+  { s: '✍️ Yazılı Soru Ekleme', items: [
+    ['Soru tipleri', '<b>Çoktan Seçmeli:</b> A, B, C, D, E şıklı klasik test sorusudur.<br><b>Boşluk Doldurma:</b> Cümle içinde boş bırakılan yerlerin doldurulduğu sorudur.<br><b>Klasik:</b> Öğrencinin cevabını yazacağı boş satırlar içeren açık uçlu sorudur.'],
+    ['Öncül ile soru kökü farkı', 'Bilgi metni (öncül) normal yazı tipiyle, asıl soruyu soran cümle (soru kökü) ise <b>kalın</b> yazı tipiyle yazdırılır. Böylece öğrenci kendisinden ne istendiğini kolayca görür.'],
+    ['Hazır soruyu yapıştırma', 'Elinizdeki bir soruyu kopyalayıp metin kutusuna yapıştırdığınızda; şıklar, soru kökü ve varsa doğru cevap <b>otomatik olarak ayrıştırılır</b>. Bunları tek tek girmenize gerek kalmaz.'],
+    ['Boşluk doldurma sorusu', 'Cümlede boşluk bırakmak istediğiniz yere <b>üç nokta (...)</b> yazmanız yeterlidir. Dilerseniz üst kısma kelime havuzu ekleyebilir, <b>Soru Ekle</b> butonuyla art arda birden fazla soru girebilirsiniz.'],
+    ['Görsel içeren soru', 'Soruya harita, grafik, şekil gibi bir görsel eklemek isterseniz <b>Görsel İçeren Soru</b> kutucuğunu işaretleyin. Yüklediğiniz görsel, soru metninin üstünde yer alır.'],
+  ]},
+
+  { s: '✂️ Görselden Soru Kesme', items: [
+    ['Nasıl kullanılır?', 'Kitap veya test sayfasının fotoğrafını yükleyin. Fareyle soruyu çerçeve içine alın ve beliren <b>Ekle</b> butonuna basın. Tüm soruları kestikten sonra <b>Yükle</b> butonuyla ana ekrana aktarın.'],
+    ['Kesim ipucu', 'Sorunun solundaki numarayı çerçevenin dışında bırakın; numaralandırmayı program kendisi yapar. Kenarlarda kalan fazla beyaz boşluklar otomatik olarak temizlenir.'],
+  ]},
+
+  { s: '🗂️ Soruları Düzenleme', items: [
+    ['Sıralama ve silme', 'Soruları fareyle sürükleyerek istediğiniz sıraya getirebilirsiniz. Soru kartının üzerindeki butonlar: 🔍 büyütme, ✏️ düzenleme, ↑ ↓ taşıma ve ✕ silme işlemi yapar.'],
+    ['Cevap anahtarı', 'Her sorunun altındaki A–E kutucuklarından doğru cevabı işaretleyin. En az bir soruda cevap işaretlediğinizde, testle birlikte ayrı bir cevap anahtarı PDF\'i de oluşturulur.'],
+  ]},
+
+  { s: '⚙️ Test Ayarları', items: [
+    ['Test türü', '<b>Yazılı Kağıdı:</b> Ad, sınıf ve puan alanları bulunan okul sınavı biçimidir.<br><b>Konu Denemesi:</b> Konu kapsamı ve deneme numarası girilebilen konu testi biçimidir.'],
+    ['Kitapçık türü', 'A-B veya A-B-C-D seçeneğini kullandığınızda sorular her kitapçıkta farklı sırayla dizilir. Bu da kopya çekilmesini zorlaştırır.'],
+    ['Sayfa düzeni', 'Test kağıdı <b>iki sütun</b> halinde hazırlanır ve bir soru asla iki sayfaya bölünmez. Sütun sayısını, sayfa boyutunu, rengi ve kenar boşluklarını <b>Gelişmiş Ayarlar</b> bölümünden değiştirebilirsiniz.'],
+    ['Filigran', 'Sayfaya kurum adınızı filigran olarak ekleyebilirsiniz. Yazının açısını ve boyutunu ayarlayabilir ya da yalnızca sayfanın orta çizgisinde dikey olarak görünmesini sağlayabilirsiniz.'],
+    ['Akıllı yerleşim', 'Soruları sayfaya daha verimli yerleştirerek testin mümkün olduğunca az sayfaya sığmasını sağlar.'],
+    ['Optik form', 'Bu seçeneği işaretlediğinizde, soru sayınıza uygun bir optik cevap kağıdı testin sonuna eklenir.'],
+  ]},
+
+  { s: '💾 Kaydetme', items: [
+    ['Çalışmanızı kaydetme', 'Sağ alttaki <b>Soruları Kaydet</b> butonuyla çalışmanızı bilgisayarınıza indirebilirsiniz. Daha sonra bu dosyayı soru alanına sürükleyerek kaldığınız yerden devam edebilirsiniz.'],
+    ['Verileriniz güvende', 'Uygulama tamamen kendi bilgisayarınızda çalışır. Sorularınız ve bilgileriniz internete gönderilmez.'],
+  ]},
+];
+
+$('guideBody').innerHTML =
+  GUIDE.map((g) => `
+    <section class="mb-7">
+      <h3 class="mb-3 border-b border-slate-200 pb-1.5 text-[13px] font-semibold tracking-wide text-slate-900">${g.s}</h3>
+      <dl class="space-y-3">
+        ${g.items.map(([t, d]) => `
+          <div>
+            <dt class="text-[13px] font-medium text-slate-800">${t}</dt>
+            <dd class="mt-0.5 text-[13px] leading-relaxed text-slate-500">${d}</dd>
+          </div>`).join('')}
+      </dl>
+    </section>`).join('') +
+  `<section class="rounded-xl border border-slate-200 bg-slate-50 p-5 text-center">
+     <div class="text-[13px] font-semibold text-slate-900">Egemen Bilim</div>
+     <div class="mt-1.5 text-[13px] text-slate-500">
+       <a class="text-slate-700 hover:underline" href="tel:+905537891938">0553 789 1938</a>
+       <span class="mx-2 text-slate-300">·</span>
+       <a class="text-slate-700 hover:underline" href="mailto:egemenbilim@gmail.com">egemenbilim@gmail.com</a>
+     </div>
+     <div class="mt-2 text-xs text-slate-400">Öneri ve hata bildirimleriniz için yazabilirsiniz.</div>
+   </section>`;
+$('openGuide').onclick=()=>$('guide').classList.replace('hidden','flex');
+$('guideClose').onclick=()=>$('guide').classList.replace('flex','hidden');
+
+/* ---------- AYAR BAĞLARI ---------- */
+function renderTabs(){ [...$('typeTabs').children].forEach(b=>{ b.className = 'rounded-lg py-1.5 transition ' + (b.dataset.t===S.testType?'bg-white text-slate-900 shadow-sm font-medium':'text-slate-500 hover:text-slate-900'); });
+  $('groups').disabled = S.testType==='yaprak';
+  $('konuRow').classList.toggle('hidden', S.testType!=='yaprak');
+  $('denemeRow').classList.toggle('hidden', S.testType!=='yaprak'); }
+[...$('typeTabs').children].forEach(b=>b.onclick=()=>{S.testType=b.dataset.t;renderTabs();});
+renderTabs();
+$('groups').onchange=e=>S.groups=+e.target.value;
+$('optic').onchange=e=>S.optic=e.target.checked;
+$('showAnswerKey').onchange=e=>S.showAnswerKey=e.target.checked;
+$('spacing').onchange=e=>{S.spacing=e.target.checked;$('spacingBox').classList.toggle('hidden',!S.spacing);};
+$('spacingValue').oninput=e=>{S.spacingValue=+e.target.value;$('spVal').textContent=e.target.value;};
+$('advBtn').onclick=()=>{ const h=$('advBox').classList.toggle('hidden'); $('advArrow').textContent = h?'＋':'−'; };
+$('smartLayout').onchange=e=>S.smartLayout=e.target.checked;
+$('watermark').oninput=e=>S.watermark=e.target.value;
+$('watermarkAngle').oninput=e=>{ S.watermarkAngle=+e.target.value; $('wmAngleVal').textContent=e.target.value+'°'; };
+$('watermarkSize').oninput=e=>{ S.watermarkSize=+e.target.value; $('wmSizeVal').textContent=e.target.value; };
+$('watermarkDivider').onchange=e=>S.watermarkDivider=e.target.checked;
+$('konuKapsami').oninput=e=>S.konuKapsami=e.target.value;
+$('denemeNo').oninput=e=>S.denemeNo=e.target.value;
+$('themeColor').oninput=e=>S.themeColor=e.target.value;
+$('pageSize').onchange=e=>S.pageSize=e.target.value;
+$('orientation').onchange=e=>S.orientation=e.target.value;
+$('columns').onchange=e=>S.columns=+e.target.value;
+$('margin').oninput=e=>{S.margin=+e.target.value;$('mgVal').textContent=e.target.value;};
+
+/* ---------- SORU YÜKLEME ---------- */
+const uid = () => 'q'+Math.random().toString(36).slice(2,10);
+function setProgress(d,t){ const p=$('progress'); if(t===null){p.classList.add('hidden');return;}
+  p.classList.remove('hidden');
+  p.innerHTML = `Yükleniyor ${d} / ${t}<div class="mt-1.5 h-1 w-32 overflow-hidden rounded-full bg-white/20"><div class="h-1 rounded-full bg-white transition-all" style="width:${d/t*100}%"></div></div>`; }
+
+async function addFiles(list){
+  const arr=[...list];
+  const db=arr.find(f=>f.name.toLowerCase().endsWith('.db'));
+  if(db){
+    try{
+      const raw = await db.text();
+      const d = JSON.parse(raw);
+      if (!d || !Array.isArray(d.questions)) throw new Error('Geçersiz taslak dosyası.');
+      questions = d.questions;
+      if (d.settings && typeof d.settings === 'object') Object.assign(S, d.settings);
+      syncUI();
+      render();
+    }catch(e){
+      console.error(e);
+      alert('Taslak dosyası okunamadı. Dosyanın bu araç ile kaydedilmiş bir ".db" olduğundan emin olun.');
+    }
+    return;
+  }
+  const imgs=arr.filter(f=>/image\/(jpeg|png|gif)/.test(f.type));
+  if(!imgs.length){ alert('Yüklemek istediğiniz görsel sadece JPG, PNG veya GIF formatında olabilir.'); return; }
+  imgs.sort((a,b)=>a.name.localeCompare(b.name,'tr',{numeric:true}));
+  let done=0; setProgress(0,imgs.length);
+  for(const f of imgs){
+    await new Promise(res=>{ const r=new FileReader();
+      r.onload=()=>{ const im=new Image(); im.onload=()=>{
+        if(questions.length<MAX) questions.push({id:uid(),src:r.result,w:im.width,h:im.height,answer:null,groupId:null,stem:'',name:f.name});
+        done++; setProgress(done,imgs.length); render(); res(); }; im.src=r.result; };
+      r.readAsDataURL(f); });
+  }
+  setTimeout(()=>setProgress(0,null),1200);
+}
+function syncUI(){
+  // Metin alanları
+  if (S.title !== undefined) $('title').value = S.title;
+  if (S.school !== undefined) $('school').value = S.school;
+  if (S.lesson !== undefined) $('lesson').value = S.lesson;
+  if (S.description !== undefined) $('description').value = S.description;
+  if (S.konuKapsami !== undefined) $('konuKapsami').value = S.konuKapsami;
+  if (S.denemeNo !== undefined) $('denemeNo').value = S.denemeNo;
+
+  // Ana ayarlar
+  if (S.groups !== undefined) $('groups').value = String(S.groups);
+  if (S.optic !== undefined) $('optic').checked = !!S.optic;
+  if (S.showAnswerKey !== undefined) $('showAnswerKey').checked = !!S.showAnswerKey;
+  if (S.spacing !== undefined) {
+    $('spacing').checked = !!S.spacing;
+    $('spacingBox').classList.toggle('hidden', !S.spacing);
+  }
+  if (S.spacingValue !== undefined) {
+    $('spacingValue').value = String(S.spacingValue);
+    $('spVal').textContent = String(S.spacingValue);
+  }
+
+  // Gelişmiş
+  if (S.smartLayout !== undefined) $('smartLayout').checked = !!S.smartLayout;
+  if (S.watermark !== undefined) $('watermark').value = S.watermark;
+  if (S.watermarkAngle !== undefined) {
+    $('watermarkAngle').value = String(S.watermarkAngle);
+    $('wmAngleVal').textContent = S.watermarkAngle + '°';
+  }
+  if (S.watermarkSize !== undefined) {
+    $('watermarkSize').value = String(S.watermarkSize);
+    $('wmSizeVal').textContent = String(S.watermarkSize);
+  }
+  if (S.watermarkDivider !== undefined) $('watermarkDivider').checked = !!S.watermarkDivider;
+  if (S.themeColor !== undefined) $('themeColor').value = S.themeColor;
+  if (S.pageSize !== undefined) $('pageSize').value = S.pageSize;
+  if (S.orientation !== undefined) $('orientation').value = S.orientation;
+  if (S.columns !== undefined) $('columns').value = String(S.columns);
+  if (S.margin !== undefined) {
+    $('margin').value = String(S.margin);
+    $('mgVal').textContent = String(S.margin);
+  }
+
+  renderTabs();
+  $('qCount').textContent = questions.length;
+  $('ansCount').textContent = questions.filter((q) => q.answer).length;
+}
+$('pickBtn').onclick=()=>$('fileInput').click();
+$('fileInput').onchange=e=>{ addFiles(e.target.files); e.target.value=''; };
+const dz=$('dropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('border-sky-400','bg-sky-50/50','shadow-[0_0_35px_rgba(56,189,248,0.30)]');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('border-sky-400','bg-sky-50/50','shadow-[0_0_35px_rgba(56,189,248,0.30)]'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('border-sky-400','bg-sky-50/50','shadow-[0_0_35px_rgba(56,189,248,0.30)]'); if(e.dataTransfer.files.length) addFiles(e.dataTransfer.files);});
+$('clearAll').onclick=()=>{ if(confirm('Tüm sorular silinsin mi?')){questions=[];render();} };
+
+/* ---------- GRID ---------- */
+let dragIdx=null;
+function render(){
+  $('qCount').textContent=questions.length;
+  $('ansCount').textContent=questions.filter(q=>q.answer).length;
+  const g=$('grid'); g.innerHTML='';
+
+  if (!questions.length) {
+    g.innerHTML = `<div id="emptyState" class="col-span-full flex items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white px-6 py-20 text-center">
+      <div>
+        <p class="text-[15px] font-medium text-slate-700">Henüz soru oluşturmadınız</p>
+        <p class="mt-1.5 text-[13px] leading-relaxed text-slate-400">
+          Dilerseniz yukarıdaki seçenekleri kullanarak<br><b class="text-slate-600">Yazılı Kağıdı</b> veya <b class="text-slate-600">Konu Denemesi</b> oluşturabilirsiniz
+        </p>
+      </div></div>`;
+    return;
+  }
+  g.classList.remove(...g.classList); g.className = 'grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4';
+  questions.forEach((q,i)=>{
+    const d=document.createElement('div');
+    d.className='card group relative cursor-grab rounded-xl border border-slate-200 bg-white p-2.5 transition hover:border-slate-300 hover:shadow-md active:cursor-grabbing';
+    if(q.groupId){ d.style.borderColor='#0f172a'; }
+    d.draggable=true;
+    d.ondragstart=()=>dragIdx=i;
+    d.ondragover=e=>e.preventDefault();
+    d.ondrop=()=>{ if(dragIdx!==null&&dragIdx!==i){ const [it]=questions.splice(dragIdx,1); questions.splice(i,0,it); render(); } };
+    d.ondblclick=()=>showPreview(q);
+    d.innerHTML=`
+      <div class="absolute left-2 top-2 z-10 rounded-md bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold text-white">${i+1}</div>
+      <div class="tools absolute right-1.5 top-1.5 z-10 flex gap-1">
+        <button class="btn-mini" data-a="prev" title="Önizleme">🔍</button>
+        ${q.type==='text'?'<button class="btn-mini" data-a="edit" title="Düzenle">✏️</button>':''}
+        <button class="btn-mini" data-a="grp" title="Gruplandır">🔗</button>
+        <button class="btn-mini" data-a="up" title="Yukarı">↑</button>
+        <button class="btn-mini" data-a="down" title="Aşağı">↓</button>
+        <button class="btn-mini !text-rose-600" data-a="del" title="Sil">✕</button>
+      </div>
+      ${q.type==='text'
+        ? (q.kind==='bosluk'
+          ? `<div class="relative h-36 overflow-hidden rounded-lg bg-slate-50 p-2.5 pt-6 text-left text-[11px] leading-snug">
+               ${q.imgSrc ? `<span class="absolute right-2 bottom-2 z-10 rounded bg-slate-900/75 px-1.5 py-0.5 text-[9px] font-medium text-white">📷 Görsel</span>` : ''}
+               <span class="text-[9px] font-medium uppercase tracking-wide text-slate-400">Boşluk Doldurma</span>
+               <div class="mt-1 text-slate-700">${esc(q.blankText||'').replace(/(\.\.\.|_{2,})/g,'<span class="text-slate-400">______</span>')}</div>
+               ${(q.wordBank||[]).length ? `<div class="mt-1.5 text-[10px] text-slate-400">${esc((q.wordBank||[]).join(' · '))}</div>` : ''}
+             </div>`
+           : `<div class="h-36 overflow-hidden rounded-lg bg-slate-50 p-2.5 pt-6 text-left text-[11px] leading-snug">
+                ${q.imgSrc ? `<span class="absolute right-2 bottom-2 z-10 rounded bg-slate-900/75 px-1.5 py-0.5 text-[9px] font-medium text-white">📷 Görsel</span>` : ''}
+                ${q.text ? `<div class="text-slate-500">${esc(q.text)}</div>` : ''}
+                ${q.root ? `<div class="mt-1 font-semibold text-slate-900">${esc(q.root)}</div>` : ''}
+                <div class="mt-1.5 ${q.layout==='h'?'flex flex-wrap gap-2':'space-y-0.5'} text-slate-600">${(q.options||[]).filter(Boolean)
+                  .map((o,k)=>`<div><span class="font-medium text-slate-400">${LETTERS[k]}</span> ${esc(o)}</div>`).join('')}</div>
+                ${q.blank ? `<div class="mt-1.5 text-[10px] text-slate-300">${q.blank} mm cevap satırı</div>` : ''}
+              </div>`)
+        : `<img src="${q.src}" class="h-36 w-full rounded-lg object-contain">`}
+      <div class="mt-2 flex justify-center gap-1">${LETTERS.map(l=>
+        `<button data-l="${l}" class="h-6 w-6 rounded-md border text-[11px] font-medium transition ${q.answer===l?'border-slate-900 bg-slate-900 text-white':'border-slate-200 text-slate-400 hover:border-slate-400'}">${l}</button>`).join('')}</div>`;
+    d.querySelectorAll('[data-a]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();
+      const a=b.dataset.a;
+      if(a==='del') questions.splice(i,1);
+      if(a==='prev') return showPreview(q);
+      if(a==='edit') return openText(q);
+      if(a==='grp') return openGroup(q);
+      if(a==='up'&&i>0){ const [it]=questions.splice(i,1); questions.splice(i-1,0,it); }
+      if(a==='down'&&i<questions.length-1){ const [it]=questions.splice(i,1); questions.splice(i+1,0,it); }
+      render(); });
+    d.querySelectorAll('[data-l]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();
+      q.answer = q.answer===b.dataset.l ? null : b.dataset.l; render();});
+    g.appendChild(d);
+  });
+}
+function esc(s){ return String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/\n/g,'<br>'); }
+function showPreview(q){
+  if (q.type === 'text' && q.kind === 'bosluk') {
+    $('previewBody').innerHTML = `<div class="text-sm leading-relaxed">
+        <span class="rounded bg-amber-200 px-2 py-0.5 text-xs font-bold text-amber-900">BOŞLUK DOLDURMA</span>
+        ${q.imgSrc ? `<img src="${q.imgSrc}" class="mt-3 max-h-56 rounded-lg border border-slate-200">` : ''}
+        <div class="mt-3 whitespace-pre-wrap text-slate-800">${esc(q.blankText).replace(/(\.\.\.|_{2,})/g,'<b class="text-amber-700">______________</b>')}</div>
+        ${(q.wordBank||[]).length ? `<div class="mt-4 rounded border border-amber-300 bg-amber-50 p-2 text-xs">
+           <b class="text-amber-900">Kelime Havuzu:</b> ${esc((q.wordBank||[]).join('  •  '))}</div>` : ''}
+      </div>`;
+  } else {
+    $('previewBody').innerHTML = q.type==='text'
+      ? `<div class="text-sm leading-relaxed">
+           ${q.imgSrc ? `<img src="${q.imgSrc}" class="mb-3 max-h-56 rounded-lg border border-slate-200">` : ''}
+           ${q.text ? `<div class="text-slate-700 whitespace-pre-wrap">${esc(q.text)}</div>` : ''}
+           ${q.root ? `<div class="mt-2 font-bold text-slate-900 whitespace-pre-wrap">${esc(q.root)}</div>` : ''}
+           <div class="mt-3 ${q.layout==='h'?'flex flex-wrap gap-4':'space-y-1.5'}">${(q.options||[]).filter(Boolean)
+             .map((o,k)=>`<div><b class="text-slate-900">${LETTERS[k]})</b> ${esc(o)}</div>`).join('')}</div>
+           ${q.blank ? `<div class="mt-3 border-t pt-2 text-xs italic text-slate-400">Klasik / Açık uçlu soru (${q.blank} mm boşluk)</div>` : ''}
+         </div>`
+      : `<img src="${q.src}" class="max-h-[80vh]">`;
+  }
+  $('preview').classList.replace('hidden','flex');
+}
+$('preview').onclick=()=>$('preview').classList.replace('flex','hidden');
+
+/* ---------- GRUPLAMA ---------- */
+let groupTarget=null, groupSel=[];
+function openGroup(q){
+  groupTarget=q; groupSel=questions.filter(x=>q.groupId&&x.groupId===q.groupId&&x.id!==q.id).map(x=>x.id);
+  $('gStem').value=q.stem||'';
+  const g=$('gGrid'); g.innerHTML='';
+  questions.forEach((x,i)=>{ if(x.id===q.id) return;
+    const b=document.createElement('button');
+    const on=()=>groupSel.includes(x.id);
+    const paint=()=>b.className='rounded-lg border p-1.5 transition '+(on()?'border-slate-900 bg-slate-50':'border-slate-200 hover:border-slate-400');
+    b.innerHTML=(x.type==='text'
+      ? `<div class="h-20 overflow-hidden text-left text-[9px] leading-tight text-slate-600">${esc(x.text||x.root||x.blankText||'')}</div>`
+      : `<img src="${x.src}" class="h-20 w-full object-contain">`)+`<span class="mt-1 block text-[10px] font-medium text-slate-400">${i+1}</span>`;
+    paint(); b.onclick=()=>{ groupSel = on()? groupSel.filter(id=>id!==x.id) : [...groupSel,x.id]; paint(); };
+    g.appendChild(b); });
+  $('groupModal').classList.replace('hidden','flex');
+}
+$('gCancel').onclick=()=>$('groupModal').classList.replace('flex','hidden');
+$('gSave').onclick=()=>{
+  const gid = groupTarget.groupId || uid();
+  questions.forEach(x=>{
+    if(x.id===groupTarget.id){ x.groupId = groupSel.length? gid : null; x.stem=$('gStem').value; }
+    else if(groupSel.includes(x.id)){ x.groupId=gid; x.stem=''; }
+    else if(x.groupId===gid){ x.groupId=null; x.stem=''; }
+  });
+  $('groupModal').classList.replace('flex','hidden'); render();
+};
+
+/* ---------- YAZILI (METİN) SORU (MEB / ÖSYM STANDARDI) ---------- */
+let editingId = null;
+let questionKind = 'coktan'; // coktan | bosluk | klasik
+let blankItems = ['']; // boşluk doldurma soruları dizisi
+let blankAnswers = ['']; // her boşluk için doğru cevap (opsiyonel)
+
+function renderBlankList() {
+  const list = $('blankQList');
+  list.innerHTML = '';
+  blankItems.forEach((txt, i) => {
+    if (blankAnswers[i] === undefined) blankAnswers[i] = '';
+    const row = document.createElement('div');
+    row.className = 'rounded-lg border border-slate-100 bg-white p-2';
+    row.innerHTML =
+      `<div class="flex items-start gap-2">` +
+        `<span class="mt-2.5 w-5 shrink-0 text-right text-xs font-semibold text-slate-400">${i + 1}.</span>` +
+        `<textarea class="inp h-12 flex-1 leading-relaxed" placeholder="Türk edebiyatında ilk roman ... tarafından yazılmıştır." data-bi="${i}">${esc(txt)}</textarea>` +
+        (blankItems.length > 1
+          ? `<button class="mt-2 shrink-0 rounded px-1.5 py-0.5 text-xs text-slate-300 transition hover:text-rose-600" data-bd="${i}">✕</button>`
+          : '') +
+      `</div>` +
+      `<div class="mt-1.5 flex items-center gap-2 pl-7">` +
+        `<span class="w-14 shrink-0 text-[10px] font-medium uppercase tracking-wide text-emerald-600">Cevap</span>` +
+        `<input class="inp !h-7 flex-1 text-[12px]" placeholder="Opsiyonel · cevap anahtarında görünür" data-ba="${i}" value="${esc(blankAnswers[i] || '')}">` +
+      `</div>`;
+    list.appendChild(row);
+  });
+  // Bind events
+  list.querySelectorAll('[data-bi]').forEach((ta) => {
+    ta.oninput = () => { blankItems[+ta.dataset.bi] = ta.value; };
+  });
+  list.querySelectorAll('[data-ba]').forEach((inp) => {
+    inp.oninput = () => { blankAnswers[+inp.dataset.ba] = inp.value; };
+  });
+  list.querySelectorAll('[data-bd]').forEach((btn) => {
+    btn.onclick = () => {
+      blankItems.splice(+btn.dataset.bd, 1);
+      blankAnswers.splice(+btn.dataset.bd, 1);
+      renderBlankList();
+    };
+  });
+}
+
+$('blankAddBtn').onclick = () => {
+  blankItems.push('');
+  blankAnswers.push('');
+  renderBlankList();
+  // Focus son eklenen textarea
+  setTimeout(() => {
+    const tas = $('blankQList').querySelectorAll('textarea');
+    if (tas.length) tas[tas.length - 1].focus();
+  }, 30);
+};
+
+function setQuestionKind(kind) {
+  questionKind = kind;
+  document.querySelectorAll('.qkind').forEach((b) => {
+    const on = b.dataset.qk === kind;
+    b.className = 'qkind rounded-lg py-2 font-medium transition ' +
+      (on ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900');
+  });
+  $('blankPanel').classList.toggle('hidden', kind !== 'bosluk');
+  $('preamblePanel').classList.toggle('hidden', kind === 'bosluk');
+  $('rootPanel').classList.toggle('hidden', kind === 'bosluk');
+  $('optionsPanel').classList.toggle('hidden', kind !== 'coktan');
+  $('layoutPanel').classList.toggle('hidden', kind !== 'coktan');
+  $('commonImgBlock').classList.toggle('hidden', kind === 'bosluk');
+  $('aiPromptPanel').classList.toggle('hidden', kind !== 'coktan');
+  if (kind === 'klasik' && $('txtBlank').value === '0') $('txtBlank').value = '25';
+  if (kind === 'coktan') $('txtBlank').value = '0';
+  if (kind === 'bosluk') { $('txtBlank').value = '0'; renderBlankList(); }
+}
+document.querySelectorAll('.qkind').forEach((b) => (b.onclick = () => setQuestionKind(b.dataset.qk)));
+
+/* Şık harfine tıklayarak doğru cevabı seç */
+function renderOptionAnswer() {
+  const current = $('txtAns').value;
+  document.querySelectorAll('[data-opt-answer]').forEach((btn) => {
+    const active = btn.dataset.optAnswer === current;
+    btn.className =
+      'opt-answer w-7 shrink-0 rounded-md py-1 text-xs font-bold transition ' +
+      (active
+        ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200'
+        : 'text-slate-400 hover:bg-slate-200 hover:text-slate-700');
+  });
+}
+document.querySelectorAll('[data-opt-answer]').forEach((btn) => {
+  btn.onclick = () => {
+    $('txtAns').value = $('txtAns').value === btn.dataset.optAnswer ? '' : btn.dataset.optAnswer;
+    renderOptionAnswer();
+  };
+});
+
+/* Prompt kopyalama */
+$('copyPrompt').onclick = async () => {
+  const txt = $('aiPrompt').innerText;
+  try {
+    await navigator.clipboard.writeText(txt);
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = txt;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  }
+  const btn = $('copyPrompt');
+  const old = btn.textContent;
+  btn.textContent = 'Kopyalandı!';
+  btn.classList.add('!border-slate-900', '!text-slate-900');
+  setTimeout(() => {
+    btn.textContent = old;
+    btn.classList.remove('!border-slate-900', '!text-slate-900');
+  }, 1600);
+};
+
+// Görsel içeren soru: state ve event handler'ları
+let txtImgSrc = null;
+function setTxtImg(src) {
+  txtImgSrc = src;
+  $('imgPreview').src = src || '';
+  $('imgPreview').classList.toggle('hidden', !src);
+  $('imgUploadPlaceholder').classList.toggle('hidden', !!src);
+  $('txtImgRemove').classList.toggle('hidden', !src);
+}
+$('txtHasImage').onchange = (e) => {
+  $('imgUploadPanel').classList.toggle('hidden', !e.target.checked);
+  if (!e.target.checked) setTxtImg(null);
+};
+$('txtImgFile').onchange = (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => setTxtImg(r.result);
+  r.readAsDataURL(f);
+};
+$('txtImgRemove').onclick = () => { setTxtImg(null); $('txtImgFile').value = ''; };
+
+// Boşluk doldurma: görsel
+let blankImgSrc = null;
+function setBlankImg(src) {
+  blankImgSrc = src;
+  $('blankImgPreview').src = src || '';
+  $('blankImgPreview').classList.toggle('hidden', !src);
+  $('blankImgPlaceholder').classList.toggle('hidden', !!src);
+  $('blankImgRemove').classList.toggle('hidden', !src);
+}
+$('blankHasImage').onchange = (e) => {
+  $('blankImgPanel').classList.toggle('hidden', !e.target.checked);
+  if (!e.target.checked) setBlankImg(null);
+};
+$('blankImgFile').onchange = (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => setBlankImg(r.result);
+  r.readAsDataURL(f);
+};
+$('blankImgRemove').onclick = () => { setBlankImg(null); $('blankImgFile').value = ''; };
+
+function openText(q) {
+  editingId = q ? q.id : null;
+  $('txtTitle').textContent = q ? 'Yazılı soruyu düzenle' : 'Yazılı soru ekle';
+
+  // Görsel state'ini sıfırla
+  setTxtImg(q && q.imgSrc ? q.imgSrc : null);
+  $('txtHasImage').checked = !!(q && q.imgSrc);
+  $('imgUploadPanel').classList.toggle('hidden', !(q && q.imgSrc));
+
+  // Boşluk doldurma görseli
+  const bImg = q && q.kind === 'bosluk' ? q.imgSrc : null;
+  setBlankImg(bImg || null);
+  $('blankHasImage').checked = !!bImg;
+  $('blankImgPanel').classList.toggle('hidden', !bImg);
+
+  // Boşluk doldurma soruları: blankItems dizisini hazırla
+  if (q && q.kind === 'bosluk') {
+    if (q.blankItems && q.blankItems.length) {
+      blankItems = [...q.blankItems];
+    } else if (q.blankText) {
+      blankItems = [q.blankText];
+    } else {
+      blankItems = [''];
+    }
+    // Aynı gruba ait tüm boşluk soruların cevaplarını topla
+    if (q.groupId) {
+      const grouped = questions.filter((x) => x.groupId === q.groupId && x.kind === 'bosluk');
+      blankAnswers = blankItems.map((_, idx) => (grouped[idx] && grouped[idx].answer) || '');
+    } else if (q.blankAnswers && q.blankAnswers.length) {
+      blankAnswers = [...q.blankAnswers];
+    } else {
+      blankAnswers = blankItems.map((_, idx) => (idx === 0 ? (q.answer || '') : ''));
+    }
+  } else {
+    blankItems = [''];
+    blankAnswers = [''];
+  }
+
+  setQuestionKind(q && q.kind ? q.kind : 'coktan');
+  $('txtPreamble').value = q ? (q.text || '') : '';
+  $('txtRoot').value = q ? (q.root || '') : '';
+  $('txtWordBank').value = q && q.wordBank ? q.wordBank.join(', ') : '';
+  for (let i = 0; i < 5; i++) $('opt' + i).value = q && q.options ? (q.options[i] || '') : '';
+  $('txtAns').value = q && q.answer ? q.answer : '';
+  renderOptionAnswer();
+  $('txtLayout').value = q && q.layout ? q.layout : 'v';
+  $('txtBlank').value = String(q && q.blank ? q.blank : (q && q.kind === 'klasik' ? 25 : 0));
+  $('textModal').classList.replace('hidden', 'flex');
+  $('aiPromptPanel').removeAttribute('open');
+  setTimeout(() => {
+    if (questionKind === 'bosluk') {
+      const tas = $('blankQList').querySelectorAll('textarea');
+      if (tas.length) tas[0].focus();
+    }
+    else (q && q.text ? $('txtRoot') : $('txtPreamble')).focus();
+  }, 50);
+}
+
+function saveText(keepOpen) {
+  const preamble = $('txtPreamble').value.trim();
+  const root = $('txtRoot').value.trim();
+  const wordBank = $('txtWordBank').value.split(',').map((w) => w.trim()).filter(Boolean);
+
+  if (questionKind === 'bosluk') {
+    // Her boşluk doldurma sorusu için ayrı bir soru nesnesi oluştur
+    const validBlanks = blankItems.map((t) => t.trim()).filter(Boolean);
+    if (!validBlanks.length) return alert('Lütfen en az bir boşluk doldurma cümlesi giriniz.');
+
+    if (editingId) {
+      // Düzenleme: mevcut soruyu güncelle, fazla soruları ekle/sil
+      const idx = questions.findIndex((x) => x.id === editingId);
+      // Aynı gruba ait eski soruları bul
+      const oldGroupId = questions[idx].groupId;
+      let groupQuestions = oldGroupId
+        ? questions.filter((x) => x.groupId === oldGroupId)
+        : [questions[idx]];
+
+      // Hepsini sil
+      groupQuestions.forEach((gq) => {
+        const gi = questions.findIndex((x) => x.id === gq.id);
+        if (gi >= 0) questions.splice(gi, 1);
+      });
+
+      // Yeniden ekle
+      const gid = validBlanks.length > 1 ? uid() : null;
+      // blankAnswers dizisini yalnızca geçerli (dolu) sorulara göre eşle
+      const validAns = [];
+      blankItems.forEach((t, idx) => { if (t.trim()) validAns.push((blankAnswers[idx] || '').trim()); });
+      validBlanks.forEach((bt, bi) => {
+        questions.splice(idx + bi, 0, {
+          id: bi === 0 ? editingId : uid(),
+          groupId: gid,
+          stem: '', name: 'metin',
+          type: 'text', kind: 'bosluk',
+          text: '', root: '',
+          imgSrc: bi === 0 && $('blankHasImage').checked && blankImgSrc ? blankImgSrc : null,
+          blankText: bt,
+          blankItems: validBlanks,
+          wordBank, bankShared: false,
+          options: ['', '', '', '', ''],
+          layout: 'v', blank: 0,
+          answer: validAns[bi] || null,
+        });
+      });
+    } else {
+      // Yeni ekleme: her soru ayrı kart olarak eklenir
+      if (questions.length + validBlanks.length > MAX)
+        return alert('Bir testte en fazla 100 soru bulundurabilirsiniz.');
+
+      const gid = validBlanks.length > 1 ? uid() : null;
+      const validAns = [];
+      blankItems.forEach((t, idx) => { if (t.trim()) validAns.push((blankAnswers[idx] || '').trim()); });
+      validBlanks.forEach((bt, bi) => {
+        questions.push({
+          id: uid(), groupId: gid, stem: '', name: 'metin',
+          type: 'text', kind: 'bosluk',
+          text: '', root: '',
+          imgSrc: bi === 0 && $('blankHasImage').checked && blankImgSrc ? blankImgSrc : null,
+          blankText: bt,
+          blankItems: validBlanks,
+          wordBank, bankShared: false,
+          options: ['', '', '', '', ''],
+          layout: 'v', blank: 0,
+          answer: validAns[bi] || null,
+        });
+      });
+    }
+    render();
+    if (keepOpen) {
+      editingId = null;
+      $('txtTitle').textContent = 'Yazılı soru ekle';
+      blankItems = [''];
+      blankAnswers = [''];
+      $('txtWordBank').value = '';
+      setBlankImg(null);
+      $('blankHasImage').checked = false;
+      $('blankImgPanel').classList.add('hidden');
+      $('blankImgFile').value = '';
+      renderBlankList();
+      setTimeout(() => {
+        const tas = $('blankQList').querySelectorAll('textarea');
+        if (tas.length) tas[0].focus();
+      }, 30);
+    } else {
+      $('textModal').classList.replace('flex', 'hidden');
+    }
+    return;
+  }
+
+  // Çoktan seçmeli / Klasik
+  if (!preamble && !root) {
+    return alert('Lütfen soru metni veya soru kökü giriniz.');
+  }
+
+  const options = [0, 1, 2, 3, 4].map((i) => $('opt' + i).value.trim());
+  const data = {
+    type: 'text',
+    kind: questionKind,
+    text: preamble,
+    root: root,
+    imgSrc: $('txtHasImage').checked && txtImgSrc ? txtImgSrc : null,
+    blankText: '',
+    blankItems: [],
+    wordBank: [],
+    bankShared: false,
+    options: questionKind === 'coktan' ? options : ['', '', '', '', ''],
+    layout: $('txtLayout').value,
+    blank: +$('txtBlank').value || 0,
+    answer: $('txtAns').value || null,
+  };
+  if (editingId) {
+    const q = questions.find((x) => x.id === editingId);
+    Object.assign(q, data);
+  } else {
+    if (questions.length >= MAX) return alert('Bir testte en fazla 100 soru bulundurabilirsiniz.');
+    questions.push(Object.assign({ id: uid(), groupId: null, stem: '', name: 'metin' }, data));
+  }
+  render();
+  if (keepOpen) {
+    editingId = null;
+    $('txtTitle').textContent = 'Yazılı soru ekle';
+    $('txtPreamble').value = '';
+    $('txtRoot').value = '';
+    setTxtImg(null);
+    $('txtHasImage').checked = false;
+    $('imgUploadPanel').classList.add('hidden');
+    $('txtImgFile').value = '';
+    [0, 1, 2, 3, 4].forEach((i) => ($('opt' + i).value = ''));
+    $('txtAns').value = '';
+    renderOptionAnswer();
+    $('txtPreamble').focus();
+  } else {
+    $('textModal').classList.replace('flex', 'hidden');
+  }
+}
+
+$('textBtn').onclick = () => openText(null);
+$('txtCancel').onclick = () => $('textModal').classList.replace('flex', 'hidden');
+$('txtSave').onclick = () => saveText(false);
+$('txtSaveNew').onclick = () => saveText(true);
+
+/** * ile başlayan ve * ile biten kısmı soru kökü olarak ayır */
+function extractMarked(raw) {
+  if (!raw) return null;
+  const m = raw.match(/\*([\s\S]*?)\*/);
+  if (!m) return null;
+  const marked = m[1].trim();
+  const rest = (raw.slice(0, m.index) + ' ' + raw.slice(m.index + m[0].length)).trim();
+  return { marked, rest };
+}
+
+/** Kopyalanan / yapıştırılan soru metninden şıkları, öncülü ve soru kökünü otomatik ayıkla */
+function autoParseQuestion(raw) {
+  if (!raw || !raw.trim()) return;
+  const starMatch = extractMarked(raw);
+  const source = starMatch ? starMatch.rest : raw;
+  const lines = source.split('\n');
+  const optMap = {};
+  const rest = [];
+  const optRegex = /^\s*([A-Ea-e])\s*[).:\-]\s*(.+)$/;
+
+  lines.forEach((line) => {
+    const m = line.trim().match(optRegex);
+    if (m && 'ABCDEabcde'.includes(m[1])) optMap[m[1].toUpperCase()] = m[2].trim();
+    else if (!/(?:cevap|doğru\s*cevap|dogru\s*cevap|yanıt|answer)\s*[:=]?\s*[A-Ea-e]\b/i.test(line)) {
+      rest.push(line);
+    }
+  });
+
+  if (Object.keys(optMap).length >= 2) {
+    LETTERS.forEach((l, i) => {
+      if (optMap[l] !== undefined) $('opt' + i).value = optMap[l];
+    });
+  }
+
+  const am = raw.match(/(?:cevap|doğru\s*cevap|dogru\s*cevap|yanıt|answer)\s*[:=]?\s*([A-Ea-e])\b/i);
+  if (am) {
+    $('txtAns').value = am[1].toUpperCase();
+    renderOptionAnswer();
+  }
+
+  if (starMatch?.marked) {
+    $('txtRoot').value = starMatch.marked;
+    $('txtPreamble').value = rest.join('\n').trim();
+    return;
+  }
+
+  // Yıldız yoksa soru kökünü Türkçe soru kalıplarıyla tahmin et
+  const remainingText = rest.join('\n').trim();
+  if (remainingText) {
+    const paragraphs = remainingText.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+    if (paragraphs.length >= 2) {
+      $('txtRoot').value = paragraphs[paragraphs.length - 1];
+      $('txtPreamble').value = paragraphs.slice(0, -1).join('\n\n');
+    } else {
+      const singleLines = remainingText.split('\n').map((l) => l.trim()).filter(Boolean);
+      if (
+        singleLines.length >= 2 &&
+        (singleLines[singleLines.length - 1].endsWith('?') ||
+          /buna göre|hangisidir|değildir|söylenebilir|ulaşılamaz|doğrudur|yanlıştır|kaçtır|hangisinde/i.test(
+            singleLines[singleLines.length - 1]
+          ))
+      ) {
+        $('txtRoot').value = singleLines[singleLines.length - 1];
+        $('txtPreamble').value = singleLines.slice(0, -1).join('\n');
+      } else {
+        if (
+          remainingText.endsWith('?') ||
+          /buna göre|hangisidir|değildir|aşağıdakilerden|kaçtır/i.test(remainingText)
+        ) {
+          $('txtRoot').value = remainingText;
+          if ($('txtPreamble').value === raw) $('txtPreamble').value = '';
+        } else {
+          $('txtPreamble').value = remainingText;
+        }
+      }
+    }
+  }
+}
+
+/** Yalnızca şıkları ayrıştırmak gerektiğinde kullanılır */
+function parseOptionsFromText(raw) {
+  autoParseQuestion(raw);
+}
+
+$('txtPreamble').addEventListener('paste', (e) => {
+  setTimeout(() => autoParseQuestion($('txtPreamble').value), 10);
+});
+$('txtRoot').addEventListener('paste', (e) => {
+  setTimeout(() => autoParseQuestion($('txtRoot').value), 10);
+});
+
+/* ---------- TASLAK ---------- */
+$('saveDraft').onclick = () => {
+  try {
+    collect();
+    if (!questions.length) {
+      alert('Kaydedilecek soru bulunamadı. Önce en az bir soru ekleyin.');
+      return;
+    }
+    const payload = JSON.stringify({ questions, settings: S });
+    const blob = new Blob([payload], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const tParsed = parseTags(S.title || 'Test');
+    const baseName = slugForFile(tParsed.clean) || 'Test';
+    const fileName = baseName + ' - ' + todayStr() + '.db';
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+
+    // Görsel geri bildirim
+    const btn = $('saveDraft');
+    const label = btn.querySelector('span:first-child');
+    if (label) {
+      const old = label.textContent;
+      label.textContent = 'Kaydedildi ✓';
+      setTimeout(() => { label.textContent = old; }, 1600);
+    }
+  } catch (e) {
+    alert('Çalışma kaydedilirken hata oluştu: ' + (e && e.message ? e.message : e));
+    console.error(e);
+  }
+};
+
+/* ---------- KIRPMA ARACI ---------- */
+let cropSrc=null, cuts=[], cropAnswer=null, rect=null, drawing=false, startP={x:0,y:0};
+$('cropAns').innerHTML = LETTERS.map(l=>`<button data-c="${l}" class="h-6 w-6 rounded-md border border-white/20 text-[11px] transition hover:border-white/50">${l}</button>`).join('');
+$('cropAns').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{ cropAnswer = cropAnswer===b.dataset.c?null:b.dataset.c;
+  $('cropAns').querySelectorAll('[data-c]').forEach(x=>x.className='h-6 w-6 rounded-md border text-[11px] transition '+(cropAnswer===x.dataset.c?'bg-white text-slate-900 border-white font-semibold':'border-white/20 hover:border-white/50')); });
+$('openCrop').onclick=()=>$('cropTool').classList.replace('hidden','flex');
+$('cropClose').onclick=()=>$('cropTool').classList.replace('flex','hidden'); // dosya korunur
+$('cropFile').onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader();
+  r.onload=()=>{ cropSrc=r.result; const im=$('cropImg'); im.src=cropSrc; im.classList.remove('hidden'); $('cropHint').classList.add('hidden'); }; r.readAsDataURL(f); };
+
+const stage=$('cropStage');
+function stagePos(e){ const b=stage.getBoundingClientRect(); return {x:e.clientX-b.left,y:e.clientY-b.top}; }
+stage.addEventListener('mousedown',e=>{ if(!cropSrc)return; hideCropAdd(); drawing=true; startP=stagePos(e); rect={x:startP.x,y:startP.y,w:0,h:0}; drawRect(); });
+stage.addEventListener('mousemove',e=>{ if(!drawing)return; const p=stagePos(e);
+  rect={x:Math.min(startP.x,p.x),y:Math.min(startP.y,p.y),w:Math.abs(p.x-startP.x),h:Math.abs(p.y-startP.y)}; drawRect(); });
+stage.addEventListener('mouseup',e=>{
+  if(!drawing)return; drawing=false;
+  if(rect && rect.w>10 && rect.h>10) showCropAdd(e);
+});
+window.addEventListener('mouseup',()=>{ drawing=false; });
+function drawRect(){ const r=$('cropRect'); if(!rect){r.classList.add('hidden');return;}
+  r.classList.remove('hidden'); r.style.left=rect.x+'px'; r.style.top=rect.y+'px'; r.style.width=rect.w+'px'; r.style.height=rect.h+'px'; }
+function showCropAdd(e){
+  const btn=$('cropAddBtn'); const wb=$('cropWrap').getBoundingClientRect();
+  btn.style.left=(e.clientX-wb.left+$('cropWrap').scrollLeft-30)+'px';
+  btn.style.top=(e.clientY-wb.top+$('cropWrap').scrollTop-42)+'px';
+  btn.classList.remove('hidden');
+}
+function hideCropAdd(){ $('cropAddBtn').classList.add('hidden'); }
+
+function trimCanvas(c){
+  const ctx=c.getContext('2d'), w=c.width, h=c.height, d=ctx.getImageData(0,0,w,h).data;
+  const blank=i=>d[i]>235&&d[i+1]>235&&d[i+2]>235;
+  const rowB=y=>{for(let x=0;x<w;x++) if(!blank((y*w+x)*4)) return false; return true;};
+  const colB=x=>{for(let y=0;y<h;y++) if(!blank((y*w+x)*4)) return false; return true;};
+  let t=0,b=h-1,l=0,r=w-1;
+  while(t<b&&rowB(t))t++; while(b>t&&rowB(b))b--; while(l<r&&colB(l))l++; while(r>l&&colB(r))r--;
+  const p=3; t=Math.max(0,t-p); l=Math.max(0,l-p); b=Math.min(h-1,b+p); r=Math.min(w-1,r+p);
+  const o=document.createElement('canvas'); o.width=r-l+1; o.height=b-t+1;
+  o.getContext('2d').drawImage(c,l,t,o.width,o.height,0,0,o.width,o.height); return o;
+}
+$('cutBtn').onclick=()=>{
+  if(!cropSrc||!rect||rect.w<8||rect.h<8) return alert('Önce fare ile bir alan seçin.');
+  const img=$('cropImg'), scale=img.naturalWidth/img.clientWidth;
+  let c=document.createElement('canvas'); c.width=rect.w*scale; c.height=rect.h*scale;
+  const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.drawImage(img,rect.x*scale,rect.y*scale,rect.w*scale,rect.h*scale,0,0,c.width,c.height);
+  if($('autoTrim').checked) c=trimCanvas(c);
+  cuts.push({id:uid(),src:c.toDataURL('image/jpeg',0.92),w:c.width,h:c.height,answer:cropAnswer,groupId:null,stem:'',name:'kirpma'});
+  rect=null; drawRect(); renderCuts();
+};
+function renderCuts(){
+  $('cutCount').textContent=cuts.length;
+  $('cutList').innerHTML='<div class="mb-2.5 text-[11px] font-medium uppercase tracking-wide text-white/40">Kesilenler</div>'+
+    (cuts.length?cuts.map((c,i)=>`<div class="group relative mb-2 overflow-hidden rounded-lg bg-white p-1"><img src="${c.src}" class="w-full">
+      <span class="absolute left-1.5 top-1.5 rounded bg-slate-900/80 px-1.5 text-[10px] font-medium text-white">${i+1}${c.answer?' · '+c.answer:''}</span>
+      <button data-i="${i}" class="absolute right-1.5 top-1.5 rounded bg-slate-900/80 px-1.5 text-[10px] text-white opacity-0 transition group-hover:opacity-100 hover:bg-rose-600">✕</button></div>`).join('')
+      :'<div class="mt-4 text-center text-[11px] text-white/30">Henüz soru kesilmedi</div>');
+  $('cutList').querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{cuts.splice(+b.dataset.i,1);renderCuts();});
+}
+renderCuts();
+$('cropUpload').onclick=()=>{ questions=questions.concat(cuts).slice(0,MAX); cuts=[]; renderCuts(); render(); $('cropTool').classList.replace('flex','hidden'); };
+
+/* ---------- PDF ---------- */
+function collect(){ S.title=$('title').value; S.school=$('school').value; S.lesson=$('lesson').value; S.description=$('description').value; S.konuKapsami=$('konuKapsami').value; S.denemeNo=$('denemeNo').value; }
+function parseTags(title){
+  const tags=(title.match(/\[[A-Z_]+\]/g)||[]);
+  return { clean:title.replace(/\[[A-Z_]+\]/g,'').trim(),
+    noPageNumber:tags.includes('[NO_PAGENUMBER]'), noDescription:tags.includes('[NO_DESCRIPTION]'),
+    noUppercase:tags.includes('[NO_UPPERCASE]'), centerDescription:tags.includes('[CENTER_DESCRIPTION]'),
+    hideVersion:tags.includes('[HIDE_VERSION]'), negativeAngle:tags.includes('[NEGATIVE_WATERMARK_ANGLE]') };
+}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function toBlocks(qs){ const seen=new Set(), out=[];
+  qs.forEach(q=>{ if(seen.has(q.id))return;
+    if(q.groupId){ const g=qs.filter(x=>x.groupId===q.groupId); g.forEach(x=>seen.add(x.id)); out.push(g); }
+    else { seen.add(q.id); out.push([q]); } }); return out; }
+function booklet(qs,i){ const b=toBlocks(qs); return i===0? b.flat() : shuffle(b).map(g=>g.length>1?shuffle(g):g).flat(); }
+function smartOrder(items,colH,gap){
+  const pool=[...items], out=[]; let rem=colH;
+  while(pool.length){
+    let cand=pool.map((it,i)=>({it,i})).filter(o=>o.it.h+gap<=rem);
+    if(!cand.length){ rem=colH; cand=pool.map((it,i)=>({it,i})); }
+    cand.sort((a,b)=>b.it.h-a.it.h);
+    const pick=cand[0]; pool.splice(pick.i,1); out.push(pick.it); rem-=pick.it.h+gap; if(rem<12) rem=colH;
+  } return out;
+}
+/* ========== YEREL PDF MOTORU — Noto Sans + düzgün PDF nesne zinciri ========== */
+const SCALE = 6; // 6 px/mm ≈ 152 DPI — net yazı, dosya boyutu dengeli
+const FONT = "'Noto Sans', 'DejaVu Sans', Arial, sans-serif";
+const PX = (mm) => mm * SCALE;
+// pt (1/72") -> canvas px: 1 pt = 25.4/72 mm
+const PT = (pt) => (pt * 25.4 / 72) * SCALE;
+const LH_MM = 5.2; // soru satır yüksekliği (mm)
+let fontReady = null;
+
+async function ensureFont() {
+  if (fontReady) return fontReady;
+  fontReady = (async () => {
+    try {
+      if (document.fonts && document.fonts.load) {
+        await Promise.all([
+          document.fonts.load("400 16px 'Noto Sans'"),
+          document.fonts.load("700 16px 'Noto Sans'"),
+          document.fonts.load("italic 400 16px 'Noto Sans'"),
+          document.fonts.load("italic 700 16px 'Noto Sans'"),
+        ]);
+        await document.fonts.ready;
+      }
+      // Canvas üzerinde gerçekten yüklendiğini doğrula (fallback'e düşmesin)
+      const probe = document.createElement('canvas').getContext('2d');
+      probe.font = "16px 'Noto Sans'";
+      const w1 = probe.measureText('ĞÜŞİÖÇğıüşiöç').width;
+      probe.font = '16px serif';
+      const w2 = probe.measureText('ĞÜŞİÖÇğıüşiöç').width;
+      // Farklı ölçüm = Noto yüklendi. Aynıysa yine de devam et (sistem fontu).
+      void (w1 !== w2);
+    } catch (e) { /* offline vs. */ }
+  })();
+  return fontReady;
+}
+
+function pageSizeMM() {
+  const s = { a4: [210, 297], a5: [148, 210], letter: [216, 279] }[S.pageSize] || [210, 297];
+  return S.orientation === 'landscape' ? [s[1], s[0]] : s;
+}
+function createPage(w, h) {
+  const c = document.createElement('canvas');
+  c.width = Math.max(4, Math.round(w * SCALE));
+  c.height = Math.max(4, Math.round(h * SCALE));
+  const ctx = c.getContext('2d');
+  // net metin için
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, c.width, c.height);
+  return { w, h, canvas: c, ctx };
+}
+function setFont(ctx, o = {}) {
+  const size = o.size || PT(10);
+  const style = (o.italic ? 'italic ' : 'normal ') + (o.bold ? '700 ' : '400 ') + size + 'px ' + FONT;
+  ctx.font = style;
+  return size;
+}
+function wrapText(ctx, text, maxW) {
+  // satır sonlarını koru, kelime bazlı satır kır
+  const paras = String(text || '').split(/\n/);
+  const lines = [];
+  for (const para of paras) {
+    if (!para.trim()) { lines.push(''); continue; }
+    const words = para.split(/\s+/);
+    let cur = '';
+    for (const w of words) {
+      const t = cur ? cur + ' ' + w : w;
+      if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; }
+      else cur = t;
+    }
+    if (cur) lines.push(cur);
+  }
+  return lines.length ? lines : [''];
+}
+/** x,y mm cinsinden; baseline yaklaşık satır ortası hizasından biraz aşağı */
+function drawText(ctx, str, x, y, o = {}) {
+  const size = setFont(ctx, o);
+  const lh = o.lineH || size * 1.45;
+  ctx.fillStyle = o.color || '#111111';
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = o.align || 'left';
+  // hafif stroke ile daha keskin kenar (okunaklılık)
+  ctx.lineWidth = Math.max(0.4, size * 0.03);
+  ctx.strokeStyle = o.color || '#111111';
+  const maxW = o.maxW != null ? o.maxW : null;
+  const lines = maxW != null ? wrapText(ctx, str, maxW) : [String(str)];
+  lines.forEach((l, i) => {
+    const yy = y * SCALE + i * lh;
+    const xx = x * SCALE;
+    // fill + çok ince stroke = daha net harf
+    ctx.fillText(l, xx, yy);
+  });
+  return (lines.length * lh) / SCALE; // mm cinsinden yükseklik
+}
+const imgCache = {};
+function getImg(q) {
+  return new Promise((res) => {
+    if (imgCache[q.id]) return res(imgCache[q.id]);
+    const src = q.imgSrc || q.src;
+    if (!src) return res(null);
+    const im = new Image();
+    im.onload = () => { imgCache[q.id] = im; res(im); };
+    im.onerror = () => res(null);
+    im.src = src;
+  });
+}
+function jpegBytes(dataURL) {
+  const b = atob(dataURL.split(',')[1]);
+  const a = new Uint8Array(b.length);
+  for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
+  return a;
+}
+
+/** Düzgün PDF-1.4 üretimi: her sayfa = Page + Image + Content (3 nesne) */
+function buildPDF(pages, wMM, hMM) {
+  // PDF kullanıcı birimi: point (1/72"). Canvas px -> point: px * 72 / (SCALE*25.4)
+  const ptPerPx = 72 / (SCALE * 25.4);
+  const W = +(pages[0].canvas.width * ptPerPx).toFixed(2);
+  const H = +(pages[0].canvas.height * ptPerPx).toFixed(2);
+
+  const enc = (s) => {
+    const a = new Uint8Array(s.length);
+    for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 0xff;
+    return a;
+  };
+  const parts = [];
+  let offset = 0;
+  const write = (data) => {
+    const bytes = typeof data === 'string' ? enc(data) : data;
+    parts.push(bytes);
+    offset += bytes.length;
+  };
+  const offsets = [0]; // index 0 unused (PDF free object)
+
+  write('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+
+  // Object 1: Catalog
+  offsets[1] = offset;
+  write('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+
+  // Object 2: Pages (kids will be 3, 6, 9, ...)
+  const pageObjNums = pages.map((_, i) => 3 + i * 3);
+  offsets[2] = offset;
+  write('2 0 obj\n<< /Type /Pages /Kids [' + pageObjNums.map((n) => n + ' 0 R').join(' ') + '] /Count ' + pages.length + ' >>\nendobj\n');
+
+  pages.forEach((pg, i) => {
+    const pageNo = 3 + i * 3;
+    const imgNo = pageNo + 1;
+    const contentNo = pageNo + 2;
+    const iw = pg.canvas.width;
+    const ih = pg.canvas.height;
+    const content = 'q\n' + W + ' 0 0 ' + H + ' 0 0 cm\n/Im0 Do\nQ\n';
+
+    // Page object
+    offsets[pageNo] = offset;
+    write(
+      pageNo + ' 0 obj\n' +
+      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + W + ' ' + H + '] ' +
+      '/Resources << /XObject << /Im0 ' + imgNo + ' 0 R >> >> ' +
+      '/Contents ' + contentNo + ' 0 R >>\nendobj\n'
+    );
+
+    // Image XObject
+    offsets[imgNo] = offset;
+    write(
+      imgNo + ' 0 obj\n' +
+      '<< /Type /XObject /Subtype /Image /Width ' + iw + ' /Height ' + ih +
+      ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + pg.bytes.length +
+      ' >>\nstream\n'
+    );
+    write(pg.bytes);
+    write('\nendstream\nendobj\n');
+
+    // Content stream
+    offsets[contentNo] = offset;
+    write(
+      contentNo + ' 0 obj\n' +
+      '<< /Length ' + content.length + ' >>\nstream\n' + content + 'endstream\nendobj\n'
+    );
+  });
+
+  const xrefStart = offset;
+  const totalObjs = 2 + pages.length * 3;
+  let xref = 'xref\n0 ' + (totalObjs + 1) + '\n';
+  xref += '0000000000 65535 f \n';
+  for (let i = 1; i <= totalObjs; i++) {
+    xref += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
+  }
+  xref += 'trailer\n<< /Size ' + (totalObjs + 1) + ' /Root 1 0 R >>\n';
+  xref += 'startxref\n' + xrefStart + '\n%%EOF\n';
+  write(xref);
+
+  return new Blob(parts, { type: 'application/pdf' });
+}
+
+/** Türk Sınav Sistemi Standardı: İnce ve zarif başlık tasarımı */
+function drawHeader(ctx, PW, PH, M, t, version, title, first) {
+  if (S.watermark && !S.watermarkDivider) {
+    ctx.save();
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = '#505050';
+    setFont(ctx, { size: PT(S.watermarkSize || 44), bold: true });
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.translate((PW / 2) * SCALE, (PH / 2) * SCALE);
+    const wmAngle = t.negativeAngle ? -Math.abs(S.watermarkAngle ?? 45) : (S.watermarkAngle ?? 45);
+    ctx.rotate((wmAngle * Math.PI) / 180);
+    ctx.fillText(S.watermark, 0, 0);
+    ctx.restore();
+  }
+
+  // 1. YAZILI KAĞIDI (MEB Standart Formatı - Yalnızca 15 mm)
+  if (S.testType === 'yazili') {
+    if (!first) {
+      // 2. ve sonraki sayfalar: İncecik koşu başlığı (Running Header, ~4 mm)
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = Math.max(1, 0.3 * SCALE);
+      ctx.beginPath();
+      ctx.moveTo(PX(M), PX(M + 5));
+      ctx.lineTo(PX(PW - M), PX(M + 5));
+      ctx.stroke();
+      drawText(ctx, S.school, M, M + 4, { size: PT(7.5), color: '#475569' });
+      drawText(ctx, title + ' YAZILI SINAVI', PW / 2, M + 4, { size: PT(8), bold: true, align: 'center' });
+      if (!t.hideVersion && S.groups > 1)
+        drawText(ctx, 'Kitapçık: ' + version, PW - M, M + 4, { size: PT(7.5), align: 'right' });
+      return M + 8;
+    }
+
+    const boxH = 15;
+    ctx.strokeStyle = S.themeColor || '#1e293b';
+    ctx.lineWidth = Math.max(1.2, 0.5 * SCALE);
+    ctx.strokeRect(PX(M), PX(M), PX(PW - 2 * M), PX(boxH));
+
+    // İç yatay bölücü
+    ctx.beginPath();
+    ctx.moveTo(PX(M), PX(M + 7.5));
+    ctx.lineTo(PX(PW - M), PX(M + 7.5));
+    ctx.stroke();
+
+    // Üst satır (Okul + Ders + Sınav adı)
+    const topText = (S.school ? S.school.toLocaleUpperCase('tr-TR') + ' • ' : '') +
+      (S.lesson ? S.lesson + ' • ' : '') + title + ' YAZILI SINAVI';
+    drawText(ctx, topText, PW / 2, M + 5.2, { size: PT(8.5), bold: true, align: 'center', color: '#0f172a' });
+    if (!t.hideVersion && S.groups > 1) {
+      drawText(ctx, 'Kitapçık: ' + version, PW - M - 2.5, M + 5.2, { size: PT(8.5), bold: true, align: 'right' });
+    }
+
+    // Alt satır (Öğrenci Bilgileri)
+    drawText(ctx, 'Adı Soyadı: .......................................', M + 2.5, M + 12.2, { size: PT(8.2) });
+    drawText(ctx, 'Sınıfı / Şubesi: .........', PW / 2 - 12, M + 12.2, { size: PT(8.2) });
+    drawText(ctx, 'No: .........', PW / 2 + 28, M + 12.2, { size: PT(8.2) });
+    drawText(ctx, 'Puan: .........', PW - M - 2.5, M + 12.2, { size: PT(8.5), bold: true, align: 'right' });
+
+    let y = M + boxH + 2.5;
+    if (!t.noDescription && S.description) {
+      y += drawText(ctx, S.description, t.centerDescription ? PW / 2 : M + 1, y, {
+        size: PT(8),
+        italic: true,
+        color: '#475569',
+        maxW: PX(PW - 2 * M - 2),
+        align: t.centerDescription ? 'center' : 'left',
+      }) + 1.5;
+    }
+    return y;
+  }
+
+  // 2. KONU DENEMESİ — Diagonal 3 bölmeli üst başlık (%40 / %50 / %10)
+  if (S.testType === 'yaprak') {
+    if (!first) {
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = Math.max(1, 0.3 * SCALE);
+      ctx.beginPath();
+      ctx.moveTo(PX(M), PX(M + 5));
+      ctx.lineTo(PX(PW - M), PX(M + 5));
+      ctx.stroke();
+      drawText(ctx, S.school, M, M + 4, { size: PT(7.5), color: '#475569' });
+      drawText(ctx, title, PW / 2, M + 4, { size: PT(8), bold: true, align: 'center' });
+      if (!t.hideVersion && S.groups > 1)
+        drawText(ctx, version + ' Kitapçığı', PW - M, M + 4, { size: PT(7.5), align: 'right' });
+      return M + 8;
+    }
+
+    // Renk yardımcısı
+    const hex2rgb = (h) => {
+      h = h.replace('#', '');
+      return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+    };
+    const c = S.themeColor || '#1e3a8a';
+    const [R, G, B] = hex2rgb(c);
+    const rgba = (a) => `rgba(${R},${G},${B},${a})`;
+
+    const x0 = M, y0 = M;
+    const headW = PW - 2 * M;
+    const headH = 22;
+    const dx = 13;          // diagonal kayma (mm)
+    const w1 = headW * 0.40; // SOL - Test Adı
+    const w2 = headW * 0.50; // ORTA - Konu Kapsamı
+    const w3 = headW * 0.10; // SAĞ - Deneme No
+
+    const drawRegion = (pts, alpha) => {
+      ctx.beginPath();
+      ctx.moveTo(PX(pts[0][0]), PX(pts[0][1]));
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(PX(pts[i][0]), PX(pts[i][1]));
+      ctx.closePath();
+      ctx.fillStyle = rgba(alpha);
+      ctx.fill();
+      ctx.strokeStyle = rgba(0.85);
+      ctx.lineWidth = Math.max(1.2, 0.5 * SCALE);
+      ctx.lineJoin = 'round'; // köşeleri çok az yuvarla (sivriye yakın)
+      ctx.stroke();
+    };
+
+    // Üç diagonal bölge
+    drawRegion([[x0, y0], [x0 + w1, y0], [x0 + w1 - dx, y0 + headH], [x0, y0 + headH]], 0.08);
+    drawRegion([[x0 + w1, y0], [x0 + w1 + w2, y0], [x0 + w1 + w2 - dx, y0 + headH], [x0 + w1 - dx, y0 + headH]], 0.13);
+    drawRegion([[x0 + w1 + w2, y0], [x0 + headW, y0], [x0 + headW, y0 + headH], [x0 + w1 + w2 - dx, y0 + headH]], 0.06);
+
+    // SOL: Test Adı
+    const cx1 = x0 + w1 / 2;
+    drawText(ctx, title, cx1, y0 + headH / 2 - 1, {
+      size: PT(12), bold: true, align: 'center', color: '#0f172a', maxW: PX(w1 - 10),
+    });
+
+    // ORTA: Konu Kapsamı — virgülle ayrılmış konular madde madde sığdırılır
+    const cx2 = x0 + w1 + w2 / 2;
+    const topics = (S.konuKapsami || '').split(',').map((s) => s.trim()).filter(Boolean);
+    let yTxt = y0 + 5.2;
+    if (topics.length) {
+      drawText(ctx, 'KONU KAPSAMI', cx2, yTxt, { size: PT(6.5), bold: true, color: '#64748b', align: 'center' });
+      yTxt += 4.6;
+      const bullets = topics.map((tp) => '• ' + tp);
+      let fontSize = 7.5;
+      setFont(ctx, { size: PT(fontSize), bold: false });
+      let lines = [];
+      bullets.forEach((b) => lines.push(...wrapText(ctx, b, PX(w2 - 10))));
+      while (lines.length * 3.7 > headH - 10 && fontSize > 5.5) {
+        fontSize -= 0.5;
+        setFont(ctx, { size: PT(fontSize), bold: false });
+        lines = [];
+        bullets.forEach((b) => lines.push(...wrapText(ctx, b, PX(w2 - 10))));
+      }
+      lines.forEach((l) => {
+        drawText(ctx, l, cx2, yTxt, { size: PT(fontSize), color: '#334155', align: 'center' });
+        yTxt += 3.7;
+      });
+    }
+
+    // SAĞ: Deneme Numarası — KALIN ve BÜYÜK, alana sığacak boyutta
+    const cx3 = x0 + w1 + w2 + w3 / 2;
+    const dNo = (S.denemeNo || '').trim();
+    if (dNo) {
+      let fs = 30;
+      setFont(ctx, { size: PT(fs), bold: true });
+      while (fs > 8 && (ctx.measureText(dNo).width > PX(w3 - 3) || PT(fs) * 1.35 > PX(headH - 3))) {
+        fs -= 1;
+        setFont(ctx, { size: PT(fs), bold: true });
+      }
+      drawText(ctx, dNo, cx3, y0 + headH / 2 + 0.5, {
+        size: PT(fs), bold: true, align: 'center', color: '#0f172a',
+      });
+    }
+
+    let y = y0 + headH + 4;
+    if (!t.noDescription && S.description) {
+      y += drawText(ctx, S.description, t.centerDescription ? PW / 2 : M + 1, y, {
+        size: PT(8),
+        italic: true,
+        color: '#475569',
+        maxW: PX(PW - 2 * M - 2),
+        align: t.centerDescription ? 'center' : 'left',
+      }) + 1.5;
+    }
+    return y;
+  }
+
+  // 3. Yaprak Test (eski bant - artık kullanılmıyor, güvenlik için)
+  const bandH = 8;
+  ctx.fillStyle = S.themeColor || '#1e3a8a';
+  ctx.fillRect(PX(M), PX(M), PX(PW - 2 * M), PX(bandH));
+
+  drawText(ctx, S.school || '', M + 2.5, M + 5.5, { size: PT(8), color: '#ffffff' });
+  drawText(ctx, title, PW / 2, M + 5.8, { size: PT(10.5), bold: true, color: '#ffffff', align: 'center' });
+  if (!t.hideVersion && S.groups > 1) {
+    drawText(ctx, version + ' KİTAPÇIĞI', PW - M - 2.5, M + 5.5, { size: PT(8.5), bold: true, color: '#ffffff', align: 'right' });
+  }
+
+  let y = M + bandH + 2.5;
+  if (!t.noDescription && S.description) {
+    y += drawText(ctx, S.description, t.centerDescription ? PW / 2 : M + 1, y, {
+      size: PT(8),
+      italic: true,
+      color: '#475569',
+      maxW: PX(PW - 2 * M - 2),
+      align: t.centerDescription ? 'center' : 'left',
+    }) + 1.5;
+  }
+  return y;
+}
+
+/** Boşluk doldurma cümlesini "..." / "___" işaretlerinden parçalara ayır */
+function splitBlanks(text) {
+  const parts = String(text || '').split(/(\.{3,}|_{2,})/g);
+  return parts.map((p) => ({ text: p, isBlank: /^(\.{3,}|_{2,})$/.test(p) }));
+}
+
+/** Boşluk doldurma satırlarını sar (boşluklar sabit genişlikte çizgi olarak) */
+function wrapBlankSegments(ctx, text, maxW, blankW) {
+  const segs = splitBlanks(text);
+  const lines = [];
+  let cur = [];
+  let curW = 0;
+  const pushLine = () => { if (cur.length) lines.push(cur); cur = []; curW = 0; };
+
+  segs.forEach((seg) => {
+    if (seg.isBlank) {
+      if (curW + blankW > maxW) pushLine();
+      cur.push({ blank: true, w: blankW });
+      curW += blankW;
+      return;
+    }
+    const words = seg.split ? seg.text.split(/(\s+)/) : [];
+    words.forEach((w) => {
+      if (!w) return;
+      const ww = ctx.measureText(w).width;
+      if (curW + ww > maxW && curW > 0) pushLine();
+      if (!/^\s+$/.test(w) || curW > 0) {
+        cur.push({ blank: false, text: w, w: ww });
+        curW += ww;
+      }
+    });
+  });
+  pushLine();
+  return lines.length ? lines : [[]];
+}
+
+/** Metin Sorusunu Ölç (Öncül: Normal, Soru Kökü: Bold, Şıklar: Normal) */
+function prepText(it, ctx) {
+  const q = it.q;
+  const contentW = it.w * SCALE - PX(7); // soru numarasından sonra kalan genişlik
+
+  // BOŞLUK DOLDURMA soru tipi
+  if (q.kind === 'bosluk') {
+    setFont(ctx, { size: PT(9.5), bold: false });
+    it.blankLines = wrapBlankSegments(ctx, q.blankText || '', contentW, PX(22));
+    let h = it.blankLines.length * LH_MM + 2;
+
+    // Görsel (varsa)
+    it.imgHeight = 0;
+    if (q.imgSrc && imgCache[q.id]) {
+      const im = imgCache[q.id];
+      const imgW = contentW / SCALE;
+      it.imgHeight = Math.min((im.height / Math.max(1, im.width)) * imgW, 45);
+      h += it.imgHeight + 2;
+    }
+
+    if ((q.wordBank || []).length && !q.bankShared) {
+      setFont(ctx, { size: PT(8.5), bold: false });
+      it.bankLines = wrapText(ctx, '( ' + q.wordBank.join('  /  ') + ' )', contentW);
+      h += it.bankLines.length * 4.4 + 2.5;
+    } else {
+      it.bankLines = [];
+    }
+    it.h = Math.max(h + 1, 8);
+    return;
+  }
+
+  // 1. Öncül / Metin (Normal Font 9.5pt)
+  setFont(ctx, { size: PT(9.5), bold: false });
+  it.preambleLines = q.text ? wrapText(ctx, q.text, contentW) : [];
+
+  // 2. Soru Kökü (BOLD Font 9.5pt)
+  setFont(ctx, { size: PT(9.5), bold: true });
+  it.rootLines = q.root ? wrapText(ctx, q.root, contentW) : [];
+
+  // Eğer sadece text girilmişse ve root boşsa:
+  if (!it.rootLines.length && it.preambleLines.length) {
+    // Soru kökü olarak kabul et
+    it.rootLines = it.preambleLines;
+    it.preambleLines = [];
+  }
+
+  // 3. Şıklar (Seçenekler)
+  const opts = (q.options || []).filter(Boolean);
+  setFont(ctx, { size: PT(9), bold: false });
+  it.optLines = opts.map((o, k) => {
+    const maxW = q.layout === 'h'
+      ? (it.w / Math.max(1, opts.length) - 4) * SCALE
+      : contentW - PX(5);
+    return { letter: LETTERS[k] + ')', lines: wrapText(ctx, o, maxW) };
+  });
+
+  // 4. Görsel (varsa)
+  it.imgHeight = 0;
+  if (q.imgSrc && imgCache[q.id]) {
+    const im = imgCache[q.id];
+    const imgW = contentW / SCALE; // mm
+    const imgH = (im.height / Math.max(1, im.width)) * imgW;
+    it.imgHeight = Math.min(imgH, 45); // max 45mm
+  }
+
+  // Toplam Yükseklik Hesabı (mm)
+  let h = 0;
+  if (it.imgHeight) h += it.imgHeight + 2;
+  if (it.preambleLines.length) h += it.preambleLines.length * LH_MM;
+  if (it.preambleLines.length && it.rootLines.length) h += 1.2; // öncül ile soru kökü arası boşluk
+  if (it.rootLines.length) h += it.rootLines.length * LH_MM;
+  if ((it.preambleLines.length || it.rootLines.length) && it.optLines.length) h += 1.5;
+
+  if (it.optLines.length) {
+    if (q.layout === 'h') {
+      const maxRows = Math.max(...it.optLines.map((o) => o.lines.length), 1);
+      h += maxRows * 4.4 + 1;
+    } else {
+      it.optLines.forEach((o) => (h += o.lines.length * 4.4 + 0.8));
+    }
+  }
+
+  if (q.blank) h += q.blank + 2;
+  it.h = Math.max(h + 1, 8);
+}
+
+/** Soruyu Canvas'a Çiz (MEB Soru Tipografisi) */
+function drawQ(ctx, it, x, y) {
+  const q = it.q;
+  ctx.fillStyle = '#0f172a';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+
+  // Soru Numarası: Bold 10pt
+  setFont(ctx, { size: PT(10), bold: true });
+  ctx.fillText(it.num + '.', PX(x + 0.5), PX(y + 4.2));
+
+  if (q.type === 'text' && q.kind === 'bosluk') {
+    let ty = y + 4.2;
+    const textX = x + 6.5;
+
+    // Görsel (varsa - cümlenin üstünde)
+    if (q.imgSrc && imgCache[q.id]) {
+      const im = imgCache[q.id];
+      const imgW = it.w - 6;
+      const imgH = it.imgHeight || Math.min((im.height / Math.max(1, im.width)) * imgW, 45);
+      ctx.drawImage(im, PX(textX), PX(ty), PX(imgW), PX(imgH));
+      ty += imgH + 2;
+    }
+
+    setFont(ctx, { size: PT(9.5), bold: false });
+    ctx.fillStyle = '#1e293b';
+
+    (it.blankLines || []).forEach((line) => {
+      let lx = PX(textX);
+      line.forEach((seg) => {
+        if (seg.blank) {
+          // Doldurulacak boşluk çizgisi
+          ctx.strokeStyle = '#0f172a';
+          ctx.lineWidth = Math.max(1, 0.3 * SCALE);
+          ctx.beginPath();
+          ctx.moveTo(lx + PX(1), PX(ty + 0.8));
+          ctx.lineTo(lx + seg.w - PX(1), PX(ty + 0.8));
+          ctx.stroke();
+        } else {
+          setFont(ctx, { size: PT(9.5), bold: false });
+          ctx.fillStyle = '#1e293b';
+          ctx.fillText(seg.text, lx, PX(ty));
+        }
+        lx += seg.w;
+      });
+      ty += LH_MM;
+    });
+
+    // Kelime havuzu (soruya özel)
+    if ((it.bankLines || []).length) {
+      ty += 1.5;
+      setFont(ctx, { size: PT(8.5), italic: true });
+      ctx.fillStyle = '#92400e';
+      it.bankLines.forEach((l) => {
+        ctx.fillText(l, PX(textX), PX(ty));
+        ty += 4.4;
+      });
+    }
+    return;
+  }
+
+  if (q.type === 'text') {
+    let ty = y + 4.2;
+    const textX = x + 6.5;
+    const imgW = it.w - 6;
+
+    // 0. Görsel (varsa - öncülün üstünde)
+    if (q.imgSrc && imgCache[q.id]) {
+      const im = imgCache[q.id];
+      const imgH = it.imgHeight || Math.min((im.height / Math.max(1, im.width)) * imgW, 45);
+      ctx.drawImage(im, PX(textX), PX(ty), PX(imgW), PX(imgH));
+      ty += imgH + 2;
+    }
+
+    // 1. Öncül / Metin (Normal Font)
+    if (it.preambleLines && it.preambleLines.length) {
+      setFont(ctx, { size: PT(9.5), bold: false });
+      ctx.fillStyle = '#1e293b';
+      it.preambleLines.forEach((l) => {
+        ctx.fillText(l, PX(textX), PX(ty));
+        ty += LH_MM;
+      });
+      if (it.rootLines && it.rootLines.length) ty += 1.2;
+    }
+
+    // 2. Soru Kökü (BOLD Font)
+    if (it.rootLines && it.rootLines.length) {
+      setFont(ctx, { size: PT(9.5), bold: true });
+      ctx.fillStyle = '#0f172a';
+      it.rootLines.forEach((l) => {
+        ctx.fillText(l, PX(textX), PX(ty));
+        ty += LH_MM;
+      });
+      ty += 1.5;
+    }
+
+    // 3. Şıklar
+    if (it.optLines && it.optLines.length) {
+      if (q.layout === 'h') {
+        const cw = it.w / Math.max(1, it.optLines.length);
+        let maxL = 1;
+        it.optLines.forEach((o, k) => {
+          const colX = x + 5.5 + k * cw;
+          // Şık harfi (Bold)
+          setFont(ctx, { size: PT(9), bold: true });
+          ctx.fillStyle = '#0f172a';
+          ctx.fillText(o.letter, PX(colX), PX(ty));
+          // Şık metni (Normal)
+          setFont(ctx, { size: PT(9), bold: false });
+          ctx.fillStyle = '#334155';
+          o.lines.forEach((l, j) => {
+            ctx.fillText(l, PX(colX + 5), PX(ty + j * 4.4));
+          });
+          maxL = Math.max(maxL, o.lines.length);
+        });
+        ty += maxL * 4.4 + 1;
+      } else {
+        it.optLines.forEach((o) => {
+          // Şık harfi (Bold)
+          setFont(ctx, { size: PT(9), bold: true });
+          ctx.fillStyle = '#0f172a';
+          ctx.fillText(o.letter, PX(x + 6.5), PX(ty));
+          // Şık metni (Normal)
+          setFont(ctx, { size: PT(9), bold: false });
+          ctx.fillStyle = '#334155';
+          o.lines.forEach((l, j) => {
+            ctx.fillText(l, PX(x + 12), PX(ty + j * 4.4));
+          });
+          ty += o.lines.length * 4.4 + 0.8;
+        });
+      }
+    }
+
+    // 4. Klasik / Açık Uçlu Cevap Satırları
+    if (q.blank) {
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = Math.max(1, 0.25 * SCALE);
+      for (let ly = ty + 4; ly < ty + q.blank; ly += 6) {
+        ctx.beginPath();
+        ctx.moveTo(PX(textX), PX(ly));
+        ctx.lineTo(PX(x + it.w), PX(ly));
+        ctx.stroke();
+      }
+    }
+  } else {
+    // Resim Soru
+    const im = imgCache[q.id];
+    if (im) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(im, PX(x + 6), PX(y), PX(it.w), PX(it.h));
+    }
+  }
+}
+
+/** Ortak Soru Kökü Başlığı (Grup Sorusu: 1-2. sorular aşağıdaki metne göre...) */
+function drawStemBox(ctx, stem, x, y, w) {
+  setFont(ctx, { size: PT(8.5), bold: true });
+  const lines = wrapText(ctx, stem, w * SCALE - PX(4));
+  const boxH = lines.length * 4.2 + 2;
+
+  // Sol şeritli kutu
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(PX(x), PX(y), PX(w), PX(boxH));
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(PX(x), PX(y), PX(1.5), PX(boxH));
+
+  setFont(ctx, { size: PT(8.5), bold: true, italic: true });
+  ctx.fillStyle = '#1e293b';
+  lines.forEach((l, i) => {
+    ctx.fillText(l, PX(x + 3), PX(y + 3.8 + i * 4.2));
+  });
+  return boxH + 2;
+}
+
+/** Sayfa Alt Bilgisi ve 2 Sütun Orta Ayırıcı Çizgisi */
+function finishPage(page, PW, PH, M, pageNo, isFirst, contentTop, subTop, bottom, isWritten) {
+  const ctx = page.ctx;
+
+  // 2 Sütun ise Orta Dikey Çizgiyi Çiz
+  if (S.columns === 2) {
+    const midX = PW / 2;
+    const topY = isFirst ? contentTop : subTop;
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = Math.max(1, 0.3 * SCALE);
+    ctx.beginPath();
+    ctx.moveTo(PX(midX), PX(topY));
+    ctx.lineTo(PX(midX), PX(bottom));
+    ctx.stroke();
+
+    // Filigranı yalnızca sütun ayırıcıda dikey göster
+    if (S.watermark && S.watermarkDivider) {
+      ctx.save();
+      ctx.globalAlpha = 0.09;
+      ctx.fillStyle = '#64748b';
+      setFont(ctx, { size: PT(S.watermarkSize || 12), bold: true });
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.translate(PX(midX), PX((topY + bottom) / 2));
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText(S.watermark, 0, 0);
+      ctx.restore();
+    }
+  }
+
+  // Sayfa Numarası ve Alt Bilgi
+  const t = parseTags(S.title);
+  if (!t.noPageNumber) {
+    drawText(ctx, '— ' + pageNo + ' —', PW / 2, PH - M + 3, {
+      size: PT(8),
+      align: 'center',
+      color: '#64748b',
+    });
+    if (isWritten && pageNo === 1) {
+      drawText(ctx, 'Süre: 40 dk.', M, PH - M + 3, { size: PT(7.5), italic: true, color: '#64748b' });
+      drawText(ctx, 'Başarılar dileriz.', PW - M, PH - M + 3, { size: PT(7.5), italic: true, align: 'right', color: '#64748b' });
+    }
+  }
+}
+
+/** Optik Form Sayfası */
+function drawOptic(ctx, PW, count, title, version, answers) {
+  // answers: opsiyonel string[] — her elemanın karşılık geldiği doğru şık (A..E) veya null
+  const isKey = Array.isArray(answers);
+  drawText(ctx, isKey ? 'OPTİK CEVAP FORMU — CEVAP ANAHTARI' : 'OPTİK CEVAP FORMU', PW / 2, 18, { size: PT(14), bold: true, align: 'center' });
+  drawText(ctx, title, PW / 2, 25, { size: PT(10), align: 'center', color: '#334155' });
+  if (isKey) {
+    drawText(ctx, 'Kitapçık: ' + version + '  ·  Doğru şıklar işaretlenmiştir', 15, 33, { size: PT(9), color: '#334155' });
+  } else {
+    drawText(ctx, 'Adı Soyadı: .............................   No: ........   Kitapçık: ' + version, 15, 33, { size: PT(9) });
+  }
+  const perCol = 25;
+  const cols = Math.max(1, Math.ceil(count / perCol));
+  ctx.strokeStyle = '#0f172a';
+  ctx.lineWidth = Math.max(1, 0.35 * SCALE);
+  for (let i = 0; i < count; i++) {
+    const c = Math.floor(i / perCol);
+    const r = i % perCol;
+    const x = 16 + c * ((PW - 32) / cols);
+    const y = 44 + r * 8.5;
+    drawText(ctx, String(i + 1).padStart(2, '0'), x, y + 1.8, { size: PT(8), bold: true });
+    const correct = isKey ? answers[i] : null;
+    for (let k = 0; k < 5; k++) {
+      const cx = x + 10 + k * 6.5;
+      const isCorrect = correct && LETTERS[k] === correct;
+      ctx.beginPath();
+      ctx.arc(PX(cx), PX(y), PX(2.3), 0, Math.PI * 2);
+      if (isCorrect) {
+        ctx.fillStyle = '#0f172a';
+        ctx.fill();
+        drawText(ctx, LETTERS[k], cx, y + 1, { size: PT(6.5), align: 'center', color: '#ffffff', bold: true });
+      } else {
+        ctx.stroke();
+        drawText(ctx, LETTERS[k], cx, y + 1, { size: PT(6.5), align: 'center' });
+      }
+    }
+  }
+}
+
+/** 2 Sütunlu MEB / ÖSYM Sınav Kağıdı Üretimi (Asla Soru Bölünmez) */
+async function renderPaperToBlob(idx) {
+  await ensureFont();
+  const t = parseTags(S.title);
+  const [PW, PH] = pageSizeMM();
+  const M = S.margin || 10;
+  const version = LETTERS[idx];
+  const gap = S.spacing ? Math.max(5, S.spacingValue) : 7;
+  const ordered = booklet(questions, idx);
+  const title = t.noUppercase ? t.clean : t.clean.toLocaleUpperCase('tr-TR');
+
+  const pages = [createPage(PW, PH)];
+  let page = pages[0];
+  const contentTop = drawHeader(page.ctx, PW, PH, M, t, version, title, true);
+  const subTop = S.testType === 'yazili' ? M + 8 : M + 8;
+  const bottom = PH - M - (t.noPageNumber ? 0 : 5);
+
+  const numCols = S.columns || 2;
+  const colGap = 8;
+  const colW = (PW - 2 * M - colGap * (numCols - 1)) / numCols;
+  const maxH = PH - 2 * M - 16;
+
+  await Promise.all(ordered.filter((q) => q.type !== 'text' || q.imgSrc).map(getImg));
+
+  // Ortak kelime havuzunu topla (ilk boşluk doldurma sorusunun öncesinde çizilecek)
+  const sharedBank = [];
+  ordered.forEach((q) => {
+    if (q.kind === 'bosluk' && q.bankShared) (q.wordBank || []).forEach((w) => { if (!sharedBank.includes(w)) sharedBank.push(w); });
+  });
+  let sharedBankDrawn = false;
+  let yStart = contentTop;
+
+  // Her sorunun ölçülerini hesapla
+  let items = ordered.map((q) => {
+    const w = colW - 6;
+    if (q.type === 'text') {
+      const it = { q, w, h: maxH };
+      prepText(it, page.ctx);
+      it.h = Math.min(it.h, maxH);
+      return it;
+    }
+    let h = (q.h / Math.max(1, q.w)) * w;
+    if (h > maxH) h = maxH;
+    return { q, w, h };
+  });
+
+  if (S.smartLayout && numCols > 1) {
+    items = smartOrder(items, bottom - yStart, gap).map((it, i) => ({ ...it, num: i + 1 }));
+  }
+
+  let c = 0;
+  let y = yStart;
+  let firstPage = true;
+  let pageIndex = 1;
+
+  for (let n = 0; n < items.length; n++) {
+    const it = items[n];
+    if (it.num === undefined) it.num = n + 1;
+
+    // Grup başlığı yüksekliği (varsa)
+    let stemH = 0;
+    if (it.q.stem) {
+      setFont(page.ctx, { size: PT(8.5), bold: true });
+      const lines = wrapText(page.ctx, it.q.stem, colW * SCALE - PX(4));
+      stemH = lines.length * 4.2 + 4;
+    }
+
+    const totalItemH = stemH + it.h;
+
+    // Sütuna sığmıyorsa -> Kesinlikle bölme, doğrudan bir sonraki sütuna / sayfaya geçir!
+    if (y + totalItemH > bottom) {
+      c++;
+      if (c >= numCols) {
+        // Mevcut sayfayı tamamla (orta çizgi + sayfa numarası)
+        finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottom, S.testType === 'yazili');
+        pageIndex++;
+
+        // Yeni sayfa oluştur
+        page = createPage(PW, PH);
+        pages.push(page);
+        firstPage = false;
+        drawHeader(page.ctx, PW, PH, M, t, version, title, false);
+        c = 0;
+      }
+      y = firstPage ? yStart : subTop;
+    }
+
+    const x = M + c * (colW + colGap);
+
+    // Ortak kelime havuzu: ilk boşluk doldurma sorusunun hemen öncesinde, sütuna sığacak şekilde
+    if (!sharedBankDrawn && sharedBank.length && it.q.kind === 'bosluk') {
+      setFont(page.ctx, { size: PT(8.5), bold: false });
+      const bankLines = wrapText(page.ctx, sharedBank.join('   •   '), (colW - 6) * SCALE);
+      const bankBoxH = bankLines.length * 4.6 + 8;
+      // Sığmazsa sonraki sütuna/sayfaya geç
+      if (y + bankBoxH + it.h > bottom) {
+        c++;
+        if (c >= numCols) {
+          finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottom, S.testType === 'yazili');
+          pageIndex++; page = createPage(PW, PH); pages.push(page); firstPage = false;
+          drawHeader(page.ctx, PW, PH, M, t, version, title, false); c = 0;
+        }
+        y = firstPage ? yStart : subTop;
+      }
+      const bx = M + c * (colW + colGap);
+      page.ctx.fillStyle = '#fffbeb';
+      page.ctx.fillRect(PX(bx), PX(y), PX(colW), PX(bankBoxH));
+      page.ctx.strokeStyle = '#f59e0b';
+      page.ctx.lineWidth = Math.max(1, 0.35 * SCALE);
+      page.ctx.strokeRect(PX(bx), PX(y), PX(colW), PX(bankBoxH));
+      drawText(page.ctx, 'KELİME HAVUZU', bx + 3, y + 4.5, { size: PT(8), bold: true, color: '#92400e' });
+      bankLines.forEach((l, i) => {
+        drawText(page.ctx, l, bx + 3, y + 9.5 + i * 4.6, { size: PT(8.5), color: '#78350f' });
+      });
+      y += bankBoxH + 3;
+      sharedBankDrawn = true;
+    }
+
+    // Varsa Grup Başlığını Çiz
+    if (it.q.stem) {
+      y += drawStemBox(page.ctx, it.q.stem, x, y, colW);
+    }
+
+    // Soruyu Çiz
+    drawQ(page.ctx, it, x, y);
+    y += it.h + gap;
+  }
+
+  // Son sayfayı tamamla
+  finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottom, S.testType === 'yazili');
+
+  // Optik Form İstenmişse
+  if (S.optic) {
+    const op = createPage(PW, PH);
+    drawOptic(op.ctx, PW, items.length, title, version);
+    pages.push(op);
+  }
+
+  // Yüksek kaliteli JPEG sıkıştırma (net ve okunaklı)
+  pages.forEach((p) => {
+    p.bytes = jpegBytes(p.canvas.toDataURL('image/jpeg', 0.93));
+  });
+
+  return { blob: buildPDF(pages, PW, PH), order: items.map((i) => i.q.id) };
+}
+
+async function renderAnswerKeyBlob(orders) {
+  await ensureFont();
+  const t = parseTags(S.title);
+  const [PW, PH] = pageSizeMM();
+  const pages = [createPage(PW, PH)];
+  let page = pages[0];
+  let y = 40;
+  drawText(page.ctx, 'CEVAP ANAHTARI', PW / 2, 22, { size: PT(16), bold: true, align: 'center' });
+  drawText(page.ctx, t.clean, PW / 2, 30, { size: PT(12), align: 'center' });
+
+  orders.forEach((order, bi) => {
+    if (y > 250) {
+      page = createPage(PW, PH);
+      pages.push(page);
+      y = 22;
+    }
+    y += drawText(page.ctx, LETTERS[bi] + ' Kitapçığı', 15, y, { size: PT(11), bold: true }) + 6;
+
+    // 1) Çoktan seçmeli / metinsel cevaplar
+    const rowH = 7.5;
+    const perRow = 5; // dar sütun düzeni (metin cevap uzun olabilir)
+    order.forEach((id, i) => {
+      const q = questions.find((x) => x.id === id);
+      const col = i % perRow;
+      const row = Math.floor(i / perRow);
+      const cellW = (PW - 30) / perRow;
+      const ans = q && q.answer ? String(q.answer) : '-';
+      drawText(
+        page.ctx,
+        (i + 1) + ') ' + ans,
+        15 + col * cellW,
+        y + row * rowH,
+        { size: PT(9), maxW: PX(cellW - 3) }
+      );
+    });
+    y += Math.ceil(order.length / perRow) * rowH + 6;
+
+    if (bi > 0) {
+      const map = order
+        .map((id, i) => (i + 1) + '\u2190A' + (questions.findIndex((q) => q.id === id) + 1))
+        .join('   ');
+      y +=
+        drawText(page.ctx, 'A kitapçığı eşleşmesi: ' + map, 15, y, {
+          size: PT(8),
+          maxW: PX(PW - 30),
+        }) + 6;
+    }
+
+    // 2) Optik form aktifse, doğru şıklar işaretli optik cevap kağıdı
+    if (S.optic) {
+      const opticPage = createPage(PW, PH);
+      pages.push(opticPage);
+      // yalnızca A..E aralığındaki cevapları optik forma işaretle
+      const answers = order.map((id) => {
+        const q = questions.find((x) => x.id === id);
+        return q && q.answer && /^[A-E]$/i.test(q.answer) ? q.answer.toUpperCase() : null;
+      });
+      drawOptic(opticPage.ctx, PW, order.length, t.clean, LETTERS[bi], answers);
+    }
+  });
+
+  pages.forEach((p) => {
+    p.bytes = jpegBytes(p.canvas.toDataURL('image/jpeg', 0.92));
+  });
+  return buildPDF(pages, PW, PH);
+}
+
+/** Dosya adı için güvenli slug ve tarih üret */
+function slugForFile(s) {
+  const map = { 'ç':'c','Ç':'C','ğ':'g','Ğ':'G','ı':'i','İ':'I','ö':'o','Ö':'O','ş':'s','Ş':'S','ü':'u','Ü':'U' };
+  return String(s || '').replace(/[çÇğĞıİöÖşŞüÜ]/g, (m) => map[m] || m)
+    .replace(/[^a-zA-Z0-9 _-]+/g, '').trim().replace(/\s+/g, ' ');
+}
+function todayStr() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`;
+}
+
+function showResult(files) {
+  const list = $('resultList');
+  list.innerHTML = '';
+  files.forEach((f) => {
+    const url = URL.createObjectURL(f.blob);
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-2 rounded-xl border border-slate-200 p-2.5';
+    row.innerHTML =
+      '<span class="flex-1 truncate text-[13px] font-medium text-slate-700">' +
+      f.name +
+      '</span>' +
+      '<a href="' +
+      url +
+      '" download="' +
+      f.name +
+      '" class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700">İndir</a>' +
+      '<button class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-900">Aç</button>';
+    row.querySelector('button').onclick = () => window.open(url, '_blank');
+    list.appendChild(row);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = f.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+  $('resultModal').classList.replace('hidden', 'flex');
+}
+$('resultClose').onclick = () => $('resultModal').classList.replace('flex', 'hidden');
+$('makeBtn').onclick = async () => {
+  collect();
+  if (!questions.length) return alert('Önce soru yükleyin.');
+  $('makeBtn').disabled = true;
+  $('makeBtn').textContent = '⏳ Hazırlanıyor...';
+  try {
+    await ensureFont();
+    const count = S.testType === 'yaprak' ? 1 : S.groups;
+    const files = [];
+    const orders = [];
+    const tParsed = parseTags(S.title);
+    const baseName = slugForFile(tParsed.clean) || 'Test';
+    const dateStr = todayStr();
+    for (let i = 0; i < count; i++) {
+      const r = await renderPaperToBlob(i);
+      orders.push(r.order);
+      const suffix = count > 1 ? ' (' + LETTERS[i] + ' Kitapçığı)' : '';
+      files.push({
+        name: baseName + ' - ' + dateStr + suffix + '.pdf',
+        blob: r.blob,
+      });
+    }
+    if (S.showAnswerKey && questions.some((q) => q.answer))
+      files.push({
+        name: baseName + ' - ' + dateStr + ' - Cevap Anahtarı.pdf',
+        blob: await renderAnswerKeyBlob(orders),
+      });
+    showResult(files);
+  } catch (e) {
+    alert('PDF oluşturulurken hata oluştu: ' + (e && e.message ? e.message : e));
+    console.error(e);
+  }
+  $('makeBtn').disabled = false;
+  $('makeBtn').textContent = '📄 Kağıdı Hazırla (PDF)';
+};
+
+// sayfa açılır açılmaz fontu önceden yükle
+ensureFont();
+
+render();
+</script>
+</body>
+</html>
