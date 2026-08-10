@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Egemen's EdTech — Eğitim Yönetim Platformu</title>
+<meta name="description" content="Öğrenci takibi, sınav hazırlığı ve yapay zekâ destekli materyal üretimini tek çatı altında toplayan eğitim platformu.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#0A1730;
+    --navy-900:#0D1D3D;
+    --navy-800:#12274A;
+    --navy-700:#1B3357;
+    --navy-600:#22406B;
+    --navy-500:#2E5285;
+    --gold:#C6A15B;
+    --gold-dark:#A9843F;
+    --teal:#1E8A82;
+    --canvas:#F5F7FA;
+    --surface:#FFFFFF;
+    --ink:#101A2E;
+    --muted:#5B6B85;
+    --line:#E2E6ED;
+    --line-dark:rgba(255,255,255,.10);
+    --shadow-sm:0 1px 2px rgba(10,23,48,.06);
+    --shadow-md:0 8px 24px rgba(10,23,48,.08);
+    --shadow-lg:0 24px 60px rgba(10,23,48,.16);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+  body{
+    margin:0;
+    font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+    background:var(--canvas);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace}
+  .serif{font-family:'Fraunces',serif}
+  a{color:inherit}
+  .container{max-width:1180px;margin:0 auto;padding:0 24px}
+  img,svg{display:block;max-width:100%}
+
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+  /* ---------- Header ---------- */
+  .site-header{
+    position:sticky;top:0;z-index:40;
+    background:rgba(10,23,48,.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-dark);
+  }
+  .site-header .container{display:flex;align-items:center;gap:20px;height:68px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:auto}
+  .brand-mark{
+    width:34px;height:34px;border-radius:9px;
+    background:linear-gradient(155deg,var(--gold) 0%,var(--gold-dark) 100%);
+    color:var(--navy-950);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:700;font-size:16px;
+    flex:none;
+  }
+  .brand-word{color:#F5F7FA;font-weight:600;font-size:15px;letter-spacing:.01em}
+  .brand-word span{color:#93A4C4;font-weight:400}
+  .site-nav{display:flex;align-items:center;gap:28px}
+  .site-nav a{
+    color:#B9C4DA;text-decoration:none;font-size:13.5px;font-weight:500;
+    transition:color .15s;
+  }
+  .site-nav a:hover{color:#fff}
+  .header-cta{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--gold);color:var(--navy-950);
+    padding:9px 16px;border-radius:8px;
+    font-size:13.5px;font-weight:700;text-decoration:none;
+    transition:filter .15s, transform .15s;
+    white-space:nowrap;
+  }
+  .header-cta:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .nav-toggle{display:none}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:
+      radial-gradient(ellipse 900px 500px at 85% -10%, rgba(198,161,91,.16), transparent 60%),
+      linear-gradient(165deg, var(--navy-950) 0%, var(--navy-900) 45%, var(--navy-800) 100%);
+    color:#fff;
+    padding:76px 0 88px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero .container{
+    display:grid;
+    grid-template-columns:1.05fr .95fr;
+    gap:56px;
+    align-items:center;
+    position:relative;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:20px;
+  }
+  .eyebrow::before{content:'';width:18px;height:1px;background:var(--gold)}
+  .hero h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(32px,4.2vw,52px);
+    line-height:1.08;
+    letter-spacing:-.01em;
+    margin:0 0 22px;
+    color:#fff;
+  }
+  .hero h1 em{font-style:italic;color:var(--gold);font-weight:500}
+  .hero p.lead{
+    font-size:16.5px;line-height:1.65;color:#C4CEE2;
+    max-width:490px;margin:0 0 34px;
+  }
+  .hero-actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .btn-primary{
+    background:var(--gold);color:var(--navy-950);
+    padding:14px 26px;border-radius:9px;
+    font-weight:700;font-size:14.5px;text-decoration:none;
+    display:inline-flex;align-items:center;gap:8px;
+    transition:filter .15s, transform .15s;
+    box-shadow:0 12px 28px rgba(198,161,91,.22);
+  }
+  .btn-primary:hover{filter:brightness(1.07);transform:translateY(-1px)}
+  .btn-ghost{
+    color:#DCE3F2;text-decoration:none;font-weight:600;font-size:14.5px;
+    display:inline-flex;align-items:center;gap:6px;
+    border-bottom:1px solid rgba(255,255,255,.25);
+    padding-bottom:2px;
+    transition:border-color .15s, color .15s;
+  }
+  .btn-ghost:hover{color:#fff;border-color:#fff}
+
+  /* Signature dashboard panel */
+  .dash-panel{
+    background:rgba(255,255,255,.045);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:16px;
+    padding:22px 22px 18px;
+    box-shadow:var(--shadow-lg);
+    backdrop-filter:blur(6px);
+  }
+  .dash-panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .dash-panel-head .dot-row{display:flex;gap:6px}
+  .dash-panel-head .dot-row span{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18)}
+  .dash-title{font-size:12px;color:#93A4C4;font-family:'IBM Plex Mono',monospace;letter-spacing:.03em}
+  .dash-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+  .kpi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:11px 12px}
+  .kpi .num{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600;color:#fff}
+  .kpi .lbl{font-size:10.5px;color:#93A4C4;margin-top:3px}
+  .kpi.gold .num{color:var(--gold)}
+  .kpi.teal .num{color:#5FC4BC}
+  .chart-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px 14px 8px}
+  .chart-caption{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .chart-caption .t{font-size:11px;color:#93A4C4;font-family:'IBM Plex Mono',monospace}
+  .legend{display:flex;gap:12px}
+  .legend span{display:flex;align-items:center;gap:5px;font-size:10px;color:#93A4C4;font-family:'IBM Plex Mono',monospace}
+  .legend i{width:7px;height:7px;border-radius:2px;display:inline-block}
+
+  /* ---------- Stats strip ---------- */
+  .stats-strip{
+    background:var(--navy-800);
+    border-top:1px solid var(--line-dark);
+  }
+  .stats-strip .container{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    padding:30px 24px;
+  }
+  .stat{padding:0 24px;border-left:1px solid rgba(255,255,255,.1)}
+  .stat:first-child{border-left:none;padding-left:0}
+  .stat .num{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;color:var(--gold)}
+  .stat .desc{font-size:13px;color:#B9C4DA;margin-top:4px;line-height:1.4}
+
+  /* ---------- Sections generic ---------- */
+  section{padding:96px 0}
+  .section-head{max-width:640px;margin:0 0 52px}
+  .section-eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--teal);margin-bottom:14px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .section-eyebrow::before{content:'';width:18px;height:1px;background:var(--teal)}
+  .section-head h2{
+    font-family:'Fraunces',serif;font-weight:600;
+    font-size:clamp(26px,3vw,36px);line-height:1.18;
+    color:var(--navy-950);margin:0 0 14px;letter-spacing:-.01em;
+  }
+  .section-head p{font-size:15.5px;color:var(--muted);line-height:1.6;margin:0}
+
+  /* ---------- Tool cards ---------- */
+  .tools{background:var(--canvas)}
+  .tool-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .tool-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:30px 26px 26px;
+    text-decoration:none;color:var(--ink);
+    display:flex;flex-direction:column;
+    transition:transform .18s, box-shadow .18s, border-color .18s;
+    position:relative;
+    overflow:hidden;
+  }
+  .tool-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:var(--accent, var(--gold));
+    transform:scaleX(0);transform-origin:left;
+    transition:transform .25s;
+  }
+  .tool-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:transparent}
+  .tool-card:hover::before{transform:scaleX(1)}
+  .tool-card .icon-wrap{
+    width:46px;height:46px;border-radius:11px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--navy-950);color:var(--gold);
+    font-size:21px;margin-bottom:20px;
+  }
+  .tool-card.c-teal .icon-wrap{color:#5FC4BC}
+  .tool-card.c-gold{--accent:var(--gold)}
+  .tool-card.c-teal{--accent:var(--teal)}
+  .tool-card.c-navy{--accent:var(--navy-500)}
+  .tool-card .index{
+    position:absolute;top:26px;right:26px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--line);
+    color:#D6DCE7;font-weight:600;
+  }
+  .tool-card h3{
+    font-family:'Fraunces',serif;font-weight:600;font-size:20px;
+    margin:0 0 10px;color:var(--navy-950);letter-spacing:-.005em;
+  }
+  .tool-card p{font-size:13.8px;line-height:1.65;color:var(--muted);margin:0 0 20px;flex:1}
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px}
+  .tag{
+    font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--navy-700);
+    background:var(--canvas);border:1px solid var(--line);
+    padding:4px 9px;border-radius:6px;
+  }
+  .card-cta{
+    display:inline-flex;align-items:center;gap:7px;
+    font-size:13.5px;font-weight:700;color:var(--navy-950);
+    text-decoration:none;
+  }
+  .card-cta svg{transition:transform .18s}
+  .tool-card:hover .card-cta svg{transform:translateX(3px)}
+
+  /* ---------- Workflow (legacy, unused styles kept for safety) ---------- */
+  .workflow{background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .flow-row{display:grid;grid-template-columns:repeat(3,1fr);gap:0;position:relative}
+  .flow-step{padding:0 30px;position:relative}
+  .flow-step:not(:first-child){border-left:1px dashed var(--line)}
+  .flow-num{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold-dark);
+    margin-bottom:14px;letter-spacing:.04em;
+  }
+  .flow-step h4{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin:0 0 10px;color:var(--navy-950)}
+  .flow-step p{font-size:13.8px;color:var(--muted);line-height:1.6;margin:0}
+
+  /* ---------- Usage guide ---------- */
+  .guide{background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .guide-list{display:flex;flex-direction:column;gap:16px}
+  .guide-row{
+    display:grid;
+    grid-template-columns:56px 1fr auto;
+    align-items:center;
+    gap:24px;
+    background:var(--canvas);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:24px 26px;
+    text-decoration:none;color:var(--ink);
+    transition:transform .18s, box-shadow .18s, border-color .18s, background .18s;
+  }
+  .guide-row:hover{
+    transform:translateX(4px);
+    box-shadow:var(--shadow-md);
+    border-color:transparent;
+    background:var(--surface);
+  }
+  .guide-icon{
+    width:56px;height:56px;border-radius:13px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--navy-950);color:var(--gold);
+    font-size:24px;flex:none;
+  }
+  .guide-row.g-teal .guide-icon{color:#5FC4BC}
+  .guide-row.g-navy .guide-icon{color:#93A4C4}
+  .guide-body{min-width:0}
+  .guide-order{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+    color:var(--gold-dark);margin-bottom:6px;text-transform:uppercase;
+  }
+  .guide-row.g-teal .guide-order{color:var(--teal)}
+  .guide-row.g-navy .guide-order{color:var(--navy-500)}
+  .guide-body h3{
+    font-family:'Fraunces',serif;font-weight:600;font-size:19px;
+    margin:0 0 8px;color:var(--navy-950);letter-spacing:-.005em;
+  }
+  .guide-body p{font-size:13.8px;line-height:1.65;color:var(--muted);margin:0 0 10px;max-width:640px}
+  .guide-steps{
+    display:flex;flex-wrap:wrap;gap:8px 20px;
+    list-style:none;padding:0;margin:0;
+  }
+  .guide-steps li{
+    font-size:12.5px;color:var(--navy-700);
+    display:flex;align-items:baseline;gap:6px;
+  }
+  .guide-steps li::before{
+    content:attr(data-n);
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;
+    color:var(--gold-dark);
+  }
+  .guide-row.g-teal .guide-steps li::before{color:var(--teal)}
+  .guide-row.g-navy .guide-steps li::before{color:var(--navy-500)}
+  .guide-arrow{
+    width:38px;height:38px;border-radius:50%;
+    border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--navy-950);flex:none;
+    transition:transform .18s, background .18s, border-color .18s;
+  }
+  .guide-row:hover .guide-arrow{
+    background:var(--navy-950);color:#fff;border-color:var(--navy-950);
+    transform:translateX(3px);
+  }
+  @media (max-width:720px){
+    .guide-row{grid-template-columns:48px 1fr;grid-template-areas:"icon body" ". body"}
+    .guide-icon{width:48px;height:48px;font-size:20px}
+    .guide-arrow{display:none}
+  }
+
+  /* ---------- Footer ---------- */
+  footer{background:var(--navy-950);color:#93A4C4;padding:52px 0 34px}
+  footer .container{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:28px}
+  .foot-brand{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .foot-col h5{color:#fff;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 14px;font-weight:600}
+  .foot-links{display:flex;flex-direction:column;gap:9px}
+  .foot-links a{color:#93A4C4;text-decoration:none;font-size:13.5px;transition:color .15s}
+  .foot-links a:hover{color:#fff}
+  .foot-bottom{
+    max-width:1180px;margin:44px auto 0;padding:22px 24px 0 24px;
+    border-top:1px solid rgba(255,255,255,.08);
+    font-size:12.5px;color:#5B6B85;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:900px){
+    .hero .container{grid-template-columns:1fr;gap:44px}
+    .dash-panel{max-width:520px}
+    .tool-grid{grid-template-columns:1fr}
+    .stats-strip .container{grid-template-columns:1fr;gap:20px}
+    .stat{border-left:none;padding:0;border-top:1px solid rgba(255,255,255,.1);padding-top:18px}
+    .stat:first-child{border-top:none;padding-top:0}
+    .flow-row{grid-template-columns:1fr;gap:32px}
+    .flow-step{border-left:none !important;padding:0}
+    .site-nav{display:none}
+  }
+  @media (max-width:560px){
+    section{padding:64px 0}
+    .hero{padding:52px 0 64px}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="#" class="brand">
+      <span class="brand-mark">E</span>
+      <span class="brand-word">Egemen's <span>EdTech</span></span>
+    </a>
+    <nav class="site-nav">
+      <a href="#sistemler">Sistemler</a>
+      <a href="#kullanim-kilavuzu">Kullanım Kılavuzu</a>
+      <a href="https://www.instagram.com/egemenbilim/" target="_blank" rel="noopener">İletişim</a>
+    </nav>
+    <a href="#sistemler" class="header-cta">Sistemlere Git</a>
+  </div>
+</header>
+
+<main>
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="container">
+      <div>
+        <div class="eyebrow">Tek Çatı Altında Eğitim Yönetimi</div>
+        <h1>Öğretmenliği <em>veriyle</em>,<br>düzenle yürütün.</h1>
+        <p class="lead">Öğrenci takibinden sınav hazırlığına, ders materyali üretiminden performans raporlarına kadar üç bütünleşik sistem — tek platformda.</p>
+        <div class="hero-actions">
+          <a href="#sistemler" class="btn-primary">
+            Sistemleri Görüntüle
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="#kullanim-kilavuzu" class="btn-ghost">Kullanım kılavuzu</a>
+        </div>
+      </div>
+
+      <div class="dash-panel" aria-hidden="true">
+        <div class="dash-panel-head">
+          <span class="dash-title">HAFTALIK_PERFORMANS.rapor</span>
+          <span class="dot-row"><span></span><span></span><span></span></span>
+        </div>
+        <div class="dash-kpis">
+          <div class="kpi gold"><div class="num">128</div><div class="lbl">Aktif Öğrenci</div></div>
+          <div class="kpi"><div class="num">9-A</div><div class="lbl">Seçili Sınıf</div></div>
+          <div class="kpi teal"><div class="num">%86</div><div class="lbl">Net Ortalaması</div></div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-caption">
+            <span class="t">SORU ÇÖZÜM TRENDİ · 8 HAFTA</span>
+            <span class="legend"><span><i style="background:var(--gold)"></i>Çözülen</span><span><i style="background:#5FC4BC"></i>Net</span></span>
+          </div>
+          <svg viewBox="0 0 320 110" width="100%" height="110">
+            <line x1="0" y1="27" x2="320" y2="27" stroke="rgba(255,255,255,.06)"/>
+            <line x1="0" y1="54" x2="320" y2="54" stroke="rgba(255,255,255,.06)"/>
+            <line x1="0" y1="81" x2="320" y2="81" stroke="rgba(255,255,255,.06)"/>
+            <g fill="var(--gold)" opacity=".85">
+              <rect x="6"  y="58" width="16" height="42" rx="2"/>
+              <rect x="38" y="46" width="16" height="54" rx="2"/>
+              <rect x="70" y="64" width="16" height="36" rx="2"/>
+              <rect x="102" y="38" width="16" height="62" rx="2"/>
+              <rect x="134" y="50" width="16" height="50" rx="2"/>
+              <rect x="166" y="30" width="16" height="70" rx="2"/>
+              <rect x="198" y="42" width="16" height="58" rx="2"/>
+              <rect x="230" y="20" width="16" height="80" rx="2"/>
+              <rect x="262" y="34" width="16" height="66" rx="2"/>
+              <rect x="294" y="14" width="16" height="86" rx="2"/>
+            </g>
+            <polyline points="14,70 46,60 78,66 110,48 142,55 174,40 206,46 238,26 270,36 302,20"
+              fill="none" stroke="#5FC4BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <g fill="#5FC4BC">
+              <circle cx="14" cy="70" r="2.5"/><circle cx="46" cy="60" r="2.5"/><circle cx="78" cy="66" r="2.5"/>
+              <circle cx="110" cy="48" r="2.5"/><circle cx="142" cy="55" r="2.5"/><circle cx="174" cy="40" r="2.5"/>
+              <circle cx="206" cy="46" r="2.5"/><circle cx="238" cy="26" r="2.5"/><circle cx="270" cy="36" r="2.5"/>
+              <circle cx="302" cy="20" r="2.5"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STATS ================= -->
+  <div class="stats-strip">
+    <div class="container">
+      <div class="stat">
+        <div class="num">3</div>
+        <div class="desc">Bütünleşik sistem — tek panelden erişim</div>
+      </div>
+      <div class="stat">
+        <div class="num">Sınırsız</div>
+        <div class="desc">Sınıf, öğrenci ve deneme kaydı</div>
+      </div>
+      <div class="stat">
+        <div class="num">PDF · AI</div>
+        <div class="desc">Dışa aktarım ve yapay zekâ destekli üretim</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOOLS ================= -->
+  <section class="tools" id="sistemler">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-eyebrow">Sistemler</div>
+        <h2>Üç araç, tek iş akışı.</h2>
+        <p>Her sistem bağımsız çalışır; birlikte kullanıldığında ders hazırlığından öğrenci performansına kadar tüm süreci kapsar.</p>
+      </div>
+
+      <div class="tool-grid">
+
+        <a class="tool-card c-gold" href="%C3%96%C4%9Frenci_Takip_Sistemi.html">
+          <span class="index mono">01</span>
+          <div class="icon-wrap">🎓</div>
+          <h3>Öğrenci Takip Sistemi</h3>
+          <p>Sınıf ve öğrenci kayıtlarını tutun, deneme sonuçlarını girin, haftalık soru istatistiklerini işleyin ve ders bazlı performans raporlarını PDF olarak alın.</p>
+          <div class="tag-row">
+            <span class="tag">Sınıf Yönetimi</span>
+            <span class="tag">Deneme Takibi</span>
+            <span class="tag">Raporlama</span>
+          </div>
+          <span class="card-cta">Sistemi Aç
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </a>
+
+        <a class="tool-card c-teal" href="S%C4%B1nav_Haz%C4%B1rlama_Arac%C4%B1.html">
+          <span class="index mono">02</span>
+          <div class="icon-wrap">📝</div>
+          <h3>Sınav Hazırlama Aracı</h3>
+          <p>Yazılı kağıtlarını ve konu denemelerini dakikalar içinde oluşturun, soru havuzunuzu düzenleyin ve sınavlarınızı baskıya hazır PDF olarak indirin.</p>
+          <div class="tag-row">
+            <span class="tag">Yazılı Kağıdı</span>
+            <span class="tag">Konu Denemesi</span>
+            <span class="tag">PDF Çıktı</span>
+          </div>
+          <span class="card-cta">Sistemi Aç
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </a>
+
+        <a class="tool-card c-navy" href="E%C4%9Fitim_Promptlar%C4%B1_Deposu.html">
+          <span class="index mono">03</span>
+          <div class="icon-wrap">💡</div>
+          <h3>Eğitim Promptları Deposu</h3>
+          <p>Sınıf seviyesine ve derse göre özelleştirilmiş yapay zekâ promptları oluşturun; ders özeti, soru seti ve çalışma kağıdı hazırlığını hızlandırın.</p>
+          <div class="tag-row">
+            <span class="tag">AI Prompt Kütüphanesi</span>
+            <span class="tag">Materyal Üretimi</span>
+          </div>
+          <span class="card-cta">Sistemi Aç
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= KULLANIM KILAVUZU ================= -->
+  <section class="guide" id="kullanim-kilavuzu">
+    <div class="container">
+      <div class="section-head" style="margin-bottom:40px">
+        <div class="section-eyebrow">Kullanım Kılavuzu</div>
+        <h2>Her sistem nasıl kullanılır?</h2>
+        <p>Aşağıdaki üç sistemin kısa kullanım adımlarını inceleyin; herhangi birine tıkladığınızda doğrudan o sisteme geçersiniz.</p>
+      </div>
+
+      <div class="guide-list">
+
+        <a class="guide-row g-gold" href="%C3%96%C4%9Frenci_Takip_Sistemi.html">
+          <div class="guide-icon">🎓</div>
+          <div class="guide-body">
+            <div class="guide-order">01 · Öğrenci Takip Sistemi</div>
+            <h3>Sınıf, öğrenci ve deneme sonuçlarını tek yerden yönetin</h3>
+            <p>Sınıflarınızı ve öğrencilerinizi kaydedin, deneme sonuçlarını ve haftalık soru çözüm verilerini işleyin, ders bazlı performans raporlarını PDF olarak alın.</p>
+            <ul class="guide-steps">
+              <li data-n="1">Sınıflar sayfasından sınıf ekleyin</li>
+              <li data-n="2">Öğrenciler sayfasından öğrenci ekleyin (tekli/toplu)</li>
+              <li data-n="3">Deneme Gir ile sonuçları girin</li>
+              <li data-n="4">Haftalık Soru Kayıtları ile çözümleri takip edin</li>
+              <li data-n="5">Raporlar'dan ders bazlı analiz ve PDF alın</li>
+            </ul>
+          </div>
+          <div class="guide-arrow">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </a>
+
+        <a class="guide-row g-teal" href="S%C4%B1nav_Haz%C4%B1rlama_Arac%C4%B1.html">
+          <div class="guide-icon">📝</div>
+          <div class="guide-body">
+            <div class="guide-order">02 · Sınav Hazırlama Aracı</div>
+            <h3>Yazılı kağıdı ve konu denemesini dakikalar içinde oluşturun</h3>
+            <p>Test türünü seçin, sorularınızı ekleyin veya soru havuzunuzdan sürükleyin, filigran ve sayfa ayarlarını yapın, sınavınızı baskıya hazır PDF olarak indirin.</p>
+            <ul class="guide-steps">
+              <li data-n="1">Yazılı Kağıdı veya Konu Denemesi seçin</li>
+              <li data-n="2">Test adı, kurum ve açıklama bilgilerini girin</li>
+              <li data-n="3">Soruları ekleyin veya havuzdan sürükleyin</li>
+              <li data-n="4">Filigran, kenar ve sayfa ayarlarını yapın</li>
+              <li data-n="5">"Kağıdı Hazırla · PDF" ile indirin</li>
+            </ul>
+          </div>
+          <div class="guide-arrow">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </a>
+
+        <a class="guide-row g-navy" href="E%C4%9Fitim_Promptlar%C4%B1_Deposu.html">
+          <div class="guide-icon">💡</div>
+          <div class="guide-body">
+            <div class="guide-order">03 · Eğitim Promptları Deposu</div>
+            <h3>Derse özel yapay zekâ promptlarını saniyeler içinde üretin</h3>
+            <p>Sınıf seviyesini, dersi ve üretmek istediğiniz materyal türünü seçin, konu bilgisini girin; oluşan profesyonel promptu kopyalayıp istediğiniz yapay zekâ aracına yapıştırın.</p>
+            <ul class="guide-steps">
+              <li data-n="1">Sınıf seviyesini seçin</li>
+              <li data-n="2">Ders / alan adını seçin</li>
+              <li data-n="3">Üretilecek materyal türünü seçin</li>
+              <li data-n="4">Konu / ünite bilgisini yazın</li>
+              <li data-n="5">"Profesyonel Prompt Oluştur" ile üretip kopyalayın</li>
+            </ul>
+          </div>
+          <div class="guide-arrow">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="foot-col" style="max-width:280px">
+      <div class="foot-brand">
+        <span class="brand-mark">E</span>
+        <span class="brand-word" style="color:#fff">Egemen's <span>EdTech</span></span>
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:#5B6B85;margin:0">Öğretmenler için veriye dayalı, sade ve bütünleşik eğitim yönetim araçları.</p>
+    </div>
+    <div class="foot-col">
+      <h5>Sistemler</h5>
+      <div class="foot-links">
+        <a href="%C3%96%C4%9Frenci_Takip_Sistemi.html">Öğrenci Takip Sistemi</a>
+        <a href="S%C4%B1nav_Haz%C4%B1rlama_Arac%C4%B1.html">Sınav Hazırlama Aracı</a>
+        <a href="E%C4%9Fitim_Promptlar%C4%B1_Deposu.html">Eğitim Promptları Deposu</a>
+      </div>
+    </div>
+    <div class="foot-col">
+      <h5>İletişim</h5>
+      <div class="foot-links">
+        <a href="https://www.instagram.com/egemenbilim/" target="_blank" rel="noopener">@egemenbilim</a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 Egemen's EdTech. Tüm hakları saklıdır.</span>
+    <span>Eğitimciler için tasarlandı.</span>
+  </div>
+</footer>
+
+</body>
+</html>

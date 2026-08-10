@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eğitim Promptları</title>
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-hover: #4F46E5;
+            --bg: #0F172A;
+            --card-bg: #1E293B;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --border: #334155;
+            --input-bg: #0F172A;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .wrapper {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .container {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem 2rem;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+            border: 1px solid var(--border);
+        }
+
+        .header-left {
+            grid-column: 1 / 2;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 2rem;
+            margin: 0;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        .header-right {
+            grid-column: 2 / 3;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .header-right p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        .form-section {
+            grid-column: 1 / 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-section {
+            grid-column: 2 / 3;
+            display: flex;
+            flex-direction: column;
+            background: #0F172A;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .required-star {
+            color: #EF4444;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn-generate:hover {
+            background-color: var(--primary-hover);
+        }
+
+        #result-box {
+            flex-grow: 1;
+            background: #090D16;
+            color: #E2E8F0;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 600px;
+            margin-bottom: 1rem;
+        }
+
+        .btn-copy {
+            background-color: #10B981;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-copy:hover {
+            background-color: #059669;
+        }
+
+        /* Dynamic Section Panels */
+        #nlm-options, #maarif-options, #program-options, #veli-options, #gagne-options {
+            display: none;
+            background: #1E1B4B;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.2rem;
+            border: 1px solid #312E81;
+        }
+
+        #maarif-options {
+            background: #064E3B;
+            border-color: #065F46;
+            padding: 0;
+            border: none;
+        }
+        
+        #program-options {
+            background: #451A03;
+            border-color: #78350F;
+            padding: 1rem;
+        }
+
+        #veli-options {
+            background: #082F49;
+            border-color: #0369A1;
+            padding: 1rem;
+        }
+        
+        #gagne-options {
+            background: #312E81;
+            border-color: #4F46E5;
+            padding: 1rem;
+        }
+
+        .maarif-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            background: #064E3B;
+            padding: 1rem;
+            border: 1px solid #065F46;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .maarif-header {
+            grid-column: 1 / -1;
+            font-weight: bold;
+            color: #A7F3D0;
+            border-bottom: 1px solid #065F46;
+            padding-bottom: 0.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .program-header {
+            color: #FDE68A; 
+            border-bottom-color: #78350F;
+            font-weight: bold;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #78350F;
+        }
+
+        .veli-header {
+            color: #BAE6FD; 
+            border-bottom-color: #0369A1;
+            font-weight: bold;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #0369A1;
+        }
+        
+        .gagne-header {
+            color: #C7D2FE;
+            border-bottom-color: #4F46E5;
+            font-weight: bold;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #4F46E5;
+        }
+
+        .opt-label {
+            font-size: 0.8rem;
+            color: #94A3B8;
+            font-weight: normal;
+        }
+
+        .link-style {
+            color: #818CF8;
+            text-decoration: underline;
+            font-weight: normal;
+            font-size: 0.85rem;
+            margin-left: 5px;
+        }
+
+        .scrollable-options {
+            grid-column: 1 / -1;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .scrollable-options .maarif-grid-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .scrollable-options::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollable-options::-webkit-scrollbar-track {
+            background: #1E293B;
+            border-radius: 4px;
+        }
+        .scrollable-options::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        /* Uyarı Kutusu Tasarımı */
+        .warning-box {
+            display: none;
+            background-color: #450A0A;
+            border-left: 4px solid #EF4444;
+            color: #FCA5A5;
+            padding: 1rem;
+            margin-bottom: 1.2rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .warning-box strong {
+            color: #F87171;
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .warning-box .command-highlight {
+            background: #7F1D1D;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #FCA5A5;
+        }
+        
+        .course-row {
+            display: flex; 
+            gap: 1rem; 
+            margin-bottom: 0.8rem; 
+            align-items: flex-end;
+            background: #1E293B;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #78350F;
+        }
+
+        .veli-course-row {
+            display: flex; 
+            gap: 1rem; 
+            margin-bottom: 0.8rem; 
+            align-items: flex-end;
+            background: #1E293B;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #0369A1;
+            flex-wrap: wrap;
+        }
+
+        .footer-info {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            line-height: 1.6;
+        }
+
+        .footer-info a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-info a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .header-left, .header-right, .form-section, .result-section {
+                grid-column: 1 / -1;
+            }
+            .maarif-grid, .scrollable-options .maarif-grid-inner {
+                grid-template-columns: 1fr;
+            }
+            .course-row, .veli-course-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="container">
+            <!-- Header Section -->
+            <div class="header-left">
+                <h1>Eğitim Promptları</h1>
+            </div>
+            <div class="header-right">
+                <p>İstediğiniz promptu oluşturup yapay zeka araçlarına yapıştırabilirsiniz.</p>
+            </div>
+            
+            <!-- Sol Panel: Form -->
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="sinif">Sınıf Seviyesi <span class="required-star">*</span></label>
+                    <select id="sinif">
+                        <option value="">Seviye seçiniz...</option>
+                        <option value="5. Sınıf">5. Sınıf</option>
+                        <option value="6. Sınıf">6. Sınıf</option>
+                        <option value="7. Sınıf">7. Sınıf</option>
+                        <option value="8. Sınıf">8. Sınıf</option>
+                        <option value="9. Sınıf">9. Sınıf</option>
+                        <option value="10. Sınıf">10. Sınıf</option>
+                        <option value="11. Sınıf">11. Sınıf</option>
+                        <option value="12. Sınıf (YKS)">12. Sınıf (YKS)</option>
+                        <option value="Mezun (YKS)">Mezun (YKS)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="main-ders-group">
+                    <label for="ders">Ders / Alan Adı <span class="required-star">*</span></label>
+                    <select id="ders">
+                        <option value="">Bir ders seçiniz...</option>
+                        <option value="Türkçe">Türkçe</option>
+                        <option value="Türk Dili ve Edebiyatı">Türk Dili ve Edebiyatı</option>
+                        <option value="Tarih">Tarih</option>
+                        <option value="Coğrafya">Coğrafya</option>
+                        <option value="Felsefe">Felsefe</option>
+                        <option value="Din Kültürü ve Ahlak Bilgisi">Din Kültürü ve Ahlak Bilgisi</option>
+                        <option value="Matematik">Matematik</option>
+                        <option value="Fizik">Fizik</option>
+                        <option value="Kimya">Kimya</option>
+                        <option value="Biyoloji">Biyoloji</option>
+                        <option value="Fen Bilgisi">Fen Bilgisi</option>
+                        <option value="İngilizce">İngilizce</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="materyal">Materyal Türü <span class="required-star">*</span></label>
+                    <select id="materyal">
+                        <option value="">Üretilecek materyali seçiniz...</option>
+                        <option value="not">1. Detaylı Ders Özeti</option>
+                        <option value="bosluk">2. Boşluk Doldurma Çalışma Kağıdı</option>
+                        <option value="nlm">3. NLM Yansı Oluşturma</option>
+                        <option value="maarif">4. Maarif Modeli Günlük Ders Planı</option>
+                        <option value="kavram_yanilgisi">5. Kavram Yanılgısı Belirleme</option>
+                        <option value="calisma_programi">6. Çalışma Programı Oluştur</option>
+                        <option value="veli_bulteni">7. Veli Bilgilendirme Bülteni</option>
+                        <option value="gagne">8. Gagne Dokuz Adımda Ders Planlaması</option>
+                    </select>
+                </div>
+
+                <!-- Uyarı Mesajı Kutusu (NotebookLM İş Akışı İçin) -->
+                <div id="dynamic-warning" class="warning-box"></div>
+
+                <!-- Standart Konu Alanı -->
+                <div class="form-group" id="konu-group">
+                    <label for="konu">Konu / Ünite / Alt Elemanlar <span class="required-star">*</span></label>
+                    <textarea id="konu" placeholder="Örn: Divan Edebiyatı, Gazel nazım şekli ve özellikleri..."></textarea>
+                </div>
+                
+                <!-- Gagne Dokuz Adımda Ders Planlaması Özel Alanları -->
+                <div id="gagne-options">
+                    <div class="gagne-header">Gagne Modeli Ek Parametreleri</div>
+                    <div class="form-group">
+                        <label for="g-sure">Eğitim / Ders Süresi <span class="required-star">*</span></label>
+                        <input type="text" id="g-sure" placeholder="Örn: 45 dakika / 2 saat / 1 gün">
+                    </div>
+                </div>
+
+                <!-- Çalışma Programı Özel Alanları -->
+                <div id="program-options">
+                    <div class="program-header">I. Program İçeriği & Zorunlu Alanlar</div>
+                    
+                    <div id="dynamic-courses">
+                        <!-- Dinamik Ders Satırları Buraya Gelecek -->
+                    </div>
+                    
+                    <button type="button" id="btn-add-course" style="background: #D97706; color: white; border: none; padding: 0.6rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold; margin-bottom: 1.2rem;">+ Yeni Ders Ekle (Max 10)</button>
+
+                    <div class="form-group">
+                        <label for="p-sure">Program Süresi <span class="required-star">*</span></label>
+                        <input type="text" id="p-sure" placeholder="Örn: 3 Haftalık, 1 Aylık">
+                    </div>
+
+                    <div class="program-header">II. Hedefler & Ek Detaylar (Opsiyonel)</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group"><label>Öğrenci İsmi</label><input type="text" id="p-ogrenci" placeholder="Örn: Ahmet"></div>
+                        <div class="form-group"><label>Önerilen Ders Kaynağı</label><input type="text" id="p-kaynak" placeholder="Örn: 3D Yayınları, OGM Materyal"></div>
+                        <div class="form-group"><label>Günlük Çalışma Süresi</label><input type="text" id="p-gunluk-sure" placeholder="Örn: 4 Saat"></div>
+                        <div class="form-group"><label>Toplam Soru Sayısı</label><input type="text" id="p-toplam-soru" placeholder="Örn: 1500"></div>
+                        <div class="form-group"><label>Günlük Soru Sayısı</label><input type="text" id="p-gunluk-soru" placeholder="Örn: 150"></div>
+                        <div class="form-group"><label>Deneme Sayısı</label><input type="text" id="p-deneme" placeholder="Örn: Haftada 2 TYT"></div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Ek Girdiler (Gün / Ders Dağılımı Talebi)</label>
+                            <textarea id="p-ek" placeholder="Örn: Pazartesi sadece Matematik olsun, Pazar günü boş geçilsin."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Veli Bilgilendirme Bülteni Özel Alanları -->
+                <div id="veli-options">
+                    <div class="veli-header">İşlenen Dersler ve Konular</div>
+                    
+                    <div id="dynamic-veli-courses">
+                        <!-- Dinamik Veli Ders Satırları Buraya Gelecek -->
+                    </div>
+                    
+                    <button type="button" id="btn-add-veli-course" style="background: #0284C7; color: white; border: none; padding: 0.6rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold; margin-bottom: 1.2rem;">+ Yeni Ders Ekle (Max 15)</button>
+
+                    <div class="form-group">
+                        <label for="v-etkinlikler">Yapılan Ekstra Etkinlikler (Opsiyonel)</label>
+                        <textarea id="v-etkinlikler" placeholder="Örn: Okuma saati düzenlendi, laboratuvarda mikroskopla soğan zarı incelendi vb." style="min-height: 80px;"></textarea>
+                    </div>
+                </div>
+
+                <!-- NLM Yansı seçildiğinde açılacak alanlar -->
+                <div id="nlm-options">
+                    <div class="form-group">
+                        <label for="ogretmen">Öğretmen Adı</label>
+                        <input type="text" id="ogretmen" placeholder="Örn: Egemen Bilim">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="kurum">Kurum Adı</label>
+                        <input type="text" id="kurum" placeholder="Örn: Atatürk Anadolu Lisesi">
+                    </div>
+                </div>
+
+                <!-- Maarif Modeli seçildiğinde açılacak alanlar -->
+                <div id="maarif-options">
+                    <div class="maarif-grid">
+                        <div class="maarif-header" style="margin-top: 0;">I. Bölüm: Ders Bilgisi & Zorunlu Alanlar</div>
+                        
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="m-okul">Okul Adı <span class="required-star">*</span></label>
+                            <input type="text" id="m-okul" placeholder="Örn: Atatürk Anadolu Lisesi">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="m-tarih">Ders Tarihi (gg/aa/yy) <span class="required-star">*</span></label>
+                            <input type="text" id="m-tarih" placeholder="Örn: 12/10/2026">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="m-hafta">Hafta <span class="required-star">*</span></label>
+                            <input type="text" id="m-hafta" placeholder="Örn: 5. Hafta">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="m-sure">Ders Süresi <span class="required-star">*</span></label>
+                            <input type="text" id="m-sure" placeholder="Örn: 2 Ders Saati (80 dk)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="m-unite">Ünite Adı <span class="required-star">*</span></label>
+                            <input type="text" id="m-unite" placeholder="Örn: 2. Ünite: Şiir">
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="m-konular">Konular <span class="required-star">*</span> <br><span class="opt-label">(Genel olarak en az 4 kavram başlığı yazın, yapay zeka kalanı dolduracaktır)</span></label>
+                            <textarea id="m-konular" placeholder="Örn: 1. Tanzimat Şiiri, 2. Şinasi, 3. Namık Kemal, 4. Ziya Paşa... (Kalanını yapay zeka genişletecek)"></textarea>
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="m-ogrenme_ciktilari">
+                                Öğrenme Çıktısı <span class="opt-label">(Opsiyonel)</span> 
+                                <a href="https://tymm.meb.gov.tr/ogretim-programlari" target="_blank" class="link-style">Öğrenme Çıktıları Tablosu için Tıklayın ve Dersi / Sınıfı seçin.</a>
+                            </label>
+                            <input type="text" id="m-ogrenme_ciktilari" placeholder="Örn: TDE1.2. (Boş bırakılırsa yapay zeka konuya ve sınıfa uygun bir kod üretecektir)">
+                        </div>
+                    </div>
+
+                    <div class="maarif-grid">
+                        <div class="maarif-header" style="margin-top: 0;">II. Bölüm: Maarif Modeli Bileşenleri <br><span class="opt-label">(Boş bırakılan alanlar yapay zeka tarafından bağlamsal olarak tamamlanacaktır)</span></div>
+                        
+                        <div class="scrollable-options">
+                            <div class="maarif-grid-inner">
+                                <div class="form-group"><label>Alan Becerileri</label><input type="text" id="m-alan"></div>
+                                <div class="form-group"><label>Kavramsal Beceriler</label><input type="text" id="m-kavramsal"></div>
+                                <div class="form-group"><label>Eğilimler</label><input type="text" id="m-egilimler"></div>
+                                <div class="form-group"><label>Sosyal-Duygusal Öğrenme</label><input type="text" id="m-sosyal"></div>
+                                <div class="form-group"><label>Değerler</label><input type="text" id="m-degerler"></div>
+                                <div class="form-group"><label>Okuryazarlık Becerileri</label><input type="text" id="m-okuryazarlik"></div>
+                                <div class="form-group"><label>Disiplinler Arası İlişkiler</label><input type="text" id="m-disiplinler"></div>
+                                <div class="form-group"><label>Beceriler Arası İlişkiler</label><input type="text" id="m-beceriler_arasi"></div>
+                                <div class="form-group"><label>İçerik Çerçevesi</label><input type="text" id="m-icerik"></div>
+                                <div class="form-group"><label>Ölçme ve Değerlendirme</label><input type="text" id="m-olcme"></div>
+                                <div class="form-group"><label>Temel Kabuller</label><input type="text" id="m-kabuller"></div>
+                                <div class="form-group"><label>Ön Değerlendirme Süreci</label><input type="text" id="m-on_degerlendirme"></div>
+                                <div class="form-group"><label>Köprü Kurma</label><input type="text" id="m-kopru"></div>
+                                <div class="form-group"><label>Öğretme-Öğrenme Uygulamaları</label><input type="text" id="m-uygulamalar"></i></div>
+                                <div class="form-group"><label>Zenginleştirme</label><input type="text" id="m-zenginlestirme"></div>
+                                <div class="form-group"><label>Destekleme</label><input type="text" id="m-destekleme"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-generate" onclick="generatePrompt()">Profesyonel Prompt Oluştur</button>
+            </div>
+
+            <!-- Sağ Panel: Sonuç -->
+            <div class="result-section">
+                <label><strong>Üretilen Prompt:</strong></label>
+                <div id="result-box">Seçimlerinizi yapıp "Profesyonel Prompt Oluştur" butonuna bastığınızda yapay zekaya kopyalayacağınız prompt metni burada belirecektir.</div>
+                <button class="btn-copy" onclick="copyPrompt()">🚀 Metni Kopyala</button>
+            </div>
+        </div>
+
+        <!-- Bilgilendirme ve İletişim Footer -->
+        <div class="footer-info">
+            Bu sistem Eğitim Teknolojileri bağlamında prompt deposu olarak üretilmiştir.<br>
+            <strong>İletişim:</strong> Egemen Bilim (Türk Dili ve Edebiyatı Öğretmeni) | Tel: 0553 789 1938 | E-posta: <a href="mailto:egemenbilim@gmail.com">egemenbilim@gmail.com</a>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT KODLARI -->
+    <script>
+        // Ders Listesi Seçenekleri (Dinamik alanlar için kopyası)
+        const dersOptions = `
+            <option value="">Bir ders seçiniz...</option>
+            <option value="Türkçe">Türkçe</option>
+            <option value="Türk Dili ve Edebiyatı">Türk Dili ve Edebiyatı</option>
+            <option value="Tarih">Tarih</option>
+            <option value="Coğrafya">Coğrafya</option>
+            <option value="Felsefe">Felsefe</option>
+            <option value="Din Kültürü ve Ahlak Bilgisi">Din Kültürü ve Ahlak Bilgisi</option>
+            <option value="Matematik">Matematik</option>
+            <option value="Fizik">Fizik</option>
+            <option value="Kimya">Kimya</option>
+            <option value="Biyoloji">Biyoloji</option>
+            <option value="Fen Bilgisi">Fen Bilgisi</option>
+            <option value="İngilizce">İngilizce</option>
+            <option value="Deneme Sınavı">Deneme Sınavı</option>
+        `;
+
+        // Çalışma Programı için Dinamik Ders Ekleme
+        let courseCount = 0;
+        function addCourseRow() {
+            if (courseCount >= 10) {
+                alert("En fazla 10 ders ekleyebilirsiniz.");
+                return;
+            }
+            courseCount++;
+            const container = document.getElementById('dynamic-courses');
+            const row = document.createElement('div');
+            row.className = 'course-row';
+            row.innerHTML = `
+                <div style="flex: 1;">
+                    <label style="font-size: 0.85rem;">Ders Seçimi <span class="required-star">*</span></label>
+                    <select class="p-ders">${dersOptions}</select>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 0.85rem;">Konu(lar) <span class="required-star">*</span></label>
+                    <input type="text" class="p-konu" placeholder="Örn: Türev, Limit">
+                </div>
+                ${courseCount > 1 ? `<button type="button" class="btn-remove-course" style="background: #EF4444; color: white; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 2px;">X</button>` : ''}
+            `;
+            container.appendChild(row);
+
+            if (courseCount > 1) {
+                row.querySelector('.btn-remove-course').addEventListener('click', function() {
+                    row.remove();
+                    courseCount--;
+                });
+            }
+        }
+
+        // Veli Bülteni için Dinamik Ders Ekleme
+        let veliCourseCount = 0;
+        function addVeliCourseRow() {
+            if (veliCourseCount >= 15) {
+                alert("En fazla 15 ders ekleyebilirsiniz.");
+                return;
+            }
+            veliCourseCount++;
+            const container = document.getElementById('dynamic-veli-courses');
+            const row = document.createElement('div');
+            row.className = 'veli-course-row';
+            row.innerHTML = `
+                <div style="flex: 1;">
+                    <label style="font-size: 0.85rem;">Ders Seçimi ${veliCourseCount === 1 ? '<span class="required-star">*</span>' : ''}</label>
+                    <select class="v-ders" onchange="handleVeliDersChange(this)">${dersOptions}</select>
+                </div>
+                <div style="flex: 1;" class="v-konu-container">
+                    <label style="font-size: 0.85rem;">İşlenen Konular ${veliCourseCount === 1 ? '<span class="required-star">*</span>' : ''}</label>
+                    <input type="text" class="v-konu" placeholder="Örn: Cümlede Anlam">
+                </div>
+                ${veliCourseCount > 1 ? `<button type="button" class="btn-remove-veli-course" style="background: #EF4444; color: white; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 2px;">X</button>` : ''}
+            `;
+            container.appendChild(row);
+
+            if (veliCourseCount > 1) {
+                row.querySelector('.btn-remove-veli-course').addEventListener('click', function() {
+                    row.remove();
+                    veliCourseCount--;
+                });
+            }
+        }
+
+        // Veli bülteninde Deneme Sınavı seçilirse konu alanını Yayın Markası olarak değiştirme
+        function handleVeliDersChange(selectElement) {
+            const row = selectElement.closest('.veli-course-row');
+            const konuContainer = row.querySelector('.v-konu-container');
+            const isDeneme = selectElement.value === 'Deneme Sınavı';
+            
+            konuContainer.innerHTML = `
+                <label style="font-size: 0.85rem;">${isDeneme ? 'Yayın Markası <span class="opt-label">(Opsiyonel)</span>' : 'İşlenen Konular ' + (row.classList.contains('first-row') ? '<span class="required-star">*</span>' : '')}</label>
+                <input type="text" class="v-konu" placeholder="${isDeneme ? 'Örn: 3D, Özdebir, Bilgi Sarmal' : 'Örn: Cümlede Anlam'}">
+            `;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            addCourseRow();
+            addVeliCourseRow();
+            document.querySelector('.veli-course-row').classList.add('first-row');
+        });
+
+        document.getElementById('btn-add-course').addEventListener('click', addCourseRow);
+        document.getElementById('btn-add-veli-course').addEventListener('click', addVeliCourseRow);
+
+        // Form alanlarını dinamik gösterme ve Uyarı Mesajları
+        document.getElementById('materyal').addEventListener('change', function() {
+            const nlmOptions = document.getElementById('nlm-options');
+            const maarifOptions = document.getElementById('maarif-options');
+            const programOptions = document.getElementById('program-options');
+            const veliOptions = document.getElementById('veli-options');
+            const gagneOptions = document.getElementById('gagne-options');
+            const konuGroup = document.getElementById('konu-group');
+            const mainDersGroup = document.getElementById('main-ders-group');
+            const warningBox = document.getElementById('dynamic-warning');
+            
+            nlmOptions.style.display = 'none';
+            maarifOptions.style.display = 'none';
+            programOptions.style.display = 'none';
+            veliOptions.style.display = 'none';
+            gagneOptions.style.display = 'none';
+            konuGroup.style.display = 'block';
+            mainDersGroup.style.display = 'block';
+            warningBox.style.display = 'none';
+
+            if (this.value === 'nlm') {
+                nlmOptions.style.display = 'block';
+            } else if (this.value === 'maarif') {
+                maarifOptions.style.display = 'block';
+                konuGroup.style.display = 'none'; 
+            } else if (this.value === 'calisma_programi') {
+                programOptions.style.display = 'block';
+                konuGroup.style.display = 'none';
+                mainDersGroup.style.display = 'none';
+            } else if (this.value === 'veli_bulteni') {
+                veliOptions.style.display = 'block';
+                konuGroup.style.display = 'none';
+                mainDersGroup.style.display = 'none';
+            } else if (this.value === 'gagne') {
+                gagneOptions.style.display = 'block';
+            } else if (this.value === 'not') {
+                warningBox.innerHTML = `<strong>⚠️ DİKKAT İŞ AKIŞI:</strong> 
+                Burada üretilen Prompt, <strong>önce <a href="https://notebook.google.com/" target="_blank" style="color: #F87171; text-decoration: underline; font-weight: bold;">NotebookLM</a>'e verilecek</strong> ve NotebookLM'den alınan çıktı ChatGPT, Gemini gibi yapay zeka araçlarına yapıştırılarak şu komut verilecektir: 
+                <div class="command-highlight">"Bu notları detaylı bir ders özetine çevir. Sınava yönelik bilgilerin bulunduğu ve gereksiz uzatmaların yer almadığı şekilde yapılandır ve indirilebilir PDF olarak ver."</div>`;
+                warningBox.style.display = 'block';
+            } else if (this.value === 'bosluk') {
+                warningBox.innerHTML = `<strong>⚠️ DİKKAT İŞ AKIŞI (KESİN TALİMAT):</strong> 
+                Burada üretilen Prompt, <strong>önce <a href="https://notebook.google.com/" target="_blank" style="color: #F87171; text-decoration: underline; font-weight: bold;">NotebookLM</a>'e verilecek</strong> ve NotebookLM'den alınan çıktı ChatGPT veya Gemini gibi yapay zeka araçlarına yapıştırılarak <strong>kelimesi kelimesine</strong> şu komut verilecektir: 
+                <div class="command-highlight">"Bu notları PDF formatına uygun, yazdırılabilir ve doğrudan kaydedilebilir (indirilebilir) bir PDF belgesi şeklinde boşluk doldurma çalışma kağıdına çevir. İçerikte yalnızca sınava yönelik kritik bilgilere yer ver, gereksiz hiçbir açıklama veya uzatma yapma. Çıktıyı hemen kaydedebileceğim ve indirebileceğim net bir PDF dosyası olarak sun."</div>`;
+                warningBox.style.display = 'block';
+            }
+        });
+
+        const promptTemplates = {
+            "not": `You are a "{ders}" teacher. Your task is to scan the resources related to the topic and subheadings provided in the input "{konu}" line by line. Without any information loss and without token-saving constraints, create the longest and most highly detailed study note aimed at the student. Pay special attention to highlighting parts that are emphasized as likely to appear in exams.\n\n{ortaokul_ek}\n\nUse an aesthetic writing style and a clean paper template, avoiding unnecessary visuals. Keep it simple, plain, and straightforward. Use a maximum of 4 colors and use highlights to emphasize important sections.\n\nAt the end of the study sheet, provide 5 simple open-ended questions for the student's self-assessment. These questions should not include the answers and must help the student test whether they have analytically grasped the topic.`,
+
+            "bosluk": `You are a "{ders}" teacher. Your task is to scan the resources related to the topic and subheadings provided in the input "{konu}" line by line. Without any information loss and without token-saving constraints, create a highly detailed FILL-IN-THE-BLANK (Boşluk Doldurma) worksheet aimed at the student. Pay special attention to highlighting parts that are emphasized as likely to appear in exams.\n\nExample format:\n\nInformation..........Information _____[1] Information....Information\nInformation..........Information _____[2] Information....Information\n\nYou must proceed in this format. On the final page, create a table showing the correct numerical answers corresponding to each blank.`,
+
+            "nlm": `OBJECTIVE: Generate a high-density, pedagogically optimized, 21+ page educational presentation strictly in Turkish.\nKPI_1_LANGUAGE: 100% Turkish. ZERO English terminology in the final output (No "Slide", "Title", "Content").\nKPI_2_VOLUME: Minimum 21 distinct presentation pages generated without truncation.\nKPI_3_PEDAGOGY: 100% adherence to Gestalt principles, zero fluff.\n\n[INPUT VARIABLES]\nTOPIC: {konu}\nGRADE LEVEL: {sinif}\n\n[PRIME DIRECTIVE]\nYou are a "{ders} Teacher", a master educator and instructional designer. Your task is to generate a comprehensive, highly engaging, and academically rigorous presentation on the provided TOPIC. The content must be tailored perfectly to the target GRADE LEVEL, using deductive reasoning (whole-to-part). \n{ortaokul_ek}\n\n[CONSTRAINTS & SAFETY (ZERO-TOLERANCE RULES)]\nSTRICT LANGUAGE: The output must be entirely in Turkish. Replace all system words: "Slide" -> "Sayfa", "Title" -> "Başlık". NEVER use English UI terms. On the first page, write "Senin Öğretmenin: {ogretmen}" in the corner in a small font, and write the institution name "[{kurum}]" in a small and aesthetic way.\nNO FLUFF TITLES: Use direct, academic titles. INSTEAD OF "En Sevilen Şiir: Gazel", USE EXACTLY "Gazel". Do not waste space with overly large, aesthetic text.\nVISUAL AESTHETIC (VIBE): The presentation aesthetic is a "Clean Lined School Notebook". ALL slide pages MUST have a perfectly smooth WHITE background and NO background color or pattern other than white is allowed. This white background must be horizontally lined, just like a school notebook. In general, all design and presentation should have the vibe of a carefully taken student note, sincere but organized. Do NOT describe abstract metaphors, random clipart, or useless stock images.\n!! A STRICTLY WHITE BACKGROUND WITH A LINED NOTEBOOK APPEARANCE IS ABSOLUTELY MANDATORY.\nVISUAL DENSITY: Every page MUST contain a description of an academic visual, schema, or table supporting the topic. In literature presentations, illustrations of the relevant author/artist MUST be included. This visual area must cover exactly 30% of each page's area.\nACADEMIC PURITY: Explain theories strictly through appropriate academic contexts. (Note: If the grade level requires concrete examples, follow the pedagogical rule to adapt them).\nGESTALT & LAYOUT: Group related concepts closely. Use Markdown tables, flowcharts, and bullet points to break down complex texts.\nNO TRUNCATION: You MUST output all 21+ pages. Do not summarize the ending.\nNO META-DATA IN OUTPUT: Slide contents MUST NEVER contain square brackets [], parentheses (), or color codes, directions, design notes, and meta-information mentioned in the prompt. No meta-information from the prompt (e.g., "Marked with highlight", "#FABF35" etc.) can appear in the final output text. Only apply the desired content and design directly.\n\n[REQUIRED CONTENT ELEMENTS]\nHIGHLIGHTING: Highlight critical definitions, formulas, and keywords. Highlights must strictly be a color between yellow and orange. (Never print the color code in the text, just apply it).\nEXAM FOCUS: Insert a bordered warning box in relevant pages containing crucial exam tips, exceptions, or historical firsts. Format as: > 🎯 SINAVDA ÇIKAR!: [Exam tip, exception, or potential question type]\n\n[DUAL-LAYER VERIFICATION LOOP]\nStep 1 - Draft Outline: Internally map out the 21+ pages. Ensure Page 1 is the Master Mind Map (Deductive).\nStep 2 - Verify Constraints: Check if there is any English word in the output. Check if there are 21 pages planned. Verify that EVERY page has exactly a 30% visual placeholder (including artist/author drawings for literature).\nStep 3 - Execute: Generate the final output using the exact [OUTPUT TEMPLATE].\n\n[OUTPUT TEMPLATE (Strict Markdown)]\nSayfa: 1\nTasarım Notu: [Completely WHITE background, lined appearance like a notebook. Student note vibe. In the corner, the text "Senin Öğretmenin: {ogretmen}" and "{kurum}".]\n[Görsel Alanı (%30): A general flowchart showing all subheadings and logical relationships will be added here. If literature topic, relevant drawings will be added.]\nKavram Haritası (Büyük Resim) - [TOPIC]\n[Text-based concept map and academic hierarchical tree.]\n\nSayfa: [Page Number]\nTasarım Notu: [Strictly WHITE background lined notebook. Symmetrical alignment.]\n[Simple Topic Title]\n[Görsel Alanı (%30): Specific academic diagram, table, structural schema description or artist drawing related to the topic]\n[Topic explanation: Using tables or process schemas. Academic explanation.]\n[Important parts marked with YELLOW/ORANGE HIGHLIGHT - NEVER reflect the color code or meta texts in parentheses to the slide, just highlight the text]\n\n> 🎯 SINAVDA ÇIKAR!:\n[Exam-focused critical info / Exception / Key Point]`,
+
+            "maarif": `2026 - 2027 Eğitim Öğretim Yılı {okul} {sinif} {ders} Günlük Ders Planı\n\nBir eğitim uzmanı ve Türkiye Yüzyılı Maarif Modeli program geliştiricisi olarak davran. Aşağıda ana hatlarını ve ilgili değişkenlerini verdiğim yapıya birebir sadık kalarak, modern pedagojik ilkelere uygun, hedef odaklı ve çok kısa bir günlük ders planı hazırla.\n\nKESİN KURALLAR (ASLA İHLAL ETME):\n1. Çıktı KESİNLİKLE sadece 1 sayfa uzunluğunda olacak şekilde ayarlanmalıdır. Metni uzatma, gereksiz cümleler kurma, içerikleri madde madde ve çok öz biçimde ver.\n2. Tasarım kesinlikle siyah-beyaz, sade ve tek renk olacaktır. Basit, profesyonel bir metin yapısı kur; asla formatın dışına çıkma.\n3. Başlıkta yalnızca yukarıda belirtilen "2026 - 2027 Eğitim Öğretim Yılı..." kısmı yer alacak, harici başlık atılmayacaktır.\n\nI. BÖLÜM: DERS BİLGİSİ\n- Dersin Adı: {ders}\n- Ders Tarihi: {tarih}\n- Hafta: {hafta}\n- Ders Süresi: {sure}\n- Ünite Adı: {unite}\n- Konular: {konular} (Sadece temel kavramlar verilmiştir. Lütfen bu konu başlıklarını genel müfredata uygun şekilde mantıksal olarak genişlet, eksik alt ve yan konuları bağlamsal olarak tamamlayarak kendi içinde bütün bir konu ağacı oluştur.)\n- Öğrenme Çıktısı: {ogrenme_ciktilari}\n\nII. BÖLÜM: MAARİF MODELİ BİLEŞENLERİ VE DERS AKIŞI\nALAN BECERİLERİ: {alan}\nKAVRAMSAL BECERİLER: {kavramsal}\nEĞİLİMLER: {egilimler}\n\nPROGRAMLAR ARASI BİLEŞENLER\n- Sosyal-Duygusal Öğrenme Becerileri: {sosyal}\n- Değerler: {degerler}\n- Okuryazarlık Becerileri: {okuryazarlik}\n\nDİSİPLİNLER ARASI İLİŞKİLER: {disiplinler}\nBECERİLER ARASI İLİŞKİLER: {beceriler_arasi}\n\nİÇERİK ÇERÇEVESİ: {icerik}\n\nÖĞRENME KANITLARI (Ölçme ve Değerlendirme): {olcme}\n\nÖĞRETME-ÖĞRENME YAŞANTILARI\n- Temel Kabuller: {kabuller}\n- Ön Değerlendirme Süreci: {on_degerlendirme}\n- Köprü Kurma: {kopru}\n- Öğretme-Öğrenme Uygulamaları: {uygulamalar}\n\nFARKLILAŞTIRMA\n- Zenginleştirme: {zenginlestirme}\n- Destekleme: {destekleme}\n\nTüm tablo ve içerik üretimi kurallara uygun olarak tamamlandıktan sonra, bu çıktıyı indirilebilir PDF formatında sun.`,
+
+            "kavram_yanilgisi": `Sen, MEB ve ÖSYM soru tarzlarına son derece hakim, özellikle pedagojik alan bilgisi ve kavram öğretimi üzerine derin uzmanlığı bulunan kıdemli bir {ders} öğretmenisin.\n\nŞu an {sinif} seviyesindeki öğrenciler için "{konu}" konusu üzerine çalışıyoruz. Hedefimiz, öğrencilerin bu içeriği/konuyu akademik olarak en verimli şekilde kavramasını veya tekrar etmesini sağlamak.\n\nBu noktada kendi pedagojik muhakeme yeteneğini kullan. {sinif} seviyesini ve "{konu}" başlığını analiz ederek, MEB müfredatına en uygun ve kritik 2-3 kazanımı sen belirle ve süreci tamamen bu kazanımlar üzerine inşa et.\n\nAşağıdaki pedagojik yönergelere uygun 1 adet "Kavram Yanılgısı Analizi" tasarla.\nÖğrencilerin "{konu}" konusunda en sık düştüğü kavram yanılgılarını (yanlış bilinen doğruları) listele. Her yanılgının altına, bu hatayı düzeltmek için sınıfta uygulanabilecek kavramsal değişim stratejilerini (kısa pedagojik reçeteler) yaz.\n\nKısıtlamalar:\n- Çıktıyı doğrudan kullanıma hazır, net, anlaşılır ve teşvik edici bir dille oluştur.\n- Yaş grubunun bilişsel ve psikolojik gelişim seviyesini mutlaka gözet.\n- MEB müfredatının sınırları dışına çıkma.\n- İçeriğin bilişsel düzeyini Bloom Taksonomisi'nde "Orta (Kavrama/Uygulama)" basamağına uygun olarak ayarla.\n- Üretilecek içerik tam olarak 20 maddeden/kavram yanılgısından oluşmalıdır.\n\nFormat:\n- Bilgileri kolay okunabilir şekilde madde işaretleri (bullet points) ve alt başlıklar kullanarak yapılandır. Çıktıyı indirilebilir PDF olarak TEK sayfada SİYAH BEYAZ olarak basit bir sayfa olarak sun. İNDİRİLEBİLİR PDF ÇIKTISI VER PDF OLARAK VERMEYİ UNUTMA`,
+
+            "gagne": `Rol: Sen uzman bir Eğitim ve Öğretim Tasarımcısısın (Instructional Designer).\nGörev: Şu an {sinif} seviyesindeki öğrenciler için "{ders}" dersi kapsamında işlenecek olan "{konu}" konsepti için, Robert Gagné’nin "Öğretimin 9 Durumu" modeline sadık kalarak kapsamlı, etkileşimli ve adım adım bir eğitim/ders planı hazırla.\nLütfen çıktıyı şu 9 aşamayı ayrı başlıklar halinde detaylandırarak oluştur:\n\n1. Dikkat Çekme (Attention): Katılımcıların derse odaklanmasını sağlayacak ilgi çekici, etkileyici bir başlangıç (örneğin; şaşırtıcı bir istatistik, hikaye, soru veya problem) kurgula.\n2. Hedef Belirleme (Informing the Participant of the Objective): Katılımcıların bu eğitim sonucunda tam olarak neyi öğreneceklerini ve beklentilerin neler olduğunu net bir dille ifade et.\n3. Önceki Bilgilerin Hatırlanması (Stimulating Recall of Prior Learning): Yeni bilginin daha önceki deneyimler ve bilgilerle ilişkilendirilmesini sağlayacak hatırlatıcı sorular veya kısa aktiviteler tasarla.\n4. Konunun Sunumu (Presenting the Stimulus Material): Temel bilgiyi; örnekler, görseller, senaryolar veya materyaller aracılığıyla en anlaşılır ve yapılandırılmış şekilde aktar. Bu maddeye, öğrencinin konuyu en iyi şekilde öğrenebilmesi ve içeriğe tam uyum sağlaması için derinlemesine düşünüp bizzat senin seçeceğin en az 3 farklı Öğretim Yöntem ve Tekniği (ör. Örnek Olay, Gösteri, Beyin Fırtınası vb.) önerisini gerekçeleriyle birlikte ekle.\n5. Öğrenmenin Yönlendirilmesi (Providing Learning Guidance): Katılımcıların materyalleri nasıl kullanacakları, bilgiyi nasıl anlamlandıracakları ve hangi stratejileri izleyecekleri konusunda rehberlik sağla. Bu maddeye, öğrenme sürecini optimize etmek için yine dersin doğasına en uygun en az 3 farklı Öğretim Yöntem ve Tekniği önerisini ekle.\n6. Performansın Gösterilmesi (Eliciting Performance): Katılımcıların öğrendiklerini aktif olarak uygulamaları ve sergilemeleri için pratik fırsatlar/görevler yarat. Bu maddeye de öğrencinin aktif katılımını en üst düzeye çıkaracak en az 3 farklı Öğretim Yöntem ve Tekniği önerisi ekle.\n7. Geri Bildirim (Providing Feedback): Katılımcıların performanslarına yönelik yapıcı, yönlendirici ve anında geri bildirim mekanizmaları öner.\n8. Performansın Geliştirilmesi (Assessing Performance): Katılımcıların neyi başardıklarını değerlendiren ve eksiklerini kapatmaları için gelişim önerileri sunan bir değerlendirme süreci kurgula.\n9. Aktarım (Enhancing Retention and Transfer): Öğrenilenlerin uzun süreli bellekte kalmasını ve gerçek dünya senaryolarında, farklı bağlamlarda uygulanabilmesini sağlayacak stratejiler ve pratikler öner.\n\nHedef Kitle: {sinif} seviyesindeki öğrenciler\nEğitim Süresi: {g_sure}\n\nTüm adımlar tamamlandıktan sonra, bu çıktıyı indirilebilir PDF formatında sun. PDF olarak vermeyi unutma.`
+        };
+
+        function generatePrompt() {
+            const sinif = document.getElementById("sinif").value;
+            const materyal = document.getElementById("materyal").value;
+
+            if (!sinif || !materyal) {
+                alert("Lütfen Sınıf Seviyesi ve Materyal Türü alanlarını eksiksiz doldurun.");
+                return;
+            }
+
+            let sonuc = "";
+
+            // Gagne Modeli Mantığı
+            if (materyal === 'gagne') {
+                const ders = document.getElementById("ders").value;
+                const konu = document.getElementById("konu").value.trim();
+                const gSure = document.getElementById("g-sure").value.trim();
+
+                if (!ders || !konu || !gSure) {
+                    alert("Gagne Planı için 'Ders / Alan Adı', 'Konu / Ünite' ve 'Eğitim / Ders Süresi' alanları zorunludur.");
+                    return;
+                }
+
+                sonuc = promptTemplates["gagne"]
+                    .replace(/{ders}/g, ders)
+                    .replace(/{konu}/g, konu)
+                    .replace(/{sinif}/g, sinif)
+                    .replace(/{g_sure}/g, gSure);
+
+                document.getElementById("result-box").textContent = sonuc;
+                return;
+            }
+
+            // Veli Bilgilendirme Bülteni Mantığı
+            if (materyal === 'veli_bulteni') {
+                let veliDersKonuListesi = [];
+                let rows = document.querySelectorAll('.veli-course-row');
+                
+                for(let i = 0; i < rows.length; i++) {
+                    let d = rows[i].querySelector('.v-ders').value;
+                    let k = rows[i].querySelector('.v-konu').value.trim();
+                    
+                    if(i === 0 && !d) {
+                        alert("Veli Bilgilendirme Bülteni için en az 1 Ders seçimi yapmalısınız.");
+                        return;
+                    }
+                    if(d) {
+                        if(d === 'Deneme Sınavı') {
+                            let yayinInfo = k ? ` (Yayın Markası: ${k})` : '';
+                            veliDersKonuListesi.push(`Deneme Sınavı uygulandı${yayinInfo}`);
+                        } else {
+                            if(i === 0 && !k) {
+                                alert("İlk ders için işlenen konuyu yazmalısınız.");
+                                return;
+                            }
+                            veliDersKonuListesi.push(`${d} dersinde${k ? ` "${k}"` : ''} konusu işlendi`);
+                        }
+                    }
+                }
+
+                const etkinlikler = document.getElementById("v-etkinlikler").value.trim() || "(Belirtilmedi)";
+
+                let altSinifSarti = "";
+                if (["5. Sınıf", "6. Sınıf", "7. Sınıf", "8. Sınıf"].includes(sinif)) {
+                    altSinifSarti = "Konuyla ilgili velilerin evde uygulayabileceği çok basit 2-3 pratik pedagojik tavsiye ekle.";
+                }
+
+                let dersMetni = veliDersKonuListesi.join(", ");
+
+                sonuc = `Aşağıdaki pedagojik yönergelere uygun 1 adet "Veli Bilgilendirme Bülteni" tasarla.\n` +
+                        `Şu an ${sinif} seviyesindeki öğrencilerimiz için bir bülten hazırlamak istiyorum. Velileri eğitim sürecinin içine dahil edecek şekilde profesyonel, empatik, oldukça sevecen ve motive edici bir metin yaz.\n` +
+                        `Metnin içinde minimal düzeyde sıcak emojiler (ör. 🌱, 📚, ✨) kullan. Tamamen insani, yapay zeka tarafından yazıldığı belli olmayan, göze batmayan kısaca bir bülten mesajı (WhatsApp veya veli grubuna uygun) oluştur.\n` +
+                        (altSinifSarti ? `- ${altSinifSarti}\n` : "") +
+                        `\n[Bu Haftaya Dair Veriler ve Talimatlar]\n` +
+                        `- İşlenen Dersler ve Konular/Sınavlar: ${dersMetni}.\n` +
+                        `Lütfen her dersi/sınavı ayrı birer madde olarak ele alıp maddele. Konu anlatımı temel (default) olmak üzere; bağlama göre her ders için uygun eklemeler yap (ör. Kavram Yanılgısı Giderme, Uygulama ve Kavrama düzeyi etkinlikler, Soru Analizleri vb.). Eğer bültende Deneme Sınavı varsa, öğrencilerin sınav deneyimi, analizi ve motivasyonu üzerine odaklan. Yapılan etkinlikleri ve çalışmaları çeşitlendirerek bağlamsal ve akıcı bir bülten metni oluştur.\n` +
+                        `- Ekstra Yapılan Etkinlikler: ${etkinlikler}\n\n` +
+                        `Not: Yukarıdaki verileri kullanarak tamamen genel, veliyi motive eden kucaklayıcı bir bilgilendirme metni oluştur.`;
+                
+                document.getElementById("result-box").textContent = sonuc;
+                return;
+            }
+
+            // Çalışma Programı Mantığı
+            if (materyal === 'calisma_programi') {
+                const sure = document.getElementById("p-sure").value.trim();
+                if (!sure) {
+                    alert("Çalışma programı için 'Program Süresi' zorunludur.");
+                    return;
+                }
+
+                let dersKonuListesi = [];
+                let rows = document.querySelectorAll('.course-row');
+                for(let i = 0; i < rows.length; i++) {
+                    let d = rows[i].querySelector('.p-ders').value;
+                    let k = rows[i].querySelector('.p-konu').value.trim();
+                    if(!d || !k) {
+                        alert("Lütfen eklediğiniz tüm ders ve konu alanlarını eksiksiz doldurunuz.");
+                        return;
+                    }
+                    dersKonuListesi.push(`${d} (${k})`);
+                }
+
+                const ogrenci = document.getElementById("p-ogrenci").value.trim() || "Öğrenci";
+                const kaynak = document.getElementById("p-kaynak").value.trim();
+                const gunlukSure = document.getElementById("p-gunluk-sure").value.trim();
+                const toplamSoru = document.getElementById("p-toplam-soru").value.trim();
+                const gunlukSoru = document.getElementById("p-gunluk-soru").value.trim();
+                const deneme = document.getElementById("p-deneme").value.trim();
+                const ekGirdi = document.getElementById("p-ek").value.trim();
+
+                let dersKonuText = dersKonuListesi.join(", ");
+                let gunlukSureMaddesi = gunlukSure 
+                    ? `- Günlük ders çalışma süresi ${gunlukSure} aşmamalıdır.` 
+                    : `- Günlük ders çalışma süresi öğrencinin bilişsel durumuna uygun olarak yapay zeka tarafından mantıklı bir şekilde belirlenmelidir.`;
+                
+                let opsiyonelMetin = "";
+                if(kaynak || toplamSoru || gunlukSoru || deneme || ekGirdi) {
+                    opsiyonelMetin += "\n\nEk Beklentiler ve Sınırlar:\n";
+                    if(kaynak) opsiyonelMetin += `- Önerilen Ders Kaynağı: ${kaynak}\n`;
+                    if(toplamSoru) opsiyonelMetin += `- Toplam Soru Hedefi: ${toplamSoru}\n`;
+                    if(gunlukSoru) opsiyonelMetin += `- Günlük Soru Hedefi: ${gunlukSoru}\n`;
+                    if(deneme) opsiyonelMetin += `- Deneme Sınavı Sayısı: ${deneme}\n`;
+                    if(ekGirdi) opsiyonelMetin += `- Ek Girdiler ve Gün Dağılımı: ${ekGirdi}\n`;
+                }
+
+                sonuc = `Şu an ${sinif} seviyesindeki ${ogrenci !== 'Öğrenci' ? ogrenci : 'öğrenci'} için "${dersKonuText}" konusu üzerine çalışıyoruz. Hedefimiz, öğrencilerin bu içeriği/konuyu akademik olarak en verimli şekilde kavramasını veya tekrar etmesini sağlamak. ${sure} kadarıyla bir çalışma programı oluştur.\n- Çıktıyı doğrudan kullanıma hazır, net, anlaşılır ve teşvik edici bir dille oluştur.\n- Yaş grubunun bilişsel ve psikolojik gelişim seviyesini mutlaka gözet.\n- MEB müfredatının sınırları dışına çıkma.\n${gunlukSureMaddesi}\n- Program için: Haftalık bazda yapılandırılmış, her günü/kriteri ayrı gösteren net bir TABLO (Table) formatında oluştur. Başlıkta ${ogrenci !== 'Öğrenci' ? ogrenci : 'Öğrenci'} ve ${sure} yer almalıdır (ör: 3 Haftalık, 1 Aylık vb.)${opsiyonelMetin}`;
+                
+                document.getElementById("result-box").textContent = sonuc;
+                return;
+            }
+
+            // Maarif Modeli Mantığı
+            sonuc = promptTemplates[materyal];
+            
+            if (materyal === 'maarif') {
+                const okul = document.getElementById("m-okul").value.trim();
+                const tarih = document.getElementById("m-tarih").value.trim();
+                const hafta = document.getElementById("m-hafta").value.trim();
+                const sure = document.getElementById("m-sure").value.trim();
+                const unite = document.getElementById("m-unite").value.trim();
+                const konular = document.getElementById("m-konular").value.trim();
+                const ders = document.getElementById("ders").value;
+                
+                if (!ders || !okul || !tarih || !hafta || !sure || !unite || !konular) {
+                    alert("Maarif Modeli Ders Planı için Ders Adı ve I. Bölüm zorunlu alanlarını lütfen doldurunuz.");
+                    return;
+                }
+
+                const ogrenmeCiktilari = document.getElementById("m-ogrenme_ciktilari").value.trim();
+
+                const optFields = ["alan", "kavramsal", "egilimler", "sosyal", "degerler", "okuryazarlik", 
+                                   "disiplinler", "beceriler_arasi", "icerik", "olcme", 
+                                   "kabuller", "on_degerlendirme", "kopru", "uygulamalar", "zenginlestirme", "destekleme"];
+
+                let vars = { 
+                    "{okul}": okul,
+                    "{ders}": ders, 
+                    "{sinif}": sinif, 
+                    "{tarih}": tarih,
+                    "{hafta}": hafta,
+                    "{sure}": sure,
+                    "{unite}": unite,
+                    "{konular}": konular,
+                    "{ogrenme_ciktilari}": ogrenmeCiktilari === "" ? "(Kullanıcı bu alanı boş bıraktı. Lütfen dersin sınıf seviyesine, konuya ve Türkiye Yüzyılı Maarif Modeli öğretim programlarına uygun resmi bir 'Öğrenme Çıktısı' maddesini ve kodunu sen bizzat oluştur.)" : ogrenmeCiktilari
+                };
+
+                optFields.forEach(f => {
+                    let val = document.getElementById("m-" + f).value.trim();
+                    vars["{" + f + "}"] = val === "" ? "(bağlamsal olarak çok kısa doldur)" : val;
+                });
+
+                for (let key in vars) {
+                    sonuc = sonuc.replace(new RegExp(key, 'g'), vars[key]);
+                }
+
+            } else {
+                // Standart (Not, Boşluk, NLM, Kavram Yanılgısı) Mantığı
+                const ders = document.getElementById("ders").value;
+                const konu = document.getElementById("konu").value;
+                const ogretmen = document.getElementById("ogretmen").value || "Egemen Bilim (Türk Dili ve Edebiyatı Öğretmeni)";
+                const kurum = document.getElementById("kurum").value || "[Kurum Adı]";
+
+                if (!ders || !konu) {
+                    alert("Lütfen Ders / Alan Adı ve Konu alanlarını eksiksiz doldurun.");
+                    return;
+                }
+
+                let ortaokul_ek = "";
+                if ((sinif.includes("5.") || sinif.includes("6.") || sinif.includes("7.") || sinif.includes("8.")) && (materyal === 'not' || materyal === 'nlm' || materyal === 'kavram_yanilgisi')) {
+                    ortaokul_ek = "According to the 'Concrete to Abstract' pedagogical principle for middle school students, you MUST provide concrete, real-world examples to explain any abstract concepts.";
+                }
+
+                sonuc = sonuc.replace(/{ders}/g, ders)
+                             .replace(/{sinif}/g, sinif)
+                             .replace(/{konu}/g, konu)
+                             .replace(/{ogretmen}/g, ogretmen)
+                             .replace(/{kurum}/g, kurum)
+                             .replace(/{ortaokul_ek}/g, ortaokul_ek);
+                             
+                // İngilizce dersi için yansı (nlm) modundaki ingilizce kullanılmayacak kısıtlamalarını kaldır
+                if (materyal === 'nlm' && ders === 'İngilizce') {
+                    sonuc = sonuc.replace('strictly in Turkish', 'appropriately for English language teaching');
+                    sonuc = sonuc.replace('KPI_1_LANGUAGE: 100% Turkish. ZERO English terminology in the final output (No "Slide", "Title", "Content").', 'KPI_1_LANGUAGE: Optimized for English teaching. English terminology and UI terms can be used as appropriate.');
+                    sonuc = sonuc.replace('STRICT LANGUAGE: The output must be entirely in Turkish. Replace all system words: "Slide" -> "Sayfa", "Title" -> "Başlık". NEVER use English UI terms.', 'LANGUAGE: Suitable for English instruction. Standard English terminology is permitted.');
+                }
+
+                sonuc = sonuc.replace(/\\n\\n\\n/g, "\\n\\n").trim();
+            }
+
+            document.getElementById("result-box").textContent = sonuc;
+        }
+
+        function copyPrompt() {
+            const textBox = document.getElementById("result-box");
+            
+            if (textBox.textContent.includes("Seçimlerinizi yapıp")) {
+                alert("Önce bir prompt oluşturun!");
+                return;
+            }
+
+            navigator.clipboard.writeText(textBox.textContent).then(() => {
+                const btn = document.querySelector(".btn-copy");
+                const originalText = btn.innerHTML;
+                btn.innerHTML = "✅ Kopyalandı!";
+                btn.style.backgroundColor = "#059669";
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.backgroundColor = "#10B981";
+                }, 2000);
+            }).catch(err => {
+                alert("Kopyalama başarısız oldu: " + err);
+            });
+        }
+    </script>
+</body>
+</html>
