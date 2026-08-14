@@ -35,6 +35,7 @@
   html.dark .btn-mini{background:#1e293b;border-color:#334155;color:#cbd5e1}
   html.dark .btn-mini:hover{background:#334155}
   html.dark .lbl{color:#94a3b8}
+  #cropStage{touch-action:none;-webkit-user-select:none;-webkit-touch-callout:none;transform-origin:0 0;will-change:transform}
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
@@ -345,9 +346,10 @@
     <span class="text-[13px] font-semibold">Görselden/PDF'ten Soru Kes</span>
     <label class="cursor-pointer rounded-lg bg-white/10 px-3.5 py-1.5 text-[13px] font-medium transition hover:bg-white/20">Görsel/PDF Yükle
       <input id="cropFile" type="file" accept="image/*,application/pdf,.pdf" class="hidden"></label>
-    <div id="pdfPageBar" class="hidden flex items-center gap-2">
+    <div id="pdfPageBar" class="hidden items-center gap-2">
       <span class="text-[13px] text-white/70">Sayfa:</span>
-      <div id="pdfPages" class="flex flex-wrap gap-1"></div>
+      <select id="pdfPageSelect" class="rounded-lg border border-white/20 bg-white/10 px-2.5 py-1.5 text-[13px] text-white outline-none transition focus:border-white/50"></select>
+      <span id="pdfPageCount" class="text-[12px] text-white/50"></span>
     </div>
     <label class="flex items-center gap-2 text-[13px] text-white/70"><input type="checkbox" id="autoTrim" checked class="!accent-white"> Boşlukları temizle</label>
     <div class="flex items-center gap-1.5 text-[13px] text-white/70">Cevap <span id="cropAns" class="flex gap-1"></span></div>
@@ -357,10 +359,10 @@
       <button id="cropClose" class="rounded-lg px-3 py-1.5 text-[13px] text-white/50 transition hover:text-white">Kapat</button>
     </div>
   </div>
-  <div class="flex min-h-0 flex-1">
-    <div id="cropWrap" class="relative flex-1 overflow-auto bg-slate-800 p-5">
+  <div class="flex min-h-0 flex-1 flex-col lg:flex-row">
+    <div id="cropWrap" class="relative flex-1 overflow-auto bg-slate-800 p-6 lg:p-5">
       <div id="cropStage" class="relative inline-block select-none">
-        <img id="cropImg" class="max-w-none hidden rounded" draggable="false">
+        <img id="cropImg" class="max-w-[calc(100vw-3rem)] max-h-[60vh] hidden rounded lg:max-w-none lg:max-h-none" draggable="false">
         <div id="cropRect" class="pointer-events-none absolute hidden border-2 border-blue-500 bg-blue-500/20"></div>
       </div>
       <button id="cropAddBtn" type="button"
@@ -368,11 +370,11 @@
         Ekle
       </button>
       <div id="cropHint" class="p-12 text-center text-[13px] leading-relaxed text-white/40">
-        Bir görsel veya PDF yükleyin, fareyle soruyu çerçeveleyin<br>ve çıkan <b class="text-white/70">Ekle</b> butonuna basın.
+        Bir görsel veya PDF yükleyin, soruyu parmağınızla veya fareyle çerçeveleyin<br>ve çıkan <b class="text-white/70">Ekle</b> butonuna basın.
       </div>
       <div id="pdfLoading" class="absolute inset-0 z-30 hidden items-center justify-center bg-slate-900/60 text-[13px] font-medium">PDF işleniyor...</div>
     </div>
-    <div id="cutList" class="w-56 overflow-auto border-l border-white/10 p-3"></div>
+    <div id="cutList" class="max-h-44 w-full shrink-0 overflow-auto border-t border-white/10 p-3 lg:max-h-none lg:w-56 lg:border-l lg:border-t-0"></div>
   </div>
 </div>
 
@@ -956,6 +958,21 @@ $('cropAns').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{ cropAnswer 
 $('openCrop').onclick=()=>$('cropTool').classList.replace('hidden','flex');
 $('cropClose').onclick=()=>$('cropTool').classList.replace('flex','hidden');
 
+let zoom = { s: 1, tx: 0, ty: 0 };
+let pinch = null;
+function applyZoom(){
+  const st = $('cropStage');
+  if (st) st.style.transform = 'translate(' + zoom.tx + 'px,' + zoom.ty + 'px) scale(' + zoom.s + ')';
+}
+function resetZoom(){ zoom = { s: 1, tx: 0, ty: 0 }; pinch = null; applyZoom(); }
+function selectPdfPage(n){
+  const found = pdfPages.find(p => p.page === n);
+  if (!found) return;
+  selectedPdfPage = n; cropSrc = found.img;
+  const im = $('cropImg'); im.src = cropSrc; im.classList.remove('hidden'); $('cropHint').classList.add('hidden');
+  rect=null; drawRect(); hideCropAdd(); resetZoom();
+  const sel = $('pdfPageSelect'); if (sel) sel.value = String(n);
+}
 async function loadPdfFile(file){
   if (!window.pdfjsLib) { alert('PDF kütüphanesi yüklenemedi.'); return; }
   $('pdfLoading').classList.remove('hidden'); $('pdfLoading').classList.add('flex');
@@ -972,22 +989,12 @@ async function loadPdfFile(file){
       pdfPages.push({ page: i, img: canvas.toDataURL('image/jpeg', 0.92) });
     }
     $('pdfPageBar').classList.remove('hidden');
-    $('pdfPages').innerHTML = pdfPages.map(p => `<button data-pg="${p.page}" class="rounded px-2 py-1 text-[12px] ${p.page===1?'bg-white font-medium text-slate-900':'bg-white/10 text-white hover:bg-white/20'}">${p.page}</button>`).join('');
-    $('pdfPages').querySelectorAll('[data-pg]').forEach(b => b.onclick = () => {
-      const n = +b.dataset.pg;
-      const found = pdfPages.find(p => p.page === n);
-      if (!found) return;
-      selectedPdfPage = n; cropSrc = found.img;
-      const im = $('cropImg'); im.src = cropSrc; im.classList.remove('hidden'); $('cropHint').classList.add('hidden');
-      rect=null; drawRect(); hideCropAdd();
-      $('pdfPages').querySelectorAll('[data-pg]').forEach(x => {
-        x.className = 'rounded px-2 py-1 text-[12px] ' + (+x.dataset.pg===n ? 'bg-white font-medium text-slate-900' : 'bg-white/10 text-white hover:bg-white/20');
-      });
-    });
-    if (pdfPages.length) {
-      selectedPdfPage = 1; cropSrc = pdfPages[0].img;
-      const im = $('cropImg'); im.src = cropSrc; im.classList.remove('hidden'); $('cropHint').classList.add('hidden');
-    }
+    $('pdfPageBar').classList.add('flex');
+    const sel = $('pdfPageSelect');
+    sel.innerHTML = pdfPages.map(p => `<option value="${p.page}">Sayfa ${p.page}</option>`).join('');
+    $('pdfPageCount').textContent = '/ ' + pdfPages.length;
+    sel.onchange = () => selectPdfPage(+sel.value);
+    if (pdfPages.length) selectPdfPage(1);
   } catch (e) { console.error(e); alert('PDF yüklenirken hata oluştu.'); }
   finally { $('pdfLoading').classList.add('hidden'); $('pdfLoading').classList.remove('flex'); }
 }
@@ -996,35 +1003,89 @@ $('cropFile').onchange=e=>{
   const f=e.target.files[0]; if(!f)return;
   if (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) loadPdfFile(f);
   else {
-    pdfPages=[]; selectedPdfPage=null; $('pdfPageBar').classList.add('hidden');
+    pdfPages=[]; selectedPdfPage=null; $('pdfPageBar').classList.add('hidden'); $('pdfPageBar').classList.remove('flex');
     const r=new FileReader();
-    r.onload=()=>{ cropSrc=r.result; const im=$('cropImg'); im.src=cropSrc; im.classList.remove('hidden'); $('cropHint').classList.add('hidden'); };
+    r.onload=()=>{ cropSrc=r.result; const im=$('cropImg'); im.src=cropSrc; im.classList.remove('hidden'); $('cropHint').classList.add('hidden'); resetZoom(); };
     r.readAsDataURL(f);
   }
   e.target.value='';
 };
 
 const stage=$('cropStage');
-function stagePos(e){ const b=stage.getBoundingClientRect(); return {x:e.clientX-b.left,y:e.clientY-b.top}; }
-stage.addEventListener('mousedown',e=>{ if(!cropSrc)return; hideCropAdd(); drawing=true; startP=stagePos(e); rect={x:startP.x,y:startP.y,w:0,h:0}; drawRect(); });
-stage.addEventListener('mousemove',e=>{ if(!drawing)return; const p=stagePos(e);
-  rect={x:Math.min(startP.x,p.x),y:Math.min(startP.y,p.y),w:Math.abs(p.x-startP.x),h:Math.abs(p.y-startP.y)}; drawRect(); });
-stage.addEventListener('mouseup',e=>{
+function stagePos(clientX, clientY){ const b=stage.getBoundingClientRect(); return {x:(clientX-b.left)/zoom.s,y:(clientY-b.top)/zoom.s}; }
+function startDraw(clientX, clientY){ if(!cropSrc)return; hideCropAdd(); drawing=true; startP=stagePos(clientX, clientY); rect={x:startP.x,y:startP.y,w:0,h:0}; drawRect(); }
+function moveDraw(clientX, clientY){ if(!drawing)return; const p=stagePos(clientX, clientY);
+  rect={x:Math.min(startP.x,p.x),y:Math.min(startP.y,p.y),w:Math.abs(p.x-startP.x),h:Math.abs(p.y-startP.y)}; drawRect(); }
+function endDraw(clientX, clientY){
   if(!drawing)return; drawing=false;
-  if(rect && rect.w>10 && rect.h>10) showCropAdd(e);
+  if(rect && rect.w>10 && rect.h>10) showCropAddAt(clientX, clientY);
+}
+stage.addEventListener('mousedown', e => startDraw(e.clientX, e.clientY));
+stage.addEventListener('mousemove', e => moveDraw(e.clientX, e.clientY));
+stage.addEventListener('mouseup', e => endDraw(e.clientX, e.clientY));
+stage.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    pinch = null;
+    e.preventDefault();
+    startDraw(e.touches[0].clientX, e.touches[0].clientY);
+  } else if (e.touches.length === 2) {
+    drawing = false; hideCropAdd();
+    const t0 = e.touches[0], t1 = e.touches[1];
+    const d0 = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+    const b = stage.getBoundingClientRect();
+    const O = { x: b.left - zoom.tx, y: b.top - zoom.ty };
+    const m = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
+    pinch = { d0, s0: zoom.s, cMid: { x: (m.x - O.x - zoom.tx) / zoom.s, y: (m.y - O.y - zoom.ty) / zoom.s } };
+    e.preventDefault();
+  }
+}, { passive: false });
+stage.addEventListener('touchmove', e => {
+  if (e.touches.length === 1 && drawing) {
+    e.preventDefault();
+    moveDraw(e.touches[0].clientX, e.touches[0].clientY);
+  } else if (e.touches.length === 2 && pinch) {
+    const t0 = e.touches[0], t1 = e.touches[1];
+    const d = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+    const sNew = Math.min(5, Math.max(1, pinch.s0 * (d / Math.max(1, pinch.d0))));
+    const b = stage.getBoundingClientRect();
+    const O = { x: b.left - zoom.tx, y: b.top - zoom.ty };
+    const m = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
+    let txNew = m.x - O.x - sNew * pinch.cMid.x;
+    let tyNew = m.y - O.y - sNew * pinch.cMid.y;
+    const wrap = $('cropWrap');
+    const cw = wrap.clientWidth, ch = wrap.clientHeight;
+    const ow = stage.offsetWidth, oh = stage.offsetHeight, c = 48;
+    if (ow * sNew > cw) txNew = Math.max(cw - ow * sNew - c, Math.min(c, txNew)); else txNew = 0;
+    if (oh * sNew > ch) tyNew = Math.max(ch - oh * sNew - c, Math.min(c, tyNew)); else tyNew = 0;
+    zoom = { s: sNew, tx: txNew, ty: tyNew };
+    applyZoom();
+    e.preventDefault();
+  }
+}, { passive: false });
+stage.addEventListener('touchend', e => {
+  if (e.touches.length === 0) {
+    if (drawing) { const t = e.changedTouches[0]; if (t) endDraw(t.clientX, t.clientY); }
+    pinch = null;
+  } else if (e.touches.length === 1) {
+    pinch = null; drawing = false;
+  }
 });
+stage.addEventListener('touchcancel', () => { pinch = null; drawing = false; });
 window.addEventListener('mouseup',()=>{ drawing=false; });
+window.addEventListener('touchend',()=>{ drawing=false; });
 function drawRect(){ const r=$('cropRect'); if(!rect){r.classList.add('hidden');return;}
   r.classList.remove('hidden'); r.style.left=rect.x+'px'; r.style.top=rect.y+'px'; r.style.width=rect.w+'px'; r.style.height=rect.h+'px'; }
-function showCropAdd(e){
+function showCropAddAt(clientX, clientY){
   const btn=$('cropAddBtn'); const wb=$('cropWrap').getBoundingClientRect();
-  btn.style.left=(e.clientX-wb.left+$('cropWrap').scrollLeft-30)+'px';
-  btn.style.top=(e.clientY-wb.top+$('cropWrap').scrollTop-42)+'px';
+  btn.style.left=(clientX-wb.left+$('cropWrap').scrollLeft-30)+'px';
+  btn.style.top=(clientY-wb.top+$('cropWrap').scrollTop-42)+'px';
   btn.classList.remove('hidden');
 }
 function hideCropAdd(){ $('cropAddBtn').classList.add('hidden'); }
 $('cropAddBtn').addEventListener('mousedown', e => e.stopPropagation());
 $('cropAddBtn').addEventListener('mouseup', e => e.stopPropagation());
+$('cropAddBtn').addEventListener('touchstart', e => e.stopPropagation());
+$('cropAddBtn').addEventListener('touchend', e => e.stopPropagation());
 $('cropAddBtn').addEventListener('click', e => { e.stopPropagation(); $('cutBtn').click(); hideCropAdd(); });
 
 function trimCanvas(c){
@@ -1039,7 +1100,7 @@ function trimCanvas(c){
   o.getContext('2d').drawImage(c,l,t,o.width,o.height,0,0,o.width,o.height); return o;
 }
 $('cutBtn').onclick=()=>{
-  if(!cropSrc||!rect||rect.w<8||rect.h<8) return alert('Önce fare ile bir alan seçin.');
+  if(!cropSrc||!rect||rect.w<8||rect.h<8) return alert('Önce bir alan seçin.');
   const img=$('cropImg'), scale=img.naturalWidth/img.clientWidth;
   let c=document.createElement('canvas'); c.width=rect.w*scale; c.height=rect.h*scale;
   const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
