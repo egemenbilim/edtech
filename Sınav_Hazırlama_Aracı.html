@@ -20,10 +20,10 @@
   .card:hover .tools{opacity:1}
   .tools{opacity:0;transition:.15s}
   .lbl{display:block;font-size:.6875rem;font-weight:500;color:#64748b;letter-spacing:.01em}
-  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar{width:6px;height:6px}
   ::-webkit-scrollbar-track{background:transparent}
-  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px;border:3px solid transparent;background-clip:content-box}
-  ::-webkit-scrollbar-thumb:hover{background:#94a3b8;background-clip:content-box;border:3px solid transparent}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px;border:2px solid transparent;background-clip:content-box}
+  ::-webkit-scrollbar-thumb:hover{background:#94a3b8;background-clip:content-box;border:2px solid transparent}
   input[type=range]{accent-color:#0f172a}
   input[type=checkbox]{accent-color:#0f172a;width:.9rem;height:.9rem}
   .fade-in{animation:fade .2s ease}
@@ -36,129 +36,701 @@
   html.dark .btn-mini:hover{background:#334155}
   html.dark .lbl{color:#94a3b8}
   #cropStage{touch-action:none;-webkit-user-select:none;-webkit-touch-callout:none;transform-origin:0 0;will-change:transform}
+
+  /* Sidebar overlay + panel */
+  #sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:40;backdrop-filter:blur(2px)}
+  #sidebarOverlay.open{display:block}
+  #sidebarPanel{
+    position:fixed;top:0;left:0;bottom:0;z-index:41;
+    width:260px;
+    background:#fff;
+    border-right:1px solid #e2e8f0;
+    transform:translateX(-100%);
+    transition:transform .22s cubic-bezier(.4,0,.2,1);
+    display:flex;flex-direction:column;
+    overflow:hidden;
+  }
+  #sidebarPanel.open{transform:translateX(0)}
+  html.dark #sidebarPanel{background:#0f172a;border-color:#1e293b}
+  #sidebarScrollArea{flex:1;overflow-y:auto;overflow-x:hidden;padding:.75rem .85rem 1rem}
+  #sidebarScrollArea::-webkit-scrollbar{width:4px}
+  #sidebarScrollArea::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}
+
+  /* Sidebar compact styles */
+  .sb-lbl{display:block;font-size:.625rem;font-weight:600;color:#94a3b8;letter-spacing:.04em;text-transform:uppercase;margin-bottom:.2rem}
+  .sb-inp{width:100%;border:1px solid #e2e8f0;border-radius:.35rem;padding:.28rem .5rem;font-size:.75rem;outline:none;background:#fff;transition:border-color .15s,box-shadow .15s;color:#0f172a}
+  .sb-inp:focus{border-color:#0f172a;box-shadow:0 0 0 2px rgba(15,23,42,.07)}
+  .sb-inp::placeholder{color:#cbd5e1;font-size:.72rem}
+  html.dark .sb-inp{background:#1e293b;border-color:#334155;color:#e2e8f0}
+  html.dark .sb-inp:focus{border-color:#94a3b8}
+  html.dark .sb-inp::placeholder{color:#475569}
+  html.dark .sb-lbl{color:#64748b}
+  .sb-section{border-top:1px solid #f1f5f9;padding-top:.55rem;margin-top:.55rem}
+  html.dark .sb-section{border-color:#1e293b}
+  .sb-check-row{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:#475569;padding:.18rem 0}
+  html.dark .sb-check-row{color:#94a3b8}
+  /* Sınav Şablonları kartları */
+  .tpl-card{
+    display:block;width:100%;text-align:left;cursor:pointer;
+    border:1px solid #e2e8f0;background:#fff;border-radius:.4rem;
+    padding:.35rem .5rem;transition:.14s;
+  }
+  .tpl-card:hover{border-color:#94a3b8;background:#f8fafc}
+  .tpl-card.active{border-color:#0f172a;background:#f1f5f9;box-shadow:0 0 0 2px rgba(15,23,42,.08)}
+  .tpl-name{display:block;font-size:.7rem;font-weight:700;color:#0f172a;line-height:1.3}
+  .tpl-desc{display:block;font-size:.6rem;color:#94a3b8;line-height:1.3;margin-top:1px}
+  html.dark .tpl-card{background:#1e293b;border-color:#334155}
+  html.dark .tpl-card:hover{background:#334155;border-color:#475569}
+  html.dark .tpl-card.active{border-color:#e2e8f0;background:#334155;box-shadow:0 0 0 2px rgba(226,232,240,.12)}
+  html.dark .tpl-name{color:#f1f5f9}
+  html.dark .tpl-desc{color:#64748b}
+
+  .sb-type-tab{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:#f1f5f9;border-radius:.4rem;padding:2px;margin-bottom:.5rem}
+  html.dark .sb-type-tab{background:#1e293b}
+  .sb-type-tab button{border-radius:.3rem;padding:.28rem .2rem;font-size:.68rem;font-weight:500;border:none;cursor:pointer;transition:.12s;background:transparent;color:#64748b}
+  .sb-type-tab button.active{background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  html.dark .sb-type-tab button.active{background:#334155;color:#fff}
+
+  /* Hamburger toggle button — turuncu parlak */
+  #sidebarToggle{
+    display:inline-flex;align-items:center;gap:.5rem;position:relative;overflow:hidden;
+    padding:.4rem .65rem;border-radius:.5rem;
+    background:linear-gradient(135deg,#f97316,#ea580c);border:1px solid rgba(249,115,22,.6);
+    cursor:pointer;color:#fff;font-size:.75rem;font-weight:700;letter-spacing:.01em;
+    box-shadow:0 0 0 0 rgba(249,115,22,.5);
+    animation:sidebarGlow 2.2s ease-in-out infinite;
+    transition:transform .15s,box-shadow .2s;
+  }
+  #sidebarToggle:hover{transform:translateY(-1px);animation:none;box-shadow:0 4px 16px rgba(249,115,22,.45),0 0 0 3px rgba(249,115,22,.15);background:linear-gradient(135deg,#fb923c,#f97316)}
+  #sidebarToggle::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:advShine 3s ease-in-out infinite}
+  @keyframes sidebarGlow{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.35),0 0 8px rgba(249,115,22,.18)}50%{box-shadow:0 0 0 4px rgba(249,115,22,0),0 0 20px rgba(234,88,12,.45)}}
+  html.dark #sidebarToggle{border-color:rgba(251,146,60,.6)}
+  .ham-icon{display:flex;flex-direction:column;gap:3.5px;width:14px}
+  .ham-icon span{display:block;height:1.5px;background:currentColor;border-radius:2px;transition:.2s}
+
+  /* Şablonlar butonu — mavi parlak (Gelişmiş Ayarlar stili) */
+  #tplBtn{
+    position:relative;overflow:hidden;
+    background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(139,92,246,.08));
+    border:1px solid rgba(59,130,246,.35);border-radius:.5rem;
+    padding:.5rem .65rem !important;color:#1e40af !important;font-weight:600 !important;
+    box-shadow:0 0 0 0 rgba(59,130,246,.5);animation:advGlow 2.4s ease-in-out infinite;transition:transform .15s,box-shadow .2s;
+  }
+  #tplBtn:hover{transform:translateY(-1px);animation:none;box-shadow:0 4px 14px rgba(59,130,246,.35),0 0 0 3px rgba(59,130,246,.15);background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(139,92,246,.15));color:#1e3a8a !important}
+  #tplBtn::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:advShine 3.2s ease-in-out infinite}
+  #tplBtn::after{content:'📋';position:absolute;right:.55rem;top:50%;transform:translateY(-50%);font-size:.7rem;opacity:.85;filter:drop-shadow(0 0 4px rgba(59,130,246,.5));animation:advSparkle 1.6s ease-in-out infinite}
+  #tplBtn #tplArrow{color:#3b82f6 !important;margin-right:1.1rem;font-weight:700}
+  html.dark #tplBtn{background:linear-gradient(135deg,rgba(96,165,250,.12),rgba(167,139,250,.12));border-color:rgba(96,165,250,.45);color:#bfdbfe !important}
+  html.dark #tplBtn:hover{color:#dbeafe !important;box-shadow:0 4px 14px rgba(96,165,250,.4),0 0 0 3px rgba(96,165,250,.18)}
+  html.dark #tplBtn #tplArrow{color:#93c5fd !important}
+
+  /* Main scroll area */
+  /* ===== Split layout ===== */
+  #mainScrollArea{
+    display:flex;
+    flex-direction:column;
+    gap:1.25rem;
+    align-items:flex-start;
+    min-width:0;
+  }
+  #mainScrollArea > .space-y-5{min-width:0;width:100%;order:1}
+  #previewPane{width:100%;order:2}
+  @media (min-width:1024px){
+    #mainScrollArea{flex-direction:row}
+    #previewPane{
+      order:1;
+      width:38%;
+      max-width:520px;
+      flex:0 0 auto;
+      position:sticky;
+      top:4.5rem;
+    }
+    #mainScrollArea > .space-y-5{order:2;flex:1 1 0%}
+  }
+
+  /* ===== Preview card ===== */
+  .pv-card{
+    border:1px solid #e2e8f0;border-radius:1rem;background:#fff;overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+  html.dark .pv-card{background:#0f172a;border-color:#1e293b}
+  .pv-head{display:flex;align-items:center;gap:.4rem;padding:.5rem .7rem;border-bottom:1px solid #f1f5f9}
+  html.dark .pv-head{border-color:#1e293b}
+  .pv-title{font-size:.72rem;font-weight:700;color:#0f172a;letter-spacing:.01em}
+  html.dark .pv-title{color:#e2e8f0}
+  .pv-dot{width:7px;height:7px;border-radius:99px;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pvPulse 1.8s infinite}
+  .pv-dot.busy{background:#f59e0b;animation-duration:.7s}
+  @keyframes pvPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}70%{box-shadow:0 0 0 6px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+  .pv-nav{margin-left:auto;display:flex;align-items:center;gap:.15rem}
+  .pv-nav button{
+    width:22px;height:22px;border-radius:.3rem;border:1px solid #e2e8f0;background:#fff;
+    color:#475569;font-size:.8rem;line-height:1;cursor:pointer;transition:.12s;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .pv-nav button:hover:not(:disabled){background:#f1f5f9;border-color:#cbd5e1;color:#0f172a}
+  .pv-nav button:disabled{opacity:.35;cursor:default}
+  html.dark .pv-nav button{background:#1e293b;border-color:#334155;color:#94a3b8}
+  html.dark .pv-nav button:hover:not(:disabled){background:#334155;color:#fff}
+  #pvPageInfo{font-size:.65rem;color:#64748b;padding:0 .25rem;min-width:34px;text-align:center;font-variant-numeric:tabular-nums}
+  #pvWrap{
+    position:relative;background:#e8edf3;padding:.7rem;
+    max-height:calc(100vh - 12rem);overflow:auto;
+    display:flex;justify-content:center;align-items:flex-start;min-height:220px;
+  }
+  html.dark #pvWrap{background:#020617}
+  #pvStack{width:100%;display:flex;justify-content:center}
+  .pv-canvas{
+    width:100%;height:auto;display:block;background:#fff;
+    border-radius:3px;box-shadow:0 3px 14px rgba(15,23,42,.18);
+  }
+  .pv-empty{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    text-align:center;font-size:.72rem;color:#94a3b8;padding:1.5rem;pointer-events:none;
+  }
+  .pv-empty.hide{display:none}
+  .pv-busy{
+    position:absolute;top:.6rem;right:.7rem;display:none;
+    border-radius:.4rem;background:rgba(15,23,42,.85);color:#fff;
+    padding:.2rem .5rem;font-size:.62rem;font-weight:600;
+  }
+  .pv-busy.on{display:block}
+  .pv-foot-make{
+    display:flex;flex-direction:column;align-items:stretch;gap:.3rem;
+    padding:.5rem .7rem;border-top:1px solid #f1f5f9;
+  }
+  html.dark .pv-foot-make{border-color:#1e293b}
+  .pv-meta-bottom{font-size:.6rem;color:#94a3b8;text-align:center;display:block}
+  .pv-big-btn{
+    border:1px solid #e2e8f0;background:#fff;border-radius:.35rem;
+    padding:.18rem .5rem;font-size:.63rem;font-weight:600;color:#475569;cursor:pointer;transition:.12s;white-space:nowrap;
+  }
+  .pv-big-btn:hover{background:#f1f5f9;border-color:#94a3b8;color:#0f172a}
+  html.dark .pv-big-btn{background:#1e293b;border-color:#334155;color:#94a3b8}
+  .pv-make-wide{
+    width:100%;justify-content:center;padding:.45rem .6rem !important;
+    font-size:.72rem !important;letter-spacing:.02em;border-radius:.45rem;
+  }
+
+  /* ===== Docking: Ayarlar açılınca önizleme merkezde büyür, blur üstünde kalır ===== */
+  .pv-card{transition:box-shadow .4s}
+  body.pv-docked #previewPane{
+    position:fixed;top:4.5rem;bottom:1rem;
+    left:calc(50% + 8rem);right:auto;
+    width:min(58vw,680px);max-width:none;z-index:46;
+    transform:translateX(-50%);
+  }
+  body.pv-docked .pv-card{height:100%;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(2,6,23,.5),0 0 0 1px rgba(148,163,184,.28)}
+  body.pv-docked #pvWrap{max-height:none;flex:1}
+  @media (max-width:1023px){
+    body.pv-docked #previewPane{width:calc(100vw - 1.1rem);left:50%;top:3.7rem;bottom:.55rem}
+  }
+
+  .pv-big-btn{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}
+  .pv-big-btn:hover{background:#dbeafe;border-color:#60a5fa;color:#1e40af}
+  html.dark .pv-big-btn{background:rgba(37,99,235,.18);border-color:rgba(96,165,250,.4);color:#bfdbfe}
+
+  /* ===== Sınav Kağıdını Oluştur — turuncu ışıltılı buton ===== */
+  .pv-make-btn{
+    position:relative;overflow:hidden;
+    display:inline-flex;align-items:center;gap:.3rem;
+    border:1px solid rgba(249,115,22,.55);border-radius:.35rem;
+    background:linear-gradient(135deg,#f97316,#ea580c);
+    color:#fff !important;font-weight:600;font-size:.63rem;
+    padding:.15rem .45rem;cursor:pointer;letter-spacing:.01em;
+    box-shadow:0 0 0 0 rgba(249,115,22,.5);
+    animation:pvMakeGlow 2.2s ease-in-out infinite;
+    transition:transform .15s,box-shadow .2s,opacity .15s;
+  }
+  .pv-make-btn:hover:not(:disabled){
+    transform:translateY(-1px);
+    animation:none;
+    box-shadow:0 4px 16px rgba(249,115,22,.5),0 0 0 3px rgba(249,115,22,.18);
+    background:linear-gradient(135deg,#fb923c,#f97316);
+  }
+  .pv-make-btn:disabled{opacity:.7;cursor:default;animation:none}
+  .pv-make-btn::before{
+    content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);
+    animation:advShine 3s ease-in-out infinite;
+  }
+  .pv-make-btn .pvMakeSpark{
+    filter:drop-shadow(0 0 4px rgba(255,255,255,.85));
+    animation:advSparkle 1.5s ease-in-out infinite;
+  }
+  @keyframes pvMakeGlow{
+    0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.4),0 0 8px rgba(249,115,22,.2)}
+    50%{box-shadow:0 0 0 4px rgba(249,115,22,0),0 0 20px rgba(234,88,12,.5)}
+  }
+  html.dark .pv-make-btn{border-color:rgba(251,146,60,.6)}
+
+  /* ===== Büyüt ve Düzenle ===== */
+  #pvBig{position:fixed;inset:0;z-index:47;display:none;background:rgba(2,6,23,.8);backdrop-filter:blur(4px);padding:.9rem}
+  #pvBig.open{display:flex;flex-direction:column;align-items:center;gap:.5rem}
+  #pvBigBar{display:flex;align-items:center;gap:.4rem;color:#e2e8f0;font-size:.72rem;font-weight:600;flex-wrap:wrap;justify-content:center}
+  #pvBigBar .pvBTitle{font-size:.8rem;color:#fff}
+  #pvBigBar button{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;border-radius:.4rem;padding:.22rem .55rem;cursor:pointer;font-size:.72rem;transition:.15s}
+  #pvBigBar button:hover:not(:disabled){background:rgba(255,255,255,.22)}
+  #pvBigBar button:disabled{opacity:.35;cursor:default}
+  .pvBHint{font-size:.63rem;font-weight:500;color:#94a3b8;border-left:1px solid rgba(255,255,255,.15);padding-left:.5rem}
+  #pvBigWrap{flex:1;min-height:0;overflow:auto;display:flex;justify-content:center;width:100%;cursor:grab;touch-action:none}
+  #pvBigWrap.panning{cursor:grabbing;user-select:none}
+  #pvStage{position:relative;line-height:0;align-self:flex-start}
+  #pvStage>canvas{width:auto;height:auto;max-width:none;max-height:none;display:block;background:#fff;border-radius:4px;box-shadow:0 18px 50px rgba(0,0,0,.55);cursor:grab}
+  #pvBigWrap.panning #pvStage>canvas{cursor:grabbing}
+  #pvOverlay{position:absolute;top:0;left:0;pointer-events:none}
+  .pvChip{position:absolute;pointer-events:auto;cursor:grab;border:1.5px dashed transparent;border-radius:3px;touch-action:none;transition:border-color .15s,background .15s}
+  .pvChip:hover{border-color:rgba(37,99,235,.85);background:rgba(59,130,246,.13)}
+  .pvChip.dragging{cursor:grabbing;border-color:#2563eb;background:rgba(59,130,246,.22);z-index:6;box-shadow:0 6px 20px rgba(37,99,235,.45)}
+  .pvLogoChip{cursor:grab}
+  .pvLogoChip:hover{border-color:rgba(234,88,12,.85);background:rgba(249,115,22,.13)}
+  .pvLogoChip .pvNum{background:rgba(234,88,12,.92)}
+  .pvLogoChip .pvRz{background:#ea580c}
+  .pvLogoChip .pvActs{opacity:1}
+  .pvLogoChip .pvActs button{background:rgba(234,88,12,.95);font-size:11px}
+  .pvLogoChip .pvActs button:hover{background:#c2410c}
+  .pvLogoChip.dragging{cursor:grabbing;border-color:#ea580c;background:rgba(249,115,22,.22);box-shadow:0 6px 20px rgba(234,88,12,.45)}
+
+  /* Sınav Şablonu Metin Çipleri (Header Elementleri) */
+  .pvTextChip{
+    border:1px dashed #94a3b8;
+    background:rgba(241,245,249,.4);
+  }
+  .pvTextChip:hover{
+    border-color:#2563eb;
+    background:rgba(59,130,246,.08);
+  }
+  .pvTextChip.selected{
+    border-color:#2563eb;
+    border-style:solid;
+    background:rgba(59,130,246,.15);
+    box-shadow:0 0 0 2px rgba(37,99,235,.2);
+  }
+
+  /* Snap çizgisi */
+  #pvSnapLine{
+    position:absolute;width:1.5px;background:#ef4444;
+    border-left:1.5px dashed #ef4444;
+    display:none;pointer-events:none;z-index:9;
+    box-shadow:0 0 8px rgba(239,68,68,.7);
+  }
+
+  /* Seçim çerçevesi (Marquee selection box) */
+  #pvMarquee{
+    position:absolute;border:1px solid #3b82f6;
+    background:rgba(59,130,246,.15);
+    pointer-events:none;display:none;z-index:10;
+  }
+  .pvNum{position:absolute;left:2px;top:1px;background:rgba(37,99,235,.92);color:#fff;font-size:8px;font-weight:700;line-height:1.35;padding:0 3px;border-radius:2px;font-family:ui-sans-serif,system-ui,sans-serif}
+  .pvActs{position:absolute;right:2px;top:1px;display:flex;gap:2px;opacity:0;transition:opacity .15s}
+  .pvChip:hover .pvActs{opacity:1}
+  .pvActs button{width:17px;height:17px;border:none;border-radius:3px;background:rgba(15,23,42,.88);color:#fff;font-size:9px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.12s}
+  .pvActs button:hover{background:#2563eb;transform:scale(1.14)}
+  .pvRz{position:absolute;right:-5px;bottom:-5px;width:12px;height:12px;background:#2563eb;border:2px solid #fff;border-radius:2px;cursor:nwse-resize;opacity:0;transition:opacity .15s;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+  .pvChip:hover .pvRz{opacity:1}
+  #pvDropLine{position:absolute;height:3px;background:#f43f5e;border-radius:2px;box-shadow:0 0 10px rgba(244,63,94,.9);display:none;pointer-events:none;z-index:8}
+
+  /* Soru editörü her zaman en üstte (önizleme / büyüt ekranının üstünde açılır) */
+  #textModal{z-index:60}
+  #groupModal,#resultModal,#preview{z-index:48}
+
+  /* Editör içi uyarı satırı — alert engellense bile kullanıcı nedenini görür */
+  .tw-warn{
+    display:none;margin-top:.85rem;padding:.5rem .7rem;border-radius:.5rem;
+    background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;
+    font-size:.75rem;font-weight:600;line-height:1.45;
+  }
+  .tw-warn.on{display:block;animation:twShake .35s ease}
+  @keyframes twShake{
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-4px)}
+    75%{transform:translateX(4px)}
+  }
+  html.dark .tw-warn{background:rgba(127,29,29,.28);border-color:rgba(248,113,113,.4);color:#fca5a5}
+
+  /* ===== Görsel kırpma ===== */
+  #imgCropModal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.72);backdrop-filter:blur(4px);padding:1rem}
+  #imgCropModal.open{display:flex}
+  .icCard{width:100%;max-width:780px;max-height:92vh;display:flex;flex-direction:column;background:#fff;border-radius:.9rem;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.55)}
+  html.dark .icCard{background:#0f172a}
+  .icHead{display:flex;align-items:center;justify-content:space-between;padding:.6rem .85rem;border-bottom:1px solid #f1f5f9;font-size:.78rem;font-weight:700;color:#0f172a}
+  html.dark .icHead{border-color:#1e293b;color:#e2e8f0}
+  .icHead button{border:none;background:transparent;font-size:.85rem;color:#94a3b8;cursor:pointer}
+  #icWrap{flex:1;min-height:0;overflow:auto;background:#0f172a;padding:.85rem;display:flex;justify-content:center}
+  #icStage{position:relative;line-height:0;touch-action:none;cursor:crosshair;align-self:flex-start}
+  #icStage img{max-width:100%;max-height:calc(92vh - 9.5rem);display:block;background:#fff}
+  #icRect{position:absolute;display:none;border:2px solid #38bdf8;background:rgba(56,189,248,.22);pointer-events:none}
+  .icFoot{display:flex;align-items:center;gap:.4rem;padding:.55rem .85rem;border-top:1px solid #f1f5f9}
+  html.dark .icFoot{border-color:#1e293b}
+  .icHint{font-size:.66rem;color:#94a3b8}
+  .icFoot button{margin-left:auto;border-radius:.4rem;padding:.32rem .75rem;font-size:.7rem;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:#fff;color:#475569;transition:.15s}
+  .icFoot button:hover{border-color:#94a3b8;color:#0f172a}
+  #icApply{margin-left:.35rem;border:none;background:#0f172a;color:#fff}
+  #icApply:hover{background:#1e293b}
+  html.dark .icFoot button{background:#1e293b;border-color:#334155;color:#cbd5e1}
+  html.dark #icApply{background:#f1f5f9;color:#0f172a}
+
+  /* Gelişmiş Ayarlar butonu - dikkat çeken parıltı efekti */
+  #advBtn{
+    position:relative;
+    background:linear-gradient(135deg, rgba(59,130,246,.08), rgba(139,92,246,.08));
+    border:1px solid rgba(59,130,246,.35);
+    border-radius:.5rem;
+    padding:.5rem .65rem !important;
+    color:#1e40af !important;
+    font-weight:600 !important;
+    overflow:hidden;
+    box-shadow:0 0 0 0 rgba(59,130,246,.5);
+    animation:advGlow 2.4s ease-in-out infinite;
+    transition:transform .15s, box-shadow .2s;
+  }
+  #advBtn:hover{
+    transform:translateY(-1px);
+    animation:none;
+    box-shadow:0 4px 14px rgba(59,130,246,.35), 0 0 0 3px rgba(59,130,246,.15);
+    background:linear-gradient(135deg, rgba(59,130,246,.15), rgba(139,92,246,.15));
+    color:#1e3a8a !important;
+  }
+  #advBtn::before{
+    content:'';
+    position:absolute;
+    top:0;left:-100%;
+    width:60%;height:100%;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+    animation:advShine 3.2s ease-in-out infinite;
+  }
+  #advBtn::after{
+    content:'✨';
+    position:absolute;
+    right:.55rem;top:50%;
+    transform:translateY(-50%);
+    font-size:.7rem;
+    opacity:.85;
+    filter:drop-shadow(0 0 4px rgba(250,204,21,.7));
+    animation:advSparkle 1.6s ease-in-out infinite;
+  }
+  #advBtn #advArrow{
+    color:#3b82f6 !important;
+    margin-right:1.1rem;
+    font-weight:700;
+  }
+  @keyframes advGlow{
+    0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.35), 0 0 8px rgba(59,130,246,.15)}
+    50%{box-shadow:0 0 0 4px rgba(59,130,246,0), 0 0 18px rgba(139,92,246,.35)}
+  }
+  @keyframes advShine{
+    0%{left:-100%}
+    55%,100%{left:130%}
+  }
+  @keyframes advSparkle{
+    0%,100%{opacity:.55;transform:translateY(-50%) scale(1) rotate(0deg)}
+    50%{opacity:1;transform:translateY(-50%) scale(1.25) rotate(15deg)}
+  }
+  html.dark #advBtn{
+    background:linear-gradient(135deg, rgba(96,165,250,.12), rgba(167,139,250,.12));
+    border-color:rgba(96,165,250,.45);
+    color:#bfdbfe !important;
+  }
+  html.dark #advBtn:hover{
+    color:#dbeafe !important;
+    box-shadow:0 4px 14px rgba(96,165,250,.4), 0 0 0 3px rgba(96,165,250,.18);
+  }
+  html.dark #advBtn #advArrow{color:#93c5fd !important}
+  html.dark @keyframes advGlow{
+    0%,100%{box-shadow:0 0 0 0 rgba(96,165,250,.4), 0 0 10px rgba(96,165,250,.2)}
+    50%{box-shadow:0 0 0 4px rgba(96,165,250,0), 0 0 20px rgba(167,139,250,.45)}
+  }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
 
-<header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90">
-  <div class="mx-auto flex max-w-[1500px] flex-wrap items-center gap-4 px-5 py-3">
-    <span class="flex items-center gap-2 text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-      <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white dark:bg-white dark:text-slate-900">ET</span>
-      <span><a href="https://www.instagram.com/egemenbilim/" target="_blank" rel="noopener noreferrer" style="color:#06b6d4" class="transition hover:underline hover:brightness-110">Egemen</a>'s Testmaker</span>
-    </span>
-    <button id="openGuide" class="rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">Kullanım Kılavuzu</button>
-    <button id="darkBtn" title="Karanlık / aydınlık mod" class="ml-auto rounded-lg px-2.5 py-1.5 text-[16px] leading-none transition hover:bg-slate-100 dark:hover:bg-slate-800">🌙</button>
-    <span class="hidden text-[13px] italic text-slate-400 dark:text-slate-500 lg:block">“Milletleri kurtaranlar yalnız ve ancak öğretmenlerdir.”</span>
-  </div>
-</header>
+<!-- Sidebar Overlay -->
+<div id="sidebarOverlay"></div>
 
-<div class="mx-auto flex max-w-[1500px] flex-col gap-5 p-5 lg:flex-row">
-  <aside class="w-full shrink-0 lg:w-[19rem]">
-    <div class="sticky top-[4.5rem] space-y-5 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-      <div>
-        <h2 class="text-[13px] font-semibold tracking-wide text-slate-900 dark:text-slate-100">Test Ayarları</h2>
-        <div id="typeTabs" class="mt-3 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 text-xs dark:bg-slate-800">
-          <button data-t="yazili" class="rounded-lg py-1.5">Yazılı Kağıdı</button>
-          <button data-t="yaprak" class="rounded-lg py-1.5">Konu Denemesi</button>
+<!-- Sidebar Panel -->
+<div id="sidebarPanel">
+  <!-- Sidebar Header -->
+  <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-3 py-2.5 shrink-0">
+    <span class="text-[11px] font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase">Test Ayarları</span>
+    <button id="sidebarClose" class="rounded-md px-1.5 py-0.5 text-[11px] text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
+  </div>
+
+  <!-- Scrollable area -->
+  <div id="sidebarScrollArea">
+
+    <!-- Sınav Şablonları (EN ÜSTTE — seçilen şablona göre aşağıdaki alanlar değişir) -->
+    <div>
+      <button id="tplBtn" class="flex w-full items-center justify-between rounded py-0.5 text-[11px] font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition">
+        <span>Sınav Şablonları</span><span id="tplArrow" class="text-slate-400">＋</span>
+      </button>
+      <div id="tplBox" class="mt-2 hidden space-y-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 p-3">
+        <div id="tplList" class="space-y-1.5">
+          <button type="button" data-tpl="none" class="tpl-card active">
+            <span class="tpl-name">Varsayılan</span>
+            <span class="tpl-desc">Klasik yazılı / konu denemesi düzeni</span>
+          </button>
+          <button type="button" data-tpl="meb" class="tpl-card">
+            <span class="tpl-name">MEB Resmî Şablon</span>
+            <span class="tpl-desc">Logolu resmî sınav başlığı</span>
+          </button>
         </div>
       </div>
+    </div>
 
-      <div class="space-y-3">
-        <label class="lbl">Test Adı
-          <input id="title" class="inp mt-1.5" placeholder="Türk Dili ve Edebiyatı - Tanzimat Dönemi" value=""></label>
-        <label id="konuRow" class="lbl hidden">Konu Kapsamı <span class="font-normal text-slate-300">· opsiyonel, virgülle ayırın</span>
-          <input id="konuKapsami" class="inp mt-1.5" placeholder="Şiir Bilgisi, Roman, Hikâye"></label>
-        <label class="lbl">Okul / Kurum
-          <input id="school" class="inp mt-1.5" placeholder="Bilim Akademi" value=""></label>
-        <label class="lbl">Üst Bilgi
-          <input id="lesson" class="inp mt-1.5" value="2025-2026 EĞİTİM ÖĞRETİM YILI"></label>
-        <label class="lbl">Sınav Yönergesi
-          <textarea id="description" class="inp mt-1.5 h-16 leading-relaxed">Aşağıdaki soruları dikkatlice okuyunuz. Her soru 10 Puan olmakla birlikte sınav süreniz 40 dakikadır.</textarea></label>
-        <label class="lbl">Kitapçık Sayısı
-          <select id="groups" class="inp mt-1.5">
-            <option value="1">Tek kitapçık (A)</option>
-            <option value="2">A - B</option>
-            <option value="4">A - B - C - D</option>
-          </select></label>
+    <!-- Type tabs (yalnızca varsayılan şablonda) -->
+    <div class="sb-type-tab tpl-hide-meb" id="typeTabs">
+      <button data-t="yazili" class="active">Yazılı Kağıdı</button>
+      <button data-t="yaprak">Konu Denemesi</button>
+    </div>
+
+    <!-- ============ VARSAYILAN ŞABLON ALANLARI ============ -->
+    <div class="tpl-hide-meb space-y-1.5">
+      <label class="sb-lbl">Test Adı
+        <input id="title" class="sb-inp mt-0.5" placeholder="Türk Dili - Tanzimat" value=""></label>
+      <div id="konuRow" class="hidden">
+        <label class="sb-lbl">Konu Kapsamı <span class="font-normal normal-case text-slate-300">· virgülle ayırın</span>
+          <input id="konuKapsami" class="sb-inp mt-0.5" placeholder="Şiir Bilgisi, Roman"></label>
       </div>
+      <label class="sb-lbl">Okul / Kurum
+        <input id="school" class="sb-inp mt-0.5" placeholder="Bilim Akademi" value=""></label>
+      <label class="sb-lbl">Üst Bilgi
+        <input id="lesson" class="sb-inp mt-0.5" value="2025-2026 EĞİTİM ÖĞRETİM YILI"></label>
+    </div>
 
-      <div class="space-y-2.5 border-t border-slate-100 pt-4 dark:border-slate-800">
-        <label class="flex items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-300"><input type="checkbox" id="optic"> Optik form ekle</label>
-        <label class="flex items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-300"><input type="checkbox" id="spacing"> Sorular arasına boşluk bırak</label>
-        <div id="spacingBox" class="hidden pl-6 text-[11px] text-slate-500">Boşluk <b class="text-slate-700 dark:text-slate-200" id="spVal">10</b> mm
-          <input type="range" id="spacingValue" min="5" max="30" value="10" class="mt-1 w-full"></div>
-        <label class="flex items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-300"><input type="checkbox" id="showAnswerKey" checked> Cevap anahtarı <span class="text-slate-400">(<span id="ansCount">0</span>)</span></label>
+    <!-- ============ MEB ŞABLONU ALANLARI ============ -->
+    <div id="mebFields" class="tpl-show-meb hidden space-y-1.5">
+      <label class="sb-lbl">Eğitim - Öğretim Yılı
+        <input id="mebYear" class="sb-inp mt-0.5" value="2026 - 2027 Eğitim - Öğretim Yılı"></label>
+      <label class="sb-lbl">Okul Adı
+        <input id="mebSchool" class="sb-inp mt-0.5" placeholder="Çakabey Anadolu Lisesi"></label>
+      <label class="sb-lbl">Sınav Tarihi
+        <input id="mebDate" class="sb-inp mt-0.5" placeholder="01.06.2027"></label>
+      <div class="grid grid-cols-2 gap-1.5">
+        <label class="sb-lbl">Ders
+          <input id="mebLesson" class="sb-inp mt-0.5" placeholder="Matematik"></label>
+        <label class="sb-lbl">Sınıf
+          <input id="mebGrade" class="sb-inp mt-0.5" placeholder="9. Sınıf"></label>
       </div>
-
-      <div class="border-t border-slate-100 pt-4 dark:border-slate-800">
-        <button id="advBtn" class="flex w-full items-center justify-between rounded-lg px-1 py-1 text-[13px] font-medium text-slate-600 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-          <span>Gelişmiş Ayarlar</span><span id="advArrow" class="text-slate-400">＋</span>
-        </button>
-        <div id="advBox" class="mt-3 hidden space-y-3 rounded-xl bg-slate-50 p-4 dark:bg-slate-800/50">
-          <label class="flex items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-300"><input type="checkbox" id="smartLayout"> Akıllı soru yerleşimi</label>
-          <label class="lbl">Filigran Metni<input id="watermark" class="inp mt-1.5" placeholder="Bilim Akademi"></label>
-          <label class="lbl">Filigran Açısı <span class="float-right font-semibold text-slate-700 dark:text-slate-200" id="wmAngleVal">45°</span>
-            <input type="range" id="watermarkAngle" min="-90" max="90" step="15" value="45" class="mt-1 w-full"></label>
-          <label class="lbl">Filigran Boyutu <span class="float-right font-semibold text-slate-700 dark:text-slate-200"><span id="wmSizeVal">44</span>pt</span>
-            <input type="range" id="watermarkSize" min="12" max="80" step="2" value="44" class="mt-1 w-full"></label>
-          <label class="flex items-start gap-2.5 text-[12px] leading-snug text-slate-600 dark:text-slate-300">
-            <input type="checkbox" id="watermarkDivider" class="mt-0.5"> Filigranı yalnızca orta çizgide dikey göster
-          </label>
-          <label class="lbl">Tasarım Rengi<input type="color" id="themeColor" value="#1d4ed8" class="mt-1.5 h-8 w-full cursor-pointer rounded-lg border border-slate-200"></label>
-          <div class="grid grid-cols-2 gap-2.5">
-            <label class="lbl">Sayfa
-              <select id="pageSize" class="inp mt-1.5"><option value="a4">A4</option><option value="a5">A5</option><option value="letter">Letter</option></select></label>
-            <label class="lbl">Yön
-              <select id="orientation" class="inp mt-1.5"><option value="portrait">Dikey</option><option value="landscape">Yatay</option></select></label>
-            <label class="lbl">Sütun
-              <select id="columns" class="inp mt-1.5"><option>1</option><option selected>2</option><option>3</option></select></label>
-            <label class="lbl">Kenar <span class="float-right font-semibold text-slate-700 dark:text-slate-200"><span id="mgVal">12</span>mm</span>
-              <input type="range" id="margin" min="5" max="30" value="12" class="mt-2 w-full"></label>
+      <label class="sb-lbl">Sınav Adı
+        <input id="mebExam" class="sb-inp mt-0.5" placeholder="1. Dönem 2. Sınavı"></label>
+      <div class="grid grid-cols-2 gap-1.5">
+        <label class="sb-lbl">Ad Alanı
+          <input id="mebNameLbl" class="sb-inp mt-0.5" value="Adı-Soyadı:"></label>
+        <label class="sb-lbl">Sınıf Alanı
+          <input id="mebClassLbl" class="sb-inp mt-0.5" value="Sınıfı:"></label>
+        <label class="sb-lbl">Numara Alanı
+          <input id="mebNoLbl" class="sb-inp mt-0.5" value="Okul No.:"></label>
+        <label class="sb-lbl">Puan Alanı
+          <input id="mebScoreLbl" class="sb-inp mt-0.5" value="Puan:"></label>
+      </div>
+      <!-- Logo seçimi -->
+      <div class="sb-section space-y-1.5">
+        <span class="sb-lbl" style="margin-bottom:2px">Logo</span>
+        <div class="space-y-1">
+          <label class="sb-check-row"><input type="radio" name="logoChoice" id="mebLogoRadio" value="meb" checked style="accent-color:#0f172a;width:.85rem;height:.85rem"> MEB Resmî Logosu</label>
+          <label class="sb-check-row"><input type="radio" name="logoChoice" id="customLogoRadio" value="custom" style="accent-color:#0f172a;width:.85rem;height:.85rem"> Kendi Logonuzu Ekleyin</label>
+          <label class="sb-check-row"><input type="radio" name="logoChoice" id="noLogoRadio" value="none" style="accent-color:#0f172a;width:.85rem;height:.85rem"> Logo Kullanma</label>
+        </div>
+        <div id="customLogoPanel" class="hidden">
+          <div class="flex items-center gap-2">
+            <label class="flex-1 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white px-3 py-4 text-center transition hover:border-slate-900 dark:border-slate-600 dark:bg-slate-900">
+              <div id="customLogoPlaceholder" class="text-[11px] text-slate-400">📷 Logo seçin <span class="block text-[10px] text-slate-300">JPG, PNG, WEBP</span></div>
+              <img id="customLogoPreview" class="mx-auto hidden max-h-16 rounded">
+              <input id="customLogoFile" type="file" accept="image/jpeg,image/png,image/webp,image/bmp,image/svg+xml" class="hidden">
+            </label>
+            <button id="customLogoRemove" type="button" class="hidden rounded border border-slate-200 px-1.5 py-0.5 text-[10px] text-slate-400 hover:border-rose-300 hover:text-rose-600">✕</button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between pt-0.5">
+          <span class="text-[10px] text-slate-400 leading-snug">"Büyüt ve Düzenle" ekranında logonun köşesinden sürükleyerek boyutunu değiştirebilirsiniz.</span>
+          <div class="flex gap-1 shrink-0 ml-2">
+            <button id="logoFixAspect" type="button" class="rounded border border-slate-200 px-1.5 py-0.5 text-[10px] text-slate-500 hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:text-slate-400" title="Logoyu doğal oranına geri getirir">Görseli Geri Düzelt</button>
+            <button id="logoSizeReset" type="button" class="rounded border border-slate-200 px-1.5 py-0.5 text-[10px] text-slate-500 hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:text-slate-400" title="Logoyu varsayılan boyutuna getirir">Boyutu Sıfırla</button>
+            <button id="logoPosReset" type="button" class="rounded border border-slate-200 px-1.5 py-0.5 text-[10px] text-slate-500 hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:text-slate-400" title="Tüm başlık metinlerinin ve logonun konumlarını ilk haline getirir">Konumları Sıfırla</button>
           </div>
         </div>
       </div>
+    </div>
 
-      <button id="makeBtn" class="w-full rounded-xl bg-slate-900 py-3 text-[13px] font-semibold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
-        Kağıdı Hazırla · PDF
+    <!-- ============ ORTAK ALANLAR (her şablonda görünür) ============ -->
+    <div class="space-y-1.5">
+      <label class="sb-lbl">Sınav Yönergesi
+        <textarea id="description" class="sb-inp mt-0.5 leading-relaxed" style="height:52px;resize:none">Aşağıdaki soruları dikkatlice okuyunuz. Her soru 10 Puan olmakla birlikte sınav süreniz 40 dakikadır.</textarea></label>
+      <label class="sb-lbl">Kitapçık Sayısı
+        <select id="groups" class="sb-inp mt-0.5">
+          <option value="1">Tek kitapçık (A)</option>
+          <option value="2">A - B</option>
+          <option value="4">A - B - C - D</option>
+        </select></label>
+    </div>
+
+    <!-- Checkboxes -->
+    <div class="sb-section space-y-0.5">
+      <label class="sb-check-row"><input type="checkbox" id="optic"> Optik form ekle</label>
+      <label class="sb-check-row"><input type="checkbox" id="spacing"> Sorular arasına boşluk bırak</label>
+      <div id="spacingBox" class="hidden pl-4 text-[10px] text-slate-500">Boşluk <b class="text-slate-700 dark:text-slate-200" id="spVal">10</b> mm
+        <input type="range" id="spacingValue" min="5" max="30" value="10" class="mt-1 w-full"></div>
+      <label class="sb-check-row"><input type="checkbox" id="showAnswerKey" checked> Cevap anahtarı <span class="text-slate-400">(<span id="ansCount">0</span>)</span></label>
+    </div>
+
+    <!-- Gelişmiş -->
+    <div class="sb-section">
+      <button id="advBtn" class="flex w-full items-center justify-between rounded py-0.5 text-[11px] font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition">
+        <span>Gelişmiş Ayarlar</span><span id="advArrow" class="text-slate-400">＋</span>
       </button>
-    </div>
-  </aside>
-
-  <main class="min-w-0 flex-1 space-y-5">
-    <div id="dropzone" class="rounded-2xl border-2 border-dashed border-slate-300 bg-white px-8 py-10 text-center transition-all duration-300 hover:border-sky-400 hover:bg-sky-50/30 hover:shadow-[0_0_30px_rgba(56,189,248,0.22)] dark:border-slate-700 dark:bg-slate-900">
-      <p class="text-[15px] font-medium text-slate-800 dark:text-slate-100">Soruları buraya sürükleyip bırakın</p>
-      <p class="mt-1.5 text-[13px] text-slate-400">JPG, PNG, GIF · en fazla 100 soru · .db taslak dosyası</p>
-      <div class="mt-5 flex flex-wrap justify-center gap-2.5">
-        <button id="pickBtn" class="flex items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all duration-150 hover:bg-blue-500 hover:shadow-md hover:shadow-blue-500/20 active:scale-[0.98]">
-          <span>📁</span> Soru Seçin
-        </button>
-        <button id="textBtn" class="flex items-center gap-1.5 rounded-xl bg-[#0b1329] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all duration-150 hover:bg-[#152347] hover:shadow-md hover:shadow-slate-900/30 active:scale-[0.98]">
-          <span>✍️</span> Yazılı Soru Ekleyin
-        </button>
-        <button id="openCrop" class="flex items-center gap-1.5 rounded-xl bg-slate-500 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all duration-150 hover:bg-slate-600 hover:shadow-md hover:shadow-slate-500/20 active:scale-[0.98]">
-          <span>✂️</span> Görselden/PDF'ten Soru Kesin
-        </button>
-      </div>
-      <input id="fileInput" type="file" multiple accept="image/jpeg,image/png,image/gif,.db" class="hidden">
-    </div>
-
-    <div class="flex items-center gap-3 px-1">
-      <h2 class="text-[13px] font-semibold text-slate-900 dark:text-slate-100">Sorular <span class="ml-0.5 font-normal text-slate-400"><span id="qCount">0</span> / 100</span></h2>
-      <span class="hidden text-xs text-slate-400 sm:block">Sıralamak için sürükleyin</span>
-      <button id="clearAll" class="ml-auto text-xs text-slate-400 transition hover:text-rose-600">Tümünü sil</button>
-    </div>
-
-    <div id="grid" class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-      <div id="emptyState" class="col-span-full flex items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white px-6 py-20 text-center dark:border-slate-700 dark:bg-slate-900">
-        <div>
-          <p class="text-[15px] font-medium text-slate-700 dark:text-slate-300">Henüz soru oluşturmadınız</p>
-          <p class="mt-1.5 text-[13px] leading-relaxed text-slate-400">
-            Dilerseniz yukarıdaki seçenekleri kullanarak<br><b class="text-slate-600 dark:text-slate-300">Yazılı Kağıdı</b> veya <b class="text-slate-600 dark:text-slate-300">Konu Denemesi</b> oluşturabilirsiniz
-          </p>
+      <div id="advBox" class="mt-2 hidden space-y-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 p-3">
+        <label class="sb-check-row"><input type="checkbox" id="smartLayout"> Akıllı soru yerleşimi</label>
+        <label class="sb-lbl">Filigran Metni<input id="watermark" class="sb-inp mt-0.5" placeholder="Bilim Akademi"></label>
+        <label class="sb-lbl">Filigran Açısı <span class="float-right font-semibold text-slate-700 dark:text-slate-200 normal-case" id="wmAngleVal">45°</span>
+          <input type="range" id="watermarkAngle" min="-90" max="90" step="15" value="45" class="mt-0.5 w-full"></label>
+        <label class="sb-lbl">Filigran Boyutu <span class="float-right font-semibold text-slate-700 dark:text-slate-200 normal-case"><span id="wmSizeVal">44</span>pt</span>
+          <input type="range" id="watermarkSize" min="12" max="80" step="2" value="44" class="mt-0.5 w-full"></label>
+        <label class="flex items-start gap-1.5 text-[10px] leading-snug text-slate-600 dark:text-slate-300">
+          <input type="checkbox" id="watermarkDivider" class="mt-0.5"> Filigranı yalnızca orta çizgide dikey göster
+        </label>
+        <label class="sb-lbl">Tasarım Rengi<input type="color" id="themeColor" value="#1d4ed8" class="mt-0.5 h-6 w-full cursor-pointer rounded border border-slate-200"></label>
+        <div class="grid grid-cols-2 gap-1.5">
+          <label class="sb-lbl">Sayfa
+            <select id="pageSize" class="sb-inp mt-0.5"><option value="a4">A4</option><option value="a5">A5</option><option value="letter">Letter</option></select></label>
+          <label class="sb-lbl">Yön
+            <select id="orientation" class="sb-inp mt-0.5"><option value="portrait">Dikey</option><option value="landscape">Yatay</option></select></label>
+          <label class="sb-lbl">Sütun
+            <select id="columns" class="sb-inp mt-0.5"><option>1</option><option selected>2</option><option>3</option></select></label>
+            <label class="sb-lbl">Kenar <span class="float-right font-semibold text-slate-700 dark:text-slate-200 normal-case"><span id="mgVal">5</span>mm</span>
+              <input type="range" id="margin" min="5" max="30" value="5" class="mt-1 w-full"></label>
         </div>
       </div>
     </div>
-  </main>
+
+  </div>
+</div>
+
+<header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90">
+  <div class="mx-auto flex max-w-[1500px] flex-wrap items-center gap-3 px-4 py-2.5">
+    <!-- Hamburger -->
+    <button id="sidebarToggle" title="Test Ayarları">
+      <span class="ham-icon"><span></span><span></span><span></span></span>
+      <span>Ayarlar</span>
+    </button>
+
+    <span class="flex items-center gap-2 text-[14px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+      <span class="flex h-6 w-6 items-center justify-center rounded-md bg-slate-900 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">ET</span>
+      <span><a href="https://www.instagram.com/egemenbilim/" target="_blank" rel="noopener noreferrer" style="color:#06b6d4" class="transition hover:underline hover:brightness-110">Egemen</a>'s Testmaker</span>
+    </span>
+    <button id="openGuide" class="rounded-lg px-2.5 py-1 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">Kullanım Kılavuzu</button>
+    <button id="darkBtn" title="Karanlık / aydınlık mod" class="ml-auto rounded-lg px-2 py-1 text-[15px] leading-none transition hover:bg-slate-100 dark:hover:bg-slate-800">🌙</button>
+    <span class="hidden text-[12px] italic text-slate-400 dark:text-slate-500 lg:block">"Milletleri kurtaranlar yalnız ve ancak öğretmenlerdir."</span>
+  </div>
+</header>
+
+<!-- Main layout: split — left live preview, right questions -->
+<div class="mx-auto max-w-[1500px] p-5">
+  <div id="mainScrollArea">
+
+    <!-- ===== SOL: SINAV KAĞIDI ÖNİZLEMESİ ===== -->
+    <section id="previewPane">
+      <div class="pv-card">
+        <div class="pv-head">
+          <span class="pv-title">Sınav Kağıdı Önizlemesi</span>
+          <span id="pvLiveDot" class="pv-dot" title="Canlı senkron"></span>
+          <button id="pvOpenBig" class="pv-big-btn" style="margin-left:auto">⤢ Büyüt ve Düzenle</button>
+          <div class="pv-nav">
+            <button id="pvPrev" title="Önceki sayfa">‹</button>
+            <span id="pvPageInfo">1 / 1</span>
+            <button id="pvNext" title="Sonraki sayfa">›</button>
+            <button id="pvRefresh" title="Yenile">⟳</button>
+          </div>
+        </div>
+        <div id="pvWrap">
+          <div id="pvStack"></div>
+          <div id="pvEmpty" class="pv-empty">Ayarları girdikçe kağıt burada canlı güncellenir.</div>
+          <div id="pvBusy" class="pv-busy">⟳ Hazırlanıyor…</div>
+        </div>
+        <div class="pv-foot-make">
+          <span id="pvMeta" class="pv-meta-bottom">—</span>
+          <button id="makeBtn" class="pv-make-btn pv-make-wide"><span class="pvMakeSpark">✨</span> Sınav Kağıdını Oluştur</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SAĞ: SORULAR ===== -->
+    <div class="space-y-5">
+      <div id="dropzone" class="rounded-2xl border-2 border-dashed border-slate-300 bg-white px-8 py-10 text-center transition-all duration-300 hover:border-sky-400 hover:bg-sky-50/30 hover:shadow-[0_0_30px_rgba(56,189,248,0.22)] dark:border-slate-700 dark:bg-slate-900">
+        <p class="text-[15px] font-medium text-slate-800 dark:text-slate-100">Soruları buraya sürükleyip bırakın</p>
+        <p class="mt-1.5 text-[13px] text-slate-400">JPG, PNG, GIF · en fazla 100 soru · .db taslak dosyası</p>
+        <div class="mt-5 flex flex-wrap justify-center gap-2.5">
+          <button id="pickBtn" class="flex items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all duration-150 hover:bg-blue-500 hover:shadow-md hover:shadow-blue-500/20 active:scale-[0.98]">
+            <span>📁</span> Soru Seçin
+          </button>
+          <button id="textBtn" class="flex items-center gap-1.5 rounded-xl bg-[#0b1329] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all duration-150 hover:bg-[#152347] hover:shadow-md hover:shadow-slate-900/30 active:scale-[0.98]">
+            <span>✍️</span> Yazılı Soru Ekleyin
+          </button>
+          <button id="openCrop" class="flex items-center gap-1.5 rounded-xl bg-slate-500 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all duration-150 hover:bg-slate-600 hover:shadow-md hover:shadow-slate-500/20 active:scale-[0.98]">
+            <span>✂️</span> Görselden/PDF'ten Soru Kesin
+          </button>
+        </div>
+        <input id="fileInput" type="file" multiple accept="image/jpeg,image/png,image/gif,.db" class="hidden">
+      </div>
+
+      <div class="flex items-center gap-3 px-1">
+        <h2 class="text-[13px] font-semibold text-slate-900 dark:text-slate-100">Sorular <span class="ml-0.5 font-normal text-slate-400"><span id="qCount">0</span> / 100</span></h2>
+        <span class="hidden text-xs text-slate-400 sm:block">Sıralamak için sürükleyin</span>
+        <button id="clearAll" class="ml-auto text-xs text-slate-400 transition hover:text-rose-600">Tümünü sil</button>
+      </div>
+
+      <div id="grid" class="grid grid-cols-2 gap-3 xl:grid-cols-3">
+        <div id="emptyState" class="col-span-full flex items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white px-6 py-20 text-center dark:border-slate-700 dark:bg-slate-900">
+          <div>
+            <p class="text-[15px] font-medium text-slate-700 dark:text-slate-300">Henüz soru oluşturmadınız</p>
+            <p class="mt-1.5 text-[13px] leading-relaxed text-slate-400">
+              Dilerseniz yukarıdaki seçenekleri kullanarak<br><b class="text-slate-600 dark:text-slate-300">Yazılı Kağıdı</b> veya <b class="text-slate-600 dark:text-slate-300">Konu Denemesi</b> oluşturabilirsiniz
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pvBig">
+  <div id="pvBigBar">
+    <span class="pvBTitle">Büyüt ve Düzenle</span>
+    <button id="pvBigPrev">‹</button>
+    <span id="pvBigInfo">1 / 1</span>
+    <button id="pvBigNext">›</button>
+    <span class="pvBHint">Sürükle: sırala / header taşı · Shift+sürükle: kutu seçim · Köşe: boyutlandır · ✂: kırp · Tekerlek: yakınlaştır</span>
+    <button id="pvZoomReset" title="Yakınlaştırmayı sıfırla">Ekrana Sığdır</button>
+    <button id="pvBigClose">Kapat ✕</button>
+  </div>
+  <div id="pvBigWrap">
+    <div id="pvStage">
+      <canvas id="pvBigCanvas"></canvas>
+      <div id="pvOverlay">
+        <div id="pvSnapLine"></div>
+        <div id="pvMarquee"></div>
+      </div>
+      <div id="pvDropLine"></div>
+    </div>
+  </div>
+</div>
+
+<div id="imgCropModal">
+  <div class="icCard">
+    <div class="icHead">
+      <span>Görseli Kırp</span>
+      <button id="icClose" type="button">✕</button>
+    </div>
+    <div id="icWrap">
+      <div id="icStage">
+        <img id="icImg" alt="">
+        <div id="icRect"></div>
+      </div>
+    </div>
+    <div class="icFoot">
+      <span class="icHint">Fareyle kırpılacak alanı çerçeveleyin</span>
+      <button id="icReset" type="button">Sıfırla</button>
+      <button id="icApply" type="button">Kırp ve Uygula</button>
+    </div>
+  </div>
 </div>
 
 <footer class="pb-10 pt-6 text-center">
@@ -322,6 +894,8 @@
       </label>
     </div>
 
+    <div id="txtWarn" class="tw-warn" role="alert"></div>
+
     <div class="mt-5 flex justify-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
       <button id="txtCancel" class="rounded-lg px-4 py-2 text-[13px] font-medium text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800">İptal</button>
       <button id="txtSaveNew" class="rounded-lg border border-slate-200 px-4 py-2 text-[13px] font-medium text-slate-700 transition hover:border-slate-900 dark:border-slate-700 dark:text-slate-300">Kaydet ve Devam</button>
@@ -352,8 +926,7 @@
       <span id="pdfPageCount" class="text-[12px] text-white/50"></span>
     </div>
     <label class="flex items-center gap-2 text-[13px] text-white/70"><input type="checkbox" id="autoTrim" checked class="!accent-white"> Boşlukları temizle</label>
-    <div class="flex items-center gap-1.5 text-[13px] text-white/70">Cevap <span id="cropAns" class="flex gap-1"></span></div>
-    <button id="cutBtn" class="rounded-lg bg-white px-3.5 py-1.5 text-[13px] font-medium text-slate-900 transition hover:bg-slate-200">Kes</button>
+    <button id="cutBtn" class="hidden">Kes</button>
     <div class="ml-auto flex gap-2">
       <button id="cropUpload" class="rounded-lg bg-white/10 px-3.5 py-1.5 text-[13px] font-medium transition hover:bg-white/20">Yükle · <span id="cutCount">0</span></button>
       <button id="cropClose" class="rounded-lg px-3 py-1.5 text-[13px] text-white/50 transition hover:text-white">Kapat</button>
@@ -365,10 +938,14 @@
         <img id="cropImg" class="max-w-[calc(100vw-3rem)] max-h-[60vh] hidden rounded lg:max-w-none lg:max-h-none" draggable="false">
         <div id="cropRect" class="pointer-events-none absolute hidden border-2 border-blue-500 bg-blue-500/20"></div>
       </div>
-      <button id="cropAddBtn" type="button"
-        class="absolute z-20 hidden rounded-lg bg-white px-4 py-2 text-[13px] font-semibold text-slate-900 shadow-xl transition hover:bg-slate-100">
-        Ekle
-      </button>
+      <div id="cropAddBar" class="absolute z-20 hidden items-center gap-2 rounded-lg bg-slate-900/95 px-2 py-1.5 shadow-xl ring-1 ring-white/15">
+        <span class="text-[11px] font-medium text-white/60">Cevap</span>
+        <span id="cropAns" class="flex gap-1"></span>
+        <button id="cropAddBtn" type="button"
+          class="rounded-md bg-white px-3 py-1 text-[12px] font-semibold text-slate-900 transition hover:bg-slate-100">
+          Ekle
+        </button>
+      </div>
       <div id="cropHint" class="p-12 text-center text-[13px] leading-relaxed text-white/40">
         Bir görsel veya PDF yükleyin, soruyu parmağınızla veya fareyle çerçeveleyin<br>ve çıkan <b class="text-white/70">Ekle</b> butonuna basın.
       </div>
@@ -395,19 +972,38 @@ if (window.pdfjsLib) {
 const LETTERS = ['A','B','C','D','E'], MAX = 100;
 const $ = id => document.getElementById(id);
 let questions = [];
-const S = { testType:'yazili', groups:1, columns:2, pageSize:'a4', orientation:'portrait', margin:12,
+const S = { testType:'yazili', groups:1, columns:2, pageSize:'a4', orientation:'portrait', margin:5,
   spacing:false, spacingValue:10, smartLayout:false,
   watermark:'', watermarkAngle:45, watermarkSize:44, watermarkDivider:false,
   themeColor:'#1d4ed8', optic:false, showAnswerKey:true, konuKapsami:'', denemeNo:'',
+  template:'none',
+  mebYear:'2026 - 2027 Eğitim - Öğretim Yılı', mebSchool:'', mebDate:'', mebLesson:'', mebGrade:'', mebExam:'',
+  mebNameLbl:'Adı-Soyadı:', mebClassLbl:'Sınıfı:', mebNoLbl:'Okul No.:', mebScoreLbl:'Puan:', mebLogo:true, logoChoice:'meb',
+  logoW:26, logoH:26, logoX:null, logoY:null, mebPos:null,
   title:'', school:'', lesson:'2025-2026 EĞİTİM ÖĞRETİM YILI',
   description:'Aşağıdaki soruları dikkatlice okuyunuz. Her soru 10 Puan olmakla birlikte sınav süreniz 40 dakikadır.' };
+
+// Sidebar open/close
+function openSidebar() {
+  $('sidebarPanel').classList.add('open');
+  $('sidebarOverlay').classList.add('open');
+  pvDock(true);
+}
+function closeSidebar() {
+  $('sidebarPanel').classList.remove('open');
+  $('sidebarOverlay').classList.remove('open');
+  pvDock(false);
+}
+$('sidebarToggle').onclick = openSidebar;
+$('sidebarClose').onclick = closeSidebar;
+$('sidebarOverlay').onclick = closeSidebar;
 
 (function initDark(){
   let on = false;
   try {
     const saved = localStorage.getItem('testmaker-dark');
     if (saved !== null) on = saved === '1';
-    else on = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // Varsayılan olarak beyaz (aydınlık) mod — sistem tercihini yok say
   } catch(e){}
   document.documentElement.classList.toggle('dark', on);
   $('darkBtn').textContent = on ? '☀️' : '🌙';
@@ -421,7 +1017,7 @@ $('darkBtn').onclick = () => {
 
 const GUIDE = [
   { s: '🚀 Hızlı Başlangıç', items: [
-    ['Üç adımda test hazırlama', 'Önce sorularınızı ekleyin, ardından soldaki bölümden test ayarlarını yapın ve son olarak <b>Kağıdı Hazırla</b> butonuna basın. PDF dosyanız hazırdır.'],
+    ['Üç adımda test hazırlama', 'Önce sorularınızı ekleyin, ardından sol üstteki <b>Ayarlar</b> butonundan test ayarlarını yapın ve son olarak <b>Kağıdı Hazırla</b> butonuna basın. PDF dosyanız hazırdır.'],
     ['Soru ekleme yöntemleri', 'Soru eklemenin üç yolu vardır:<br>• <b>Soru Seçin</b> — bilgisayarınızdaki soru görsellerini yükleyin.<br>• <b>Yazılı Soru Ekleyin</b> — Soru yazın yahut metin bloğu olarak soruyu şıkları ile yapıştırın.<br>• <b>Görselden Soru Kesin</b> — Soruyu yüklediğiniz görselden veya PDF\'den keserek seçin.'],
   ]},
   { s: '✍️ Yazılı Soru Ekleme', items: [
@@ -479,9 +1075,7 @@ $('guideClose').onclick=()=>$('guide').classList.replace('flex','hidden');
 
 function renderTabs(){
   [...$('typeTabs').children].forEach(b=>{
-    b.className = 'rounded-lg py-1.5 transition ' + (b.dataset.t===S.testType
-      ? 'bg-white text-slate-900 shadow-sm font-medium dark:bg-slate-600 dark:text-white'
-      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white');
+    b.className = b.dataset.t===S.testType ? 'active' : '';
   });
   $('konuRow').classList.toggle('hidden', S.testType!=='yaprak');
 }
@@ -493,6 +1087,140 @@ $('showAnswerKey').onchange=e=>S.showAnswerKey=e.target.checked;
 $('spacing').onchange=e=>{S.spacing=e.target.checked;$('spacingBox').classList.toggle('hidden',!S.spacing);};
 $('spacingValue').oninput=e=>{S.spacingValue=+e.target.value;$('spVal').textContent=e.target.value;};
 $('advBtn').onclick=()=>{ const h=$('advBox').classList.toggle('hidden'); $('advArrow').textContent = h?'＋':'−'; };
+$('tplBtn').onclick=()=>{ const h=$('tplBox').classList.toggle('hidden'); $('tplArrow').textContent = h?'＋':'−'; };
+function renderTplCards(){
+  const isMeb = S.template === 'meb';
+  document.querySelectorAll('.tpl-card').forEach(b=>b.classList.toggle('active', b.dataset.tpl===S.template));
+  /* Şablona göre alanları gizle/göster: yalnızca seçili şablonun ilgili alanları görünür. */
+  document.querySelectorAll('.tpl-hide-meb').forEach(el=>el.classList.toggle('hidden', isMeb));
+  document.querySelectorAll('.tpl-show-meb').forEach(el=>el.classList.toggle('hidden', !isMeb));
+}
+document.querySelectorAll('.tpl-card').forEach(b=>{
+  b.onclick=()=>{ S.template=b.dataset.tpl; renderTplCards(); schedulePreview(); };
+});
+renderTplCards();
+$('mebYear').oninput=e=>S.mebYear=e.target.value;
+$('mebSchool').oninput=e=>S.mebSchool=e.target.value;
+$('mebDate').oninput=e=>S.mebDate=e.target.value;
+$('mebLesson').oninput=e=>S.mebLesson=e.target.value;
+$('mebGrade').oninput=e=>S.mebGrade=e.target.value;
+$('mebExam').oninput=e=>S.mebExam=e.target.value;
+$('mebNameLbl').oninput=e=>S.mebNameLbl=e.target.value;
+$('mebClassLbl').oninput=e=>S.mebClassLbl=e.target.value;
+$('mebNoLbl').oninput=e=>S.mebNoLbl=e.target.value;
+$('mebScoreLbl').oninput=e=>S.mebScoreLbl=e.target.value;
+/* Logo seçim mantığı — MEB, özel veya yok */
+let customLogoSrc = null, customLogoImg = null;
+function renderLogoChoice(){
+  const c = S.logoChoice || 'meb';
+  $('mebLogoRadio').checked = c === 'meb';
+  $('customLogoRadio').checked = c === 'custom';
+  $('noLogoRadio').checked = c === 'none';
+  $('customLogoPanel').classList.toggle('hidden', c !== 'custom');
+  S.mebLogo = c !== 'none';
+}
+document.querySelectorAll('[name=logoChoice]').forEach(r => {
+  r.onchange = () => { S.logoChoice = r.value; renderLogoChoice(); schedulePreview(); };
+});
+$('customLogoFile').onchange = (e) => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    /* Yüklenen logoyu piksel okuyarak kırp — gereksiz boşluk kalmasın */
+    trimLogoImage(r.result, (trimmed) => {
+      customLogoSrc = trimmed;
+      const im = new Image();
+      im.onload = () => {
+        customLogoImg = im;
+        /* Doğal orana göre otomatik boyutla, sıkışık/geniş görünmesin */
+        const ar = (im.naturalWidth || 1) / (im.naturalHeight || 1);
+        let h = 26, w = h * ar;
+        if (w > 60) { w = 60; h = w / ar; }
+        S.logoW = Math.max(8, w); S.logoH = Math.max(8, h);
+        schedulePreview();
+      };
+      im.src = customLogoSrc;
+      $('customLogoPreview').src = customLogoSrc;
+      $('customLogoPreview').classList.remove('hidden');
+      $('customLogoPlaceholder').classList.add('hidden');
+      $('customLogoRemove').classList.remove('hidden');
+    });
+  };
+  r.readAsDataURL(f);
+};
+$('customLogoRemove').onclick = () => {
+  customLogoSrc = null; customLogoImg = null;
+  $('customLogoFile').value = '';
+  $('customLogoPreview').classList.add('hidden');
+  $('customLogoPlaceholder').classList.remove('hidden');
+  $('customLogoRemove').classList.add('hidden');
+  schedulePreview();
+};
+function activeLogoAspect(){
+  const choice = S.logoChoice || 'meb';
+  if (choice === 'custom' && customLogoImg && customLogoImg.naturalWidth && customLogoImg.naturalHeight) {
+    return customLogoImg.naturalWidth / customLogoImg.naturalHeight;
+  }
+  return 1; // MEB logosu kare
+}
+function fixLogoAspect(){
+  const ar = activeLogoAspect();
+  let h = S.logoH || 26;
+  let w = h * ar;
+  const maxW = 60;
+  if (w > maxW) { w = maxW; h = w / ar; }
+  S.logoW = Math.max(8, w);
+  S.logoH = Math.max(8, h);
+  refreshNow();
+}
+$('logoFixAspect').onclick = fixLogoAspect;
+
+/* Yüklenen logonun çevresindeki boş/şeffaf alanı piksel okuyarak kırpar,
+   böylece logo gereksiz boşluk kaplamaz. */
+function trimLogoImage(src, cb){
+  const im = new Image();
+  im.onload = () => {
+    const w = im.naturalWidth, h = im.naturalHeight;
+    if (!w || !h) return cb(src);
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(im, 0, 0);
+    let data;
+    try { data = ctx.getImageData(0, 0, w, h).data; } catch (e) { return cb(src); }
+    /* Boş piksel: tamamen şeffaf ya da neredeyse beyaz */
+    const isBlank = (i) => {
+      const a = data[i + 3];
+      if (a < 12) return true;
+      return data[i] > 244 && data[i + 1] > 244 && data[i + 2] > 244;
+    };
+    let top = 0, bottom = h - 1, left = 0, right = w - 1;
+    const rowBlank = (y) => { for (let x = 0; x < w; x++) if (!isBlank((y * w + x) * 4)) return false; return true; };
+    const colBlank = (x) => { for (let y = top; y <= bottom; y++) if (!isBlank((y * w + x) * 4)) return false; return true; };
+    while (top < bottom && rowBlank(top)) top++;
+    while (bottom > top && rowBlank(bottom)) bottom--;
+    while (left < right && colBlank(left)) left++;
+    while (right > left && colBlank(right)) right--;
+    const pad = 1;
+    top = Math.max(0, top - pad); left = Math.max(0, left - pad);
+    bottom = Math.min(h - 1, bottom + pad); right = Math.min(w - 1, right + pad);
+    const nw = right - left + 1, nh = bottom - top + 1;
+    if (nw < 4 || nh < 4 || (nw === w && nh === h)) return cb(src);
+    const o = document.createElement('canvas');
+    o.width = nw; o.height = nh;
+    o.getContext('2d').drawImage(c, left, top, nw, nh, 0, 0, nw, nh);
+    cb(o.toDataURL('image/png'));
+  };
+  im.onerror = () => cb(src);
+  im.src = src;
+}
+$('logoSizeReset').onclick = () => { S.logoW = 26; S.logoH = 26; schedulePreview(); };
+$('logoPosReset').onclick = () => {
+  S.logoX = null; S.logoY = null; S.mebPos = null;
+  selectedHeaderItems.clear();
+  schedulePreview();
+};
+renderLogoChoice();
 $('smartLayout').onchange=e=>S.smartLayout=e.target.checked;
 $('watermark').oninput=e=>S.watermark=e.target.value;
 $('watermarkAngle').oninput=e=>{ S.watermarkAngle=+e.target.value; $('wmAngleVal').textContent=e.target.value+'°'; };
@@ -561,6 +1289,18 @@ function syncUI(){
   if (S.orientation !== undefined) $('orientation').value = S.orientation;
   if (S.columns !== undefined) $('columns').value = String(S.columns);
   if (S.margin !== undefined) { $('margin').value = String(S.margin); $('mgVal').textContent = String(S.margin); }
+  if (S.template !== undefined) renderTplCards();
+  if (S.mebYear !== undefined) $('mebYear').value = S.mebYear;
+  if (S.mebSchool !== undefined) $('mebSchool').value = S.mebSchool;
+  if (S.mebDate !== undefined) $('mebDate').value = S.mebDate;
+  if (S.mebLesson !== undefined) $('mebLesson').value = S.mebLesson;
+  if (S.mebGrade !== undefined) $('mebGrade').value = S.mebGrade;
+  if (S.mebExam !== undefined) $('mebExam').value = S.mebExam;
+  if (S.mebNameLbl !== undefined) $('mebNameLbl').value = S.mebNameLbl;
+  if (S.mebClassLbl !== undefined) $('mebClassLbl').value = S.mebClassLbl;
+  if (S.mebNoLbl !== undefined) $('mebNoLbl').value = S.mebNoLbl;
+  if (S.mebScoreLbl !== undefined) $('mebScoreLbl').value = S.mebScoreLbl;
+  if (S.logoChoice !== undefined) renderLogoChoice();
   renderTabs();
   $('qCount').textContent = questions.length;
   $('ansCount').textContent = questions.filter((q) => q.answer).length;
@@ -588,7 +1328,7 @@ function render(){
       </div></div>`;
     return;
   }
-  g.className = 'grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4';
+  g.className = 'grid grid-cols-2 gap-3 xl:grid-cols-3';
   questions.forEach((q,i)=>{
     const d=document.createElement('div');
     d.className='card group relative cursor-grab rounded-xl border border-slate-200 bg-white p-2.5 transition hover:border-slate-300 hover:shadow-md active:cursor-grabbing dark:border-slate-800 dark:bg-slate-900';
@@ -818,17 +1558,41 @@ function openText(q) {
   renderOptionAnswer();
   $('txtLayout').value = q && q.layout ? q.layout : 'v';
   $('txtBlank').value = String(q && q.blank ? q.blank : (q && q.kind === 'klasik' ? 25 : 0));
-  $('textModal').classList.replace('hidden', 'flex');
+  clearWarn();
+  openModal('textModal');
   $('aiPromptPanel').removeAttribute('open');
 }
 
+/* Dayanıklı modal aç/kapat yardımcıları — replace() sessizce başarısız olsa bile kesin sonuç verir */
+function openModal(id){ const el = $(id); if (!el) return; el.classList.remove('hidden'); el.classList.add('flex'); }
+function closeModal(id){ const el = $(id); if (!el) return; el.classList.add('hidden'); el.classList.remove('flex','above'); }
+function warnText(msg){
+  const w = $('txtWarn');
+  if (w) { w.textContent = msg; w.classList.remove('on'); void w.offsetWidth; w.classList.add('on'); }
+  try { window.alert(msg); } catch (e) {}
+}
+function clearWarn(){ const w = $('txtWarn'); if (w) { w.classList.remove('on'); w.textContent = ''; } }
+
+/* Kayıt akışı: hata oluşsa dahi pencere asla açık kilitli kalmaz */
 function saveText(keepOpen) {
+  try { _saveText(keepOpen); }
+  catch (e) {
+    console.error('saveText hatası:', e);
+    if (!keepOpen) closeModal('textModal');
+    alert('Soru kaydedilirken beklenmedik bir hata oluştu:\n' + (e && e.message ? e.message : e));
+  }
+}
+function _saveText(keepOpen) {
   const preamble = $('txtPreamble').value.trim();
   const root = $('txtRoot').value.trim();
   const wordBank = $('txtWordBank').value.split(',').map((w) => w.trim()).filter(Boolean);
   if (questionKind === 'bosluk') {
     const validBlanks = blankItems.map((t) => t.trim()).filter(Boolean);
-    if (!validBlanks.length) return alert('Lütfen en az bir boşluk doldurma cümlesi giriniz.');
+    /* Form tamamen boşsa ("Kaydet ve Devam" sonrası) kullanıcıyı kilitlemeden kapat */
+    if (!validBlanks.length) {
+      if (!keepOpen) return closeModal('textModal');
+      return warnText('Lütfen en az bir boşluk doldurma cümlesi giriniz.');
+    }
     if (editingId) {
       const idx = questions.findIndex((x) => x.id === editingId);
       const oldGroupId = questions[idx].groupId;
@@ -866,10 +1630,15 @@ function saveText(keepOpen) {
       blankItems = ['']; blankAnswers = ['']; $('txtWordBank').value = '';
       setBlankImg(null); $('blankHasImage').checked = false; $('blankImgPanel').classList.add('hidden'); $('blankImgFile').value = '';
       renderBlankList();
-    } else $('textModal').classList.replace('flex', 'hidden');
+    } else closeModal('textModal');
     return;
   }
-  if (!preamble && !root) return alert('Lütfen soru metni veya soru kökü giriniz.');
+  if (!preamble && !root) {
+    /* Form tamamen boşsa (ör. "Kaydet ve Devam" sonrası) pencereyi kapat, kullanıcıyı sıkıştırma */
+    const hasOptions = [0, 1, 2, 3, 4].some((i) => $('opt' + i).value.trim());
+    if (!hasOptions) return closeModal('textModal');
+    return warnText('Lütfen soru metni veya soru kökü giriniz.');
+  }
   const options = [0, 1, 2, 3, 4].map((i) => $('opt' + i).value.trim());
   const data = {
     type: 'text', kind: questionKind, text: preamble, root: root,
@@ -889,10 +1658,10 @@ function saveText(keepOpen) {
     $('txtPreamble').value = ''; $('txtRoot').value = '';
     setTxtImg(null); $('txtHasImage').checked = false; $('imgUploadPanel').classList.add('hidden'); $('txtImgFile').value = '';
     [0, 1, 2, 3, 4].forEach((i) => ($('opt' + i).value = '')); $('txtAns').value = ''; renderOptionAnswer();
-  } else $('textModal').classList.replace('flex', 'hidden');
+  } else closeModal('textModal');
 }
 $('textBtn').onclick = () => openText(null);
-$('txtCancel').onclick = () => $('textModal').classList.replace('flex', 'hidden');
+$('txtCancel').onclick = () => closeModal('textModal');
 $('txtSave').onclick = () => saveText(false);
 $('txtSaveNew').onclick = () => saveText(true);
 
@@ -943,7 +1712,7 @@ $('saveDraft').onclick = () => {
     const blob = new Blob([payload], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
     const tParsed = parseTags(S.title || 'Test');
-    const baseName = slugForFile(tParsed.clean) || 'Test';
+    const baseName = defaultBaseName(tParsed.clean);
     const a = document.createElement('a'); a.href = url; a.download = baseName + ' - ' + todayStr() + '.db'; a.rel = 'noopener';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 4000);
@@ -952,9 +1721,19 @@ $('saveDraft').onclick = () => {
 
 let cropSrc=null, cuts=[], cropAnswer=null, rect=null, drawing=false, startP={x:0,y:0};
 let pdfPages=[], selectedPdfPage=null;
-$('cropAns').innerHTML = LETTERS.map(l=>`<button data-c="${l}" class="h-6 w-6 rounded-md border border-white/20 text-[11px] transition hover:border-white/50">${l}</button>`).join('');
-$('cropAns').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{ cropAnswer = cropAnswer===b.dataset.c?null:b.dataset.c;
-  $('cropAns').querySelectorAll('[data-c]').forEach(x=>x.className='h-6 w-6 rounded-md border text-[11px] transition '+(cropAnswer===x.dataset.c?'bg-white text-slate-900 border-white font-semibold':'border-white/20 hover:border-white/50')); });
+const CROP_ANS_BASE = 'h-6 w-6 rounded-md border text-[11px] font-medium transition ';
+const CROP_ANS_OFF = 'border-white/25 text-white/80 hover:border-white/60 hover:text-white';
+const CROP_ANS_ON = 'bg-white text-slate-900 border-white font-bold';
+function paintCropAns(){
+  $('cropAns').querySelectorAll('[data-c]').forEach(x =>
+    x.className = CROP_ANS_BASE + (cropAnswer === x.dataset.c ? CROP_ANS_ON : CROP_ANS_OFF));
+}
+$('cropAns').innerHTML = LETTERS.map(l=>`<button type="button" data-c="${l}" class="${CROP_ANS_BASE}${CROP_ANS_OFF}">${l}</button>`).join('');
+$('cropAns').querySelectorAll('[data-c]').forEach(b=>b.onclick=(e)=>{
+  e.stopPropagation();
+  cropAnswer = cropAnswer===b.dataset.c ? null : b.dataset.c;
+  paintCropAns();
+});
 $('openCrop').onclick=()=>$('cropTool').classList.replace('hidden','flex');
 $('cropClose').onclick=()=>$('cropTool').classList.replace('flex','hidden');
 
@@ -1076,16 +1855,17 @@ window.addEventListener('touchend',()=>{ drawing=false; });
 function drawRect(){ const r=$('cropRect'); if(!rect){r.classList.add('hidden');return;}
   r.classList.remove('hidden'); r.style.left=rect.x+'px'; r.style.top=rect.y+'px'; r.style.width=rect.w+'px'; r.style.height=rect.h+'px'; }
 function showCropAddAt(clientX, clientY){
-  const btn=$('cropAddBtn'); const wb=$('cropWrap').getBoundingClientRect();
-  btn.style.left=(clientX-wb.left+$('cropWrap').scrollLeft-30)+'px';
-  btn.style.top=(clientY-wb.top+$('cropWrap').scrollTop-42)+'px';
-  btn.classList.remove('hidden');
+  const bar=$('cropAddBar'); const wb=$('cropWrap').getBoundingClientRect();
+  bar.classList.remove('hidden'); bar.classList.add('flex');
+  const bw = bar.offsetWidth || 240;
+  let left = clientX - wb.left + $('cropWrap').scrollLeft - bw + 30;
+  if (left < 4) left = 4;
+  bar.style.left = left + 'px';
+  bar.style.top = (clientY - wb.top + $('cropWrap').scrollTop - 46) + 'px';
 }
-function hideCropAdd(){ $('cropAddBtn').classList.add('hidden'); }
-$('cropAddBtn').addEventListener('mousedown', e => e.stopPropagation());
-$('cropAddBtn').addEventListener('mouseup', e => e.stopPropagation());
-$('cropAddBtn').addEventListener('touchstart', e => e.stopPropagation());
-$('cropAddBtn').addEventListener('touchend', e => e.stopPropagation());
+function hideCropAdd(){ const bar=$('cropAddBar'); bar.classList.add('hidden'); bar.classList.remove('flex'); }
+['mousedown','mouseup','touchstart','touchend','pointerdown','pointerup'].forEach(ev =>
+  $('cropAddBar').addEventListener(ev, e => e.stopPropagation()));
 $('cropAddBtn').addEventListener('click', e => { e.stopPropagation(); $('cutBtn').click(); hideCropAdd(); });
 
 function trimCanvas(c){
@@ -1107,7 +1887,9 @@ $('cutBtn').onclick=()=>{
   ctx.drawImage(img,rect.x*scale,rect.y*scale,rect.w*scale,rect.h*scale,0,0,c.width,c.height);
   if($('autoTrim').checked) c=trimCanvas(c);
   cuts.push({id:uid(),src:c.toDataURL('image/jpeg',0.92),w:c.width,h:c.height,answer:cropAnswer,groupId:null,stem:'',name:'kirpma'});
-  rect=null; drawRect(); renderCuts();
+  rect=null; drawRect();
+  cropAnswer=null; paintCropAns();
+  renderCuts();
 };
 function renderCuts(){
   $('cutCount').textContent=cuts.length;
@@ -1121,7 +1903,14 @@ function renderCuts(){
 renderCuts();
 $('cropUpload').onclick=()=>{ questions=questions.concat(cuts).slice(0,MAX); cuts=[]; renderCuts(); render(); $('cropTool').classList.replace('flex','hidden'); };
 
-function collect(){ S.title=$('title').value; S.school=$('school').value; S.lesson=$('lesson').value; S.description=$('description').value; S.konuKapsami=$('konuKapsami').value; }
+function collect(){
+  S.title=$('title').value; S.school=$('school').value; S.lesson=$('lesson').value;
+  S.description=$('description').value; S.konuKapsami=$('konuKapsami').value;
+  S.mebYear=$('mebYear').value; S.mebSchool=$('mebSchool').value; S.mebDate=$('mebDate').value;
+  S.mebLesson=$('mebLesson').value; S.mebGrade=$('mebGrade').value; S.mebExam=$('mebExam').value;
+  S.mebNameLbl=$('mebNameLbl').value; S.mebClassLbl=$('mebClassLbl').value;
+  S.mebNoLbl=$('mebNoLbl').value; S.mebScoreLbl=$('mebScoreLbl').value;
+}
 function parseTags(title){
   const tags=(title.match(/\[[A-Z_]+\]/g)||[]);
   return { clean:title.replace(/\[[A-Z_]+\]/g,'').trim(),
@@ -1135,14 +1924,51 @@ function toBlocks(qs){ const seen=new Set(), out=[];
     if(q.groupId){ const g=qs.filter(x=>x.groupId===q.groupId); g.forEach(x=>seen.add(x.id)); out.push(g); }
     else { seen.add(q.id); out.push([q]); } }); return out; }
 function booklet(qs,i){ const b=toBlocks(qs); return i===0? b.flat() : shuffle(b).map(g=>g.length>1?shuffle(g):g).flat(); }
-function smartOrder(items,colH,gap){
-  const pool=[...items], out=[]; let rem=colH;
-  while(pool.length){
-    let cand=pool.map((it,i)=>({it,i})).filter(o=>o.it.h+gap<=rem);
-    if(!cand.length){ rem=colH; cand=pool.map((it,i)=>({it,i})); }
-    cand.sort((a,b)=>b.it.h-a.it.h);
-    const pick=cand[0]; pool.splice(pick.i,1); out.push(pick.it); rem-=pick.it.h+gap; if(rem<12) rem=colH;
-  } return out;
+/* Akıllı soru yerleşimi — en-iyi-sığdırma (best-fit) sütun paketlemesi.
+   Render motorunun sütun kurallarıyla birebir aynı simülasyon yapılır:
+   • Kalan sütun boşluğuna sığan sorulardan en az boşluk bırakan seçilir (en-iyi sığdırma).
+   • Boş sütun: hiçbir soru sığmıyorsa en uzun soru yerleştirilir (FFD).
+   • Sütunun kalanına sığan yoksa sütun kapatılır, yeni sütun açılır.
+   • Dev (sütundan uzun) soru tek başına sütunu kapatır — render akışıyla aynı.
+   Böylece sütun boşlukları minimize edilir, sayfa/sütun atlama sayısı en aza iner. */
+function smartItemTotalH(it, ctx, colW){
+  let th = it.h;
+  if (it.q && it.q.stem && ctx) {
+    setFont(ctx, { size: PT(8.5), bold: true });
+    th += wrapText(ctx, it.q.stem, colW * SCALE - PX(4)).length * 4.2 + 4;
+  }
+  return th;
+}
+function smartOrder(items, colH, gap, ctx, colW){
+  const pool = items.map((it) => ({ it, th: smartItemTotalH(it, ctx, colW) }));
+  const out = [];
+  let rem = colH;      // mevcut sütundaki kalan kullanılabilir yükseklik
+  let fresh = true;    // sütunda henüz soru yok (dev soru başa yerleşebilir)
+  while (pool.length) {
+    let pickI = -1, bestLeft = Infinity;
+    for (let i = 0; i < pool.length; i++) {
+      if (pool[i].th <= rem) {
+        const left = rem - pool[i].th;
+        if (left < bestLeft) { bestLeft = left; pickI = i; }
+      }
+    }
+    if (pickI === -1) {
+      if (fresh) {
+        /* Boş sütun: en uzun soruyu yerleştir (sığmasa bile render başa çizer) */
+        pool.sort((a, b) => b.th - a.th);
+        pickI = 0;
+      } else {
+        /* Sütunun kalanına sığan yok: sütunu kapat, yeni sütunda devam et */
+        rem = colH; fresh = true;
+        continue;
+      }
+    }
+    const pick = pool.splice(pickI, 1)[0];
+    out.push(pick.it);
+    rem -= pick.th + gap;
+    fresh = false;
+  }
+  return out;
 }
 const SCALE = 6;
 const FONT = "'Noto Sans', 'DejaVu Sans', Arial, sans-serif";
@@ -1150,20 +1976,25 @@ const PX = (mm) => mm * SCALE;
 const PT = (pt) => (pt * 25.4 / 72) * SCALE;
 const LH_MM = 5.2;
 let fontReady = null;
+/* Türkçe karakterleri (İ, Ğ, Ş, Ü, Ö, Ç...) içeren örnek dizi:
+   Google Fonts'un latin-ext alt kümesini canvas çiziminden ÖNCE yükler.
+   Aksi halde İ/Ğ gibi harfler canvas'ta kutu/kaybolan glif olarak görünür. */
+const TR_FONT_SAMPLE = 'AaBbCcÇçDdEeFfGgĞğHhIıİiJjKkLlMmNnOoÖöPpRrSsŞşTtUuÜüVvWwXxYyZz0123456789 —–…!?.,:;()[]«»°·•×÷+−=%&$#@_<>*/';
 async function ensureFont() {
   if (fontReady) return fontReady;
   fontReady = (async () => {
     try {
       if (document.fonts && document.fonts.load) {
         await Promise.all([
-          document.fonts.load("400 16px 'Noto Sans'"),
-          document.fonts.load("700 16px 'Noto Sans'"),
-          document.fonts.load("italic 400 16px 'Noto Sans'"),
-          document.fonts.load("italic 700 16px 'Noto Sans'"),
+          document.fonts.load("400 16px 'Noto Sans'", TR_FONT_SAMPLE),
+          document.fonts.load("700 16px 'Noto Sans'", TR_FONT_SAMPLE),
+          document.fonts.load("italic 400 16px 'Noto Sans'", TR_FONT_SAMPLE),
+          document.fonts.load("italic 700 16px 'Noto Sans'", TR_FONT_SAMPLE),
         ]);
         await document.fonts.ready;
       }
     } catch (e) {}
+    try { await ensureMebLogo(); } catch (e) {}
   })();
   return fontReady;
 }
@@ -1262,6 +2093,234 @@ function buildPDF(pages) {
   return new Blob(parts, { type: 'application/pdf' });
 }
 
+/* MEB logosu — Wikimedia'daki resmî amblem görseli (CORS destekli, PNG önizlemesi).
+   Görsel yüklenene kadar / yüklenemezse aşağıdaki vektörel yedek çizim kullanılır. */
+const MEB_LOGO_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Milli_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1_Logo.svg/500px-Milli_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1_Logo.svg.png';
+let mebLogoImg = null, mebLogoReady = null;
+function ensureMebLogo() {
+  if (mebLogoReady) return mebLogoReady;
+  mebLogoReady = new Promise((resolve) => {
+    const im = new Image();
+    im.crossOrigin = 'anonymous';
+    im.onload = () => { mebLogoImg = im; resolve(); };
+    im.onerror = () => { mebLogoImg = null; resolve(); };
+    im.src = MEB_LOGO_URL;
+  });
+  return mebLogoReady;
+}
+/* Logo seçim durumu: 'meb', 'custom' veya 'none'. Görsel sorularda olduğu gibi
+   genişlik/yükseklik birbirinden bağımsız olarak büyütülüp küçültülebilir. */
+function mebLogoVisible(){
+  const choice = S.logoChoice || 'meb';
+  return choice !== 'none' && (choice === 'meb' || (choice === 'custom' && customLogoImg));
+}
+/* Logonun sayfa üzerindeki konum/boyut kutusu — hem çizim hem de
+   "Büyüt ve Düzenle" ekranındaki boyutlandırma tutamacı için kullanılır. */
+function getMebLogoBox(M){
+  const defaultX = M + 2;
+  const defaultY = M + 2;
+  return {
+    show: mebLogoVisible(),
+    x: S.logoX != null ? S.logoX : defaultX,
+    y: S.logoY != null ? S.logoY : defaultY,
+    w: S.logoW || 26,
+    h: S.logoH || 26
+  };
+}
+function drawMEBLogo(ctx, x, y, w, h) {
+  const choice = S.logoChoice || 'meb';
+  if (choice === 'none') return;
+  if (choice === 'custom' && customLogoImg) {
+    ctx.drawImage(customLogoImg, PX(x), PX(y), PX(w), PX(h));
+    return;
+  }
+  if (mebLogoImg) {
+    ctx.drawImage(mebLogoImg, PX(x), PX(y), PX(w), PX(h));
+    return;
+  }
+  drawMEBLogoVector(ctx, x + w / 2, y + h / 2, Math.min(w, h) / 2);
+}
+
+/* Tüm MEB başlığı metinlerinin harften harfe kapladığı tam boyutları (textbox)
+   ve koordinatlarını alan yardımcı metot.
+   "Kullanılmayan alan textbox olarak yer kaplamasın" talebini tam olarak çözer. */
+function getMEBHeaderItems(ctx, PW, PH, M, t, version) {
+  const L = M + 2, R = PW - M - 2;
+  const logoBox = getMebLogoBox(M);
+  const showLogo = logoBox.show;
+  const textL = showLogo ? Math.max(L, logoBox.x + logoBox.w + 4) : L;
+  const textCx = (textL + R) / 2;
+  let y = M + 6.5;
+  ctx.save();
+
+  setFont(ctx, { size: PT(12), bold: true });
+  const wYear = ctx.measureText(S.mebYear || '').width / SCALE;
+  const defYear = { x: textCx - wYear / 2, y: y, w: wYear, h: 4.8 };
+  if (S.mebYear) y += 7.5;
+
+  setFont(ctx, { size: PT(12), bold: true });
+  const wSchool = ctx.measureText(S.mebSchool || '').width / SCALE;
+  const defSchool = { x: textCx - wSchool / 2, y: y, w: wSchool, h: 4.8 };
+  if (S.mebSchool) y += 7.5;
+
+  y = Math.max(y + 1.5, M + (showLogo ? logoBox.h + 4 : 7));
+  const dash = (v) => (v && String(v).trim() ? String(v).trim() : '...............');
+  const lessonText = dash(S.mebLesson);
+  /* Sınıf ve Sınav Adı tek bir sürüklenebilir metin kutusunda birleştirilir. */
+  const gradeText = dash(S.mebGrade) + ' Sınıf';
+  const examOnly = S.mebExam && String(S.mebExam).trim() ? String(S.mebExam).trim() : '............... Sınavı';
+  const examText = gradeText + ' ' + examOnly;
+
+  setFont(ctx, { size: PT(12), bold: true });
+  const gapMM = 2.2;
+  const wLesson = ctx.measureText(lessonText).width / SCALE;
+  const wExam = ctx.measureText(examText).width / SCALE;
+  const totalW = wLesson + gapMM + wExam;
+  const rowStartX = textCx - totalW / 2;
+  const defLesson = { x: rowStartX, y, w: wLesson, h: 4.8 };
+  const defExam = { x: rowStartX + wLesson + gapMM, y, w: wExam, h: 4.8 };
+
+  const dateStr = (S.mebDate || '').trim();
+  setFont(ctx, { size: PT(11), bold: true });
+  const wDate = dateStr ? ctx.measureText(dateStr).width / SCALE : 18;
+  const defDate = { x: R - wDate, y, w: wDate, h: 4.4 };
+
+  y += 7;
+  setFont(ctx, { size: PT(11), bold: true });
+  const wName = S.mebNameLbl ? ctx.measureText(S.mebNameLbl).width / SCALE : 20;
+  const wClass = S.mebClassLbl ? ctx.measureText(S.mebClassLbl).width / SCALE : 12;
+  const wNo = S.mebNoLbl ? ctx.measureText(S.mebNoLbl).width / SCALE : 16;
+  const wScore = S.mebScoreLbl ? ctx.measureText(S.mebScoreLbl).width / SCALE : 10;
+  const defName = { x: L, y, w: wName, h: 4.4 };
+  const defClass = { x: L + (PW - 2 * M) * 0.36, y, w: wClass, h: 4.4 };
+  const defNo = { x: L + (PW - 2 * M) * 0.55, y, w: wNo, h: 4.4 };
+  const defScore = { x: L + (PW - 2 * M) * 0.78, y, w: wScore, h: 4.4 };
+  ctx.restore();
+
+  const p = S.mebPos || {};
+  const make = (id, text, size, bold, def) => ({ id, text, size, bold, align:'left', x: p[id]?.x != null ? p[id].x : def.x, y: p[id]?.y != null ? p[id].y : def.y, w: def.w, h: def.h });
+  return {
+    mebYear: make('mebYear', S.mebYear, 12, true, defYear),
+    mebSchool: make('mebSchool', S.mebSchool, 12, true, defSchool),
+    mebLesson: make('mebLesson', lessonText, 12, true, defLesson),
+    mebExam: make('mebExam', examText, 12, true, defExam),
+    mebDate: make('mebDate', dateStr, 11, true, defDate),
+    mebNameLbl: make('mebNameLbl', S.mebNameLbl || 'Adı-Soyadı:', 11, true, defName),
+    mebClassLbl: make('mebClassLbl', S.mebClassLbl || 'Sınıfı:', 11, true, defClass),
+    mebNoLbl: make('mebNoLbl', S.mebNoLbl || 'Okul No.:', 11, true, defNo),
+    mebScoreLbl: make('mebScoreLbl', S.mebScoreLbl || 'Puan:', 11, true, defScore),
+  };
+}
+/* Yedek vektörel amblem — kırmızı dairesel amblem (yazı halkası + meşale/kitap + yıldızlar) */
+function drawMEBLogoVector(ctx, cx, cy, r) {
+  const RED = '#d32b2b';
+  const X = PX(cx), Y = PX(cy), R = PX(r);
+  ctx.save();
+  ctx.translate(X, Y);
+  ctx.strokeStyle = RED; ctx.fillStyle = RED;
+  ctx.lineWidth = Math.max(1, R * 0.035);
+  ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.stroke();
+  ctx.lineWidth = Math.max(1, R * 0.02);
+  ctx.beginPath(); ctx.arc(0, 0, R * 0.93, 0, Math.PI * 2); ctx.stroke();
+  /* halat dokusu */
+  ctx.lineWidth = Math.max(0.6, R * 0.026);
+  for (let i = 0; i < 60; i++) {
+    const a = (i / 60) * Math.PI * 2, rr1 = R * 0.945, rr2 = R * 0.995, sk = 0.05;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * rr1, Math.sin(a) * rr1);
+    ctx.lineTo(Math.cos(a + sk) * rr2, Math.sin(a + sk) * rr2);
+    ctx.stroke();
+  }
+  ctx.lineWidth = Math.max(1, R * 0.022);
+  ctx.beginPath(); ctx.arc(0, 0, R * 0.7, 0, Math.PI * 2); ctx.stroke();
+  /* üst yay yazısı */
+  const ring = (text, radius, startA, endA, size, flip) => {
+    setFont(ctx, { size, bold: true });
+    ctx.fillStyle = RED; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const n = text.length; if (!n) return;
+    for (let i = 0; i < n; i++) {
+      const p = n === 1 ? 0.5 : i / (n - 1);
+      const a = startA + (endA - startA) * p;
+      ctx.save();
+      ctx.translate(Math.cos(a) * radius, Math.sin(a) * radius);
+      ctx.rotate(a + (flip ? -Math.PI / 2 : Math.PI / 2));
+      ctx.fillText(text[i], 0, 0);
+      ctx.restore();
+    }
+  };
+  ring('TÜRKİYE CUMHURİYETİ MİLLİ EĞİTİM BAKANLIĞI', R * 0.82, Math.PI * 0.86, Math.PI * 0.14, R * 0.115, true);
+  /* alt yıldızlar */
+  const star = (a, sr) => {
+    const px = Math.cos(a) * R * 0.82, py = Math.sin(a) * R * 0.82;
+    ctx.save(); ctx.translate(px, py); ctx.beginPath();
+    for (let k = 0; k < 5; k++) {
+      const oa = -Math.PI / 2 + (k * 2 * Math.PI) / 5;
+      const ia = oa + Math.PI / 5;
+      ctx.lineTo(Math.cos(oa) * sr, Math.sin(oa) * sr);
+      ctx.lineTo(Math.cos(ia) * sr * 0.42, Math.sin(ia) * sr * 0.42);
+    }
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  };
+  [0.24, 0.36, 0.5, 0.64, 0.76].forEach((f) => star(Math.PI * f, R * 0.075));
+  /* açık kitap */
+  ctx.lineWidth = Math.max(1, R * 0.03);
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.42, R * 0.3); ctx.quadraticCurveTo(-R * 0.2, R * 0.18, 0, R * 0.3);
+  ctx.quadraticCurveTo(R * 0.2, R * 0.18, R * 0.42, R * 0.3);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.42, R * 0.3); ctx.lineTo(-R * 0.42, R * 0.44);
+  ctx.quadraticCurveTo(-R * 0.2, R * 0.32, 0, R * 0.44);
+  ctx.quadraticCurveTo(R * 0.2, R * 0.32, R * 0.42, R * 0.44);
+  ctx.lineTo(R * 0.42, R * 0.3);
+  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, R * 0.3); ctx.lineTo(0, R * 0.44); ctx.stroke();
+  /* meşale */
+  ctx.lineWidth = Math.max(1, R * 0.05);
+  ctx.beginPath(); ctx.moveTo(0, R * 0.28); ctx.lineTo(0, -R * 0.05); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(0, -R * 0.05);
+  ctx.bezierCurveTo(-R * 0.22, -R * 0.16, -R * 0.14, -R * 0.4, 0, -R * 0.5);
+  ctx.bezierCurveTo(R * 0.14, -R * 0.4, R * 0.22, -R * 0.16, 0, -R * 0.05);
+  ctx.closePath(); ctx.fill();
+  /* ay-yıldız */
+  ctx.save();
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(0, -R * 0.28, R * 0.115, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = RED;
+  ctx.beginPath(); ctx.arc(R * 0.035, -R * 0.28, R * 0.09, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  ctx.restore();
+}
+
+/* MEB resmî şablon başlığı — tüm metinler ayarlardan düzenlenebilir */
+function drawMEBHeader(ctx, PW, PH, M, t, version, first) {
+  const logoBox = getMebLogoBox(M);
+  if (logoBox.show) drawMEBLogo(ctx, logoBox.x, logoBox.y, logoBox.w, logoBox.h);
+  const items = getMEBHeaderItems(ctx, PW, PH, M, t, version);
+
+  ['mebYear','mebSchool','mebLesson','mebExam','mebDate','mebNameLbl','mebClassLbl','mebNoLbl','mebScoreLbl'].forEach((key) => {
+    const it = items[key];
+    if (!it || !it.text) return;
+    drawText(ctx, it.text, it.x, it.y + (it.size >= 12 ? 3.8 : 3.5), { size: PT(it.size), bold: it.bold });
+  });
+
+  const labelY = Math.max(items.mebNameLbl.y, items.mebClassLbl.y, items.mebNoLbl.y, items.mebScoreLbl.y);
+  let y = labelY + 6.2;
+  if (!t.hideVersion && S.groups > 1) {
+    drawText(ctx, 'Kitapçık: ' + version, PW - M - 2, y - 6.2, { size: PT(9), bold: true, align: 'right' });
+  }
+  ctx.strokeStyle = '#111'; ctx.lineWidth = Math.max(1, 0.4 * SCALE);
+  ctx.beginPath(); ctx.moveTo(PX(M), PX(y)); ctx.lineTo(PX(PW - M), PX(y)); ctx.stroke();
+  y += 3.5;
+  if (!t.noDescription && S.description) {
+    y += drawText(ctx, S.description, M + 1, y, {
+      size: PT(7.5), italic: true, color: '#475569', maxW: PX(PW - 2 * M - 2),
+    }) + 1.5;
+  }
+  return y + 1;
+}
+
 function drawHeader(ctx, PW, PH, M, t, version, title, first) {
   if (S.watermark && !S.watermarkDivider) {
     ctx.save(); ctx.globalAlpha = 0.08; ctx.fillStyle = '#505050';
@@ -1270,6 +2329,20 @@ function drawHeader(ctx, PW, PH, M, t, version, title, first) {
     ctx.translate((PW / 2) * SCALE, (PH / 2) * SCALE);
     const wmAngle = t.negativeAngle ? -Math.abs(S.watermarkAngle ?? 45) : (S.watermarkAngle ?? 45);
     ctx.rotate((wmAngle * Math.PI) / 180); ctx.fillText(S.watermark, 0, 0); ctx.restore();
+  }
+  if (S.template === 'meb') {
+    if (!first) {
+      /* İkinci ve sonraki sayfalar: ince üst şerit, sayfa tam olarak sorulara ayrılır */
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = Math.max(1, 0.3 * SCALE);
+      ctx.beginPath(); ctx.moveTo(PX(M), PX(M + 5)); ctx.lineTo(PX(PW - M), PX(M + 5)); ctx.stroke();
+      drawText(ctx, S.mebSchool || S.school || '', M, M + 4, { size: PT(7.5), color: '#475569' });
+      const dash2 = (v) => (v && String(v).trim() ? String(v).trim() : '');
+      const mid = [dash2(S.mebLesson), dash2(S.mebGrade), dash2(S.mebExam)].filter(Boolean).join(' · ');
+      if (mid) drawText(ctx, mid, PW / 2, M + 4, { size: PT(8), bold: true, align: 'center' });
+      if (!t.hideVersion && S.groups > 1) drawText(ctx, 'Kitapçık: ' + version, PW - M, M + 4, { size: PT(7.5), align: 'right' });
+      return M + 8;
+    }
+    return drawMEBHeader(ctx, PW, PH, M, t, version, first);
   }
   if (S.testType === 'yazili') {
     if (!first) {
@@ -1301,15 +2374,15 @@ function drawHeader(ctx, PW, PH, M, t, version, title, first) {
   }
   if (S.testType === 'yaprak') {
     const headerTop = first ? M : M + 3;
-    drawText(ctx, (S.school || 'BİLİM AKADEMİ').toUpperCase(), M, headerTop + 4, { size: PT(14), bold: true, color: '#2c3e50' });
-    drawText(ctx, title.toUpperCase(), PW - M, headerTop + 4, { size: PT(16), bold: true, align: 'right', color: '#000' });
+    drawText(ctx, (S.school || 'BİLİM AKADEMİ').toLocaleUpperCase('tr-TR'), M, headerTop + 4, { size: PT(14), bold: true, color: '#2c3e50' });
+    drawText(ctx, title.toLocaleUpperCase('tr-TR'), PW - M, headerTop + 4, { size: PT(16), bold: true, align: 'right', color: '#000' });
     if (!t.hideVersion && S.groups > 1) {
       drawText(ctx, version + ' KİTAPÇIĞI', PW - M, headerTop + 10, { size: PT(7), bold: true, align: 'right', color: '#555' });
     }
     ctx.strokeStyle = '#333'; ctx.lineWidth = Math.max(1.5, 0.5 * SCALE);
     ctx.beginPath(); ctx.moveTo(PX(M), PX(headerTop + 13)); ctx.lineTo(PX(PW - M), PX(headerTop + 13)); ctx.stroke();
     let currentY = headerTop + 18;
-    if (S.konuKapsami) {
+    if (first && S.konuKapsami) {
       const topics = S.konuKapsami.split(',').map((s) => s.trim()).filter(Boolean);
       if (topics.length) {
         const topicText = '> ' + topics.join(' > ');
@@ -1320,7 +2393,7 @@ function drawHeader(ctx, PW, PH, M, t, version, title, first) {
         currentY += 12;
       }
     }
-    if (!t.noDescription && S.description) {
+    if (first && !t.noDescription && S.description) {
       currentY += drawText(ctx, S.description, M + 1, currentY, { size: PT(8), italic: true, color: '#475569', maxW: PX(PW - 2 * M - 2) }) + 1.5;
     }
     return currentY + 2;
@@ -1501,11 +2574,11 @@ function finishPage(page, PW, PH, M, pageNo, isFirst, contentTop, subTop, bottom
   }
   const t = parseTags(S.title);
   if (!t.noPageNumber) {
-    if (S.testType === 'yaprak') {
+    if (S.template !== 'meb' && S.testType === 'yaprak') {
       const footerY = PH - M + 3;
       ctx.strokeStyle = '#333'; ctx.lineWidth = Math.max(1.5, 0.5 * SCALE);
       ctx.beginPath(); ctx.moveTo(PX(M), PX(footerY - 4)); ctx.lineTo(PX(PW - M), PX(footerY - 4)); ctx.stroke();
-      drawText(ctx, (S.school || 'BİLİM AKADEMİ').toUpperCase(), M, footerY, { size: PT(9), bold: true, color: '#000' });
+      drawText(ctx, (S.school || 'BİLİM AKADEMİ').toLocaleUpperCase('tr-TR'), M, footerY, { size: PT(9), bold: true, color: '#000' });
       drawText(ctx, String(pageNo), PW - M, footerY, { size: PT(9), bold: true, align: 'right', color: '#000' });
     } else {
       drawText(ctx, '— ' + pageNo + ' —', PW / 2, PH - M + 3, { size: PT(8), align: 'center', color: '#64748b' });
@@ -1548,12 +2621,16 @@ async function renderPaperToBlob(idx) {
   const pages = [createPage(PW, PH)];
   let page = pages[0];
   const contentTop = drawHeader(page.ctx, PW, PH, M, t, version, title, true);
-  const subTop = M + 8;
-  const bottom = PH - M - (t.noPageNumber ? 0 : 5);
+  const isMeb = S.template === 'meb';
+  const footerH = t.noPageNumber ? 0 : (!isMeb && S.testType === 'yaprak' ? 10 : 5);
+  const subTop = !isMeb && S.testType === 'yaprak' ? M + 16 : M + 8;
+  const wantsFooterNote = isMeb || S.testType === 'yazili';
+  const bottomAdj = PH - M - footerH;
+  const usableH = bottomAdj - contentTop;
+  const maxH = Math.max(20, usableH * 0.88);
   const numCols = S.columns || 2;
   const colGap = 8;
   const colW = (PW - 2 * M - colGap * (numCols - 1)) / numCols;
-  const maxH = PH - 2 * M - 16;
   await Promise.all(ordered.filter((q) => q.type !== 'text' || q.imgSrc).map(getImg));
   const sharedBank = [];
   ordered.forEach((q) => { if (q.kind === 'bosluk' && q.bankShared) (q.wordBank || []).forEach((w) => { if (!sharedBank.includes(w)) sharedBank.push(w); }); });
@@ -1562,20 +2639,20 @@ async function renderPaperToBlob(idx) {
   let items = ordered.map((q) => {
     const w = colW - 6;
     if (q.type === 'text') { const it = { q, w, h: maxH }; prepText(it, page.ctx); it.h = Math.min(it.h, maxH); return it; }
-    let h = (q.h / Math.max(1, q.w)) * w; if (h > maxH) h = maxH; return { q, w, h };
+    return imgItem(q, w, maxH);
   });
-  if (S.smartLayout && numCols > 1) items = smartOrder(items, bottom - yStart, gap).map((it, i) => ({ ...it, num: i + 1 }));
-  let c = 0, y = yStart, firstPage = true, pageIndex = 1;
+  if (S.smartLayout && numCols > 1) items = smartOrder(items, bottomAdj - yStart, gap, page.ctx, colW).map((it, i) => ({ ...it, num: i + 1 }));
+  let c = 0, y = yStart, firstPage = true, pageIndex = 1, placedThisPage = 0;
   for (let n = 0; n < items.length; n++) {
     const it = items[n]; if (it.num === undefined) it.num = n + 1;
     let stemH = 0;
     if (it.q.stem) { setFont(page.ctx, { size: PT(8.5), bold: true }); stemH = wrapText(page.ctx, it.q.stem, colW * SCALE - PX(4)).length * 4.2 + 4; }
-    if (y + stemH + it.h > bottom) {
+    if (y + stemH + it.h > bottomAdj && placedThisPage > 0) {
       c++;
       if (c >= numCols) {
-        finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottom, S.testType === 'yazili');
+        finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottomAdj, wantsFooterNote);
         pageIndex++; page = createPage(PW, PH); pages.push(page); firstPage = false;
-        drawHeader(page.ctx, PW, PH, M, t, version, title, false); c = 0;
+        drawHeader(page.ctx, PW, PH, M, t, version, title, false); c = 0; placedThisPage = 0;
       }
       y = firstPage ? yStart : subTop;
     }
@@ -1584,12 +2661,12 @@ async function renderPaperToBlob(idx) {
       setFont(page.ctx, { size: PT(8.5) });
       const bankLines = wrapText(page.ctx, sharedBank.join('   •   '), (colW - 6) * SCALE);
       const bankBoxH = bankLines.length * 4.6 + 8;
-      if (y + bankBoxH + it.h > bottom) {
+      if (y + bankBoxH + it.h > bottomAdj && placedThisPage > 0) {
         c++;
         if (c >= numCols) {
-          finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottom, S.testType === 'yazili');
+          finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottomAdj, wantsFooterNote);
           pageIndex++; page = createPage(PW, PH); pages.push(page); firstPage = false;
-          drawHeader(page.ctx, PW, PH, M, t, version, title, false); c = 0;
+          drawHeader(page.ctx, PW, PH, M, t, version, title, false); c = 0; placedThisPage = 0;
         }
         y = firstPage ? yStart : subTop;
       }
@@ -1604,8 +2681,9 @@ async function renderPaperToBlob(idx) {
     if (it.q.stem) y += drawStemBox(page.ctx, it.q.stem, x, y, colW);
     drawQ(page.ctx, it, x, y);
     y += it.h + gap;
+    placedThisPage++;
   }
-  finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottom, S.testType === 'yazili');
+  finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottomAdj, wantsFooterNote);
   if (S.optic) { const op = createPage(PW, PH); drawOptic(op.ctx, PW, items.length, title, version); pages.push(op); }
   pages.forEach((p) => { p.bytes = jpegBytes(p.canvas.toDataURL('image/jpeg', 0.93)); });
   return { blob: buildPDF(pages), order: items.map((i) => i.q.id) };
@@ -1645,6 +2723,16 @@ function slugForFile(s) {
   const map = { 'ç':'c','Ç':'C','ğ':'g','Ğ':'G','ı':'i','İ':'I','ö':'o','Ö':'O','ş':'s','Ş':'S','ü':'u','Ü':'U' };
   return String(s || '').replace(/[çÇğĞıİöÖşŞüÜ]/g, (m) => map[m] || m).replace(/[^a-zA-Z0-9 _-]+/g, '').trim().replace(/\s+/g, ' ');
 }
+/* MEB modunda "Test Adı" alanı gizli olduğu için dosya adı otomatik üretilir. */
+function defaultBaseName(cleanTitle){
+  const base = slugForFile(cleanTitle);
+  if (base) return base;
+  if (S.template === 'meb') {
+    const combo = slugForFile([S.mebSchool, S.mebLesson, S.mebGrade, S.mebExam].filter(Boolean).join(' - '));
+    if (combo) return combo;
+  }
+  return 'Sinav';
+}
 function todayStr() {
   const d = new Date(); const p = (n) => String(n).padStart(2, '0');
   return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`;
@@ -1665,16 +2753,17 @@ function showResult(files) {
   $('resultModal').classList.replace('hidden', 'flex');
 }
 $('resultClose').onclick = () => $('resultModal').classList.replace('flex', 'hidden');
+const MAKE_BTN_DEFAULT_HTML = '<span class="pvMakeSpark">✨</span> Sınav Kağıdını Oluştur';
 $('makeBtn').onclick = async () => {
   collect();
   if (!questions.length) return alert('Önce soru yükleyin.');
-  $('makeBtn').disabled = true; $('makeBtn').textContent = '⏳ Hazırlanıyor...';
+  $('makeBtn').disabled = true; $('makeBtn').innerHTML = '⏳ Hazırlanıyor...';
   try {
     await ensureFont();
     const count = S.groups;
     const files = []; const orders = [];
     const tParsed = parseTags(S.title);
-    const baseName = slugForFile(tParsed.clean) || 'Test';
+    const baseName = defaultBaseName(tParsed.clean);
     const dateStr = todayStr();
     for (let i = 0; i < count; i++) {
       const r = await renderPaperToBlob(i);
@@ -1689,10 +2778,806 @@ $('makeBtn').onclick = async () => {
     alert('PDF oluşturulurken hata oluştu: ' + (e && e.message ? e.message : e));
     console.error(e);
   }
-  $('makeBtn').disabled = false; $('makeBtn').textContent = 'Kağıdı Hazırla · PDF';
+  $('makeBtn').disabled = false; $('makeBtn').innerHTML = MAKE_BTN_DEFAULT_HTML;
 };
+/* ================= CANLI SINAV KAĞIDI ÖNİZLEMESİ ================= */
+let pvPages = [], pvIndex = 0, pvTimer = null, pvBusy = false, pvDirty = false;
+
+function pvSetBusy(on){
+  $('pvBusy').classList.toggle('on', on);
+  $('pvLiveDot').classList.toggle('busy', on);
+}
+function schedulePreview(){
+  clearTimeout(pvTimer);
+  pvTimer = setTimeout(runPreview, 320);
+}
+async function runPreview(){
+  if (pvBusy) { pvDirty = true; return; }
+  pvBusy = true; pvSetBusy(true);
+  try {
+    collect();
+    const pages = await buildPreviewPages();
+    pvPages = pages;
+    if (pvIndex > pvPages.length - 1) pvIndex = pvPages.length - 1;
+    if (pvIndex < 0) pvIndex = 0;
+    showPvPage();
+  } catch (e) { console.error('Önizleme hatası:', e); }
+  pvBusy = false; pvSetBusy(false);
+  if (pvDirty) { pvDirty = false; schedulePreview(); }
+}
+function showPvPage(){
+  const stack = $('pvStack');
+  stack.innerHTML = '';
+  const has = pvPages.length > 0;
+  $('pvEmpty').classList.toggle('hide', has);
+  if (has) {
+    const c = pvPages[pvIndex].canvas;
+    c.className = 'pv-canvas';
+    stack.appendChild(c);
+  }
+  $('pvPageInfo').textContent = has ? (pvIndex + 1) + ' / ' + pvPages.length : '0 / 0';
+  $('pvPrev').disabled = !has || pvIndex === 0;
+  $('pvNext').disabled = !has || pvIndex >= pvPages.length - 1;
+  const sz = (S.pageSize || 'a4').toUpperCase();
+  const yon = S.orientation === 'landscape' ? 'Yatay' : 'Dikey';
+  $('pvMeta').textContent = has
+    ? sz + ' · ' + yon + ' · ' + (S.columns || 2) + ' sütun · ' + questions.length + ' soru · ' + pvPages.length + ' sayfa'
+    : '—';
+  if ($('pvBig').classList.contains('open')) showPvBig();
+}
+$('pvPrev').onclick = () => { if (pvIndex > 0) { pvIndex--; showPvPage(); } };
+$('pvNext').onclick = () => { if (pvIndex < pvPages.length - 1) { pvIndex++; showPvPage(); } };
+$('pvRefresh').onclick = () => { clearTimeout(pvTimer); runPreview(); };
+
+/* ---------- BÜYÜT VE DÜZENLE ---------- */
+let pvZoom = 0, pvFitZoom = 1;
+function refreshNow(){ clearTimeout(pvTimer); runPreview(); }
+
+function fitPreviewZoom(){
+  const wrap = $('pvBigWrap'), cv = $('pvBigCanvas');
+  if (!cv.width || !wrap.clientWidth || !wrap.clientHeight) return 1;
+  return Math.min(1, (wrap.clientWidth - 28) / cv.width, (wrap.clientHeight - 18) / cv.height);
+}
+function applyPreviewZoom(){
+  const cv = $('pvBigCanvas');
+  if (!cv.width) return;
+  cv.style.width = Math.round(cv.width * pvZoom) + 'px';
+  cv.style.height = Math.round(cv.height * pvZoom) + 'px';
+  requestAnimationFrame(layoutOverlay);
+}
+
+function showPvBig(){
+  const cv = $('pvBigCanvas');
+  if (!pvPages.length) { $('pvOverlay').innerHTML = ''; $('pvBigInfo').textContent = '0 / 0'; return; }
+  const src = pvPages[pvIndex].canvas;
+  cv.width = src.width; cv.height = src.height;
+  cv.getContext('2d').drawImage(src, 0, 0);
+  pvFitZoom = fitPreviewZoom();
+  if (!pvZoom) pvZoom = pvFitZoom;
+  pvZoom = Math.max(pvFitZoom * .55, Math.min(3.5, pvZoom));
+  applyPreviewZoom();
+  $('pvBigInfo').textContent = (pvIndex + 1) + ' / ' + pvPages.length;
+  $('pvBigPrev').disabled = pvIndex === 0;
+  $('pvBigNext').disabled = pvIndex >= pvPages.length - 1;
+  requestAnimationFrame(layoutOverlay);
+}
+let selectedHeaderItems = new Set();
+function layoutOverlay(){
+  const cv = $('pvBigCanvas'), pg = pvPages[pvIndex], ov = $('pvOverlay');
+  if (!pg) { ov.innerHTML = ''; return; }
+  const dispW = cv.clientWidth || cv.width, k = dispW / pg.w;
+  ov.style.width = dispW + 'px';
+  ov.style.height = (pg.h * k) + 'px';
+  
+  // Snap çizgisi ve seçim çerçevesi dışındaki tüm eski çipleri temizle
+  const snapLine = $('pvSnapLine');
+  const marquee = $('pvMarquee');
+  ov.innerHTML = '';
+  ov.appendChild(snapLine);
+  ov.appendChild(marquee);
+  
+  // 1. Sorular
+  (pg.items || []).forEach((it, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'pvChip';
+    chip.style.left = (it.x * k) + 'px';
+    chip.style.top = (it.y * k) + 'px';
+    chip.style.width = (it.w * k) + 'px';
+    chip.style.height = (it.h * k) + 'px';
+    const isImg = it.q.type !== 'text';
+    chip.innerHTML =
+      '<span class="pvNum">' + (i + 1) + '</span>' +
+      '<span class="pvActs">' +
+        (isImg
+          ? '<button type="button" data-act="crop" title="Görseli kırp">✂</button>' +
+            '<button type="button" data-act="fit" title="Sütun genişliğine sığdır">⤢</button>'
+          : '<button type="button" data-act="edit" title="Metni düzenle">✎</button>') +
+      '</span>' +
+      (isImg ? '<span class="pvRz" data-act="rz" title="Boyutlandır"></span>' : '');
+    ov.appendChild(chip);
+    wireChip(chip, it, k);
+  });
+  
+  // 2. MEB Başlığı Metin Çipleri (Header Draggable & Selectable Items)
+  if (pg.mebHeaderItems) {
+    const headerLabels = {
+      mebYear:'YIL', mebSchool:'OKUL', mebLesson:'DERS', mebExam:'SINIF+SINAV', mebDate:'TARIH',
+      mebNameLbl:'AD', mebClassLbl:'SINIF ET', mebNoLbl:'NO', mebScoreLbl:'PUAN'
+    };
+    Object.values(pg.mebHeaderItems).forEach((it) => {
+      if (!it.text) return;
+      const chip = document.createElement('div');
+      chip.className = 'pvChip pvTextChip' + (selectedHeaderItems.has(it.id) ? ' selected' : '');
+      chip.dataset.hid = it.id;
+      chip.style.left = (it.x * k) + 'px';
+      chip.style.top = (it.y * k) + 'px';
+      chip.style.width = (it.w * k) + 'px';
+      chip.style.height = (it.h * k) + 'px';
+      chip.innerHTML = '<span class="pvNum" style="background:#475569;font-size:7px">' + (headerLabels[it.id] || it.id) + '</span>';
+      ov.appendChild(chip);
+      wireHeaderChip(chip, it, k);
+    });
+  }
+  
+  // 3. MEB/Custom Logosunun Çipi (Sürükleme ve Boyutlandırma Ortak)
+  if (pg.logoBox) {
+    const box = pg.logoBox;
+    const chip = document.createElement('div');
+    chip.className = 'pvChip pvLogoChip' + (selectedHeaderItems.has('logo') ? ' selected' : '');
+    chip.dataset.hid = 'logo';
+    chip.style.left = (box.x * k) + 'px';
+    chip.style.top = (box.y * k) + 'px';
+    chip.style.width = (box.w * k) + 'px';
+    chip.style.height = (box.h * k) + 'px';
+    chip.innerHTML = '<span class="pvNum">LOGO</span>' +
+      '<span class="pvActs"><button type="button" data-act="logofix" title="Logoyu doğal oranına getir">↺</button></span>' +
+      '<span class="pvRz" data-act="rz" title="Boyutlandır"></span>';
+    ov.appendChild(chip);
+    wireLogoChipCombined(chip, k);
+  }
+}
+
+let dragState = null, suppressClick = false;
+function wireChip(chip, it, k){
+  chip.addEventListener('pointerdown', (e) => {
+    const act = e.target.dataset.act;
+    if (act && act !== 'rz') return;                       // butonlar click ile çalışır
+    dragState = { chip, it, k, mode: act === 'rz' ? 'rz' : 'drag',
+      sx: e.clientX, sy: e.clientY, moved: false,
+      w0: it.w, h0: it.h, scale0: it.q.scale || 1 };
+    chip.setPointerCapture(e.pointerId);
+    chip.classList.add('dragging');
+    e.preventDefault();
+  });
+  chip.addEventListener('pointermove', (e) => {
+    const d = dragState; if (!d || d.chip !== chip) return;
+    const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+    if (Math.abs(dx) + Math.abs(dy) > 3) d.moved = true;
+    if (!d.moved) return;
+    if (d.mode === 'rz') {
+      const baseW = d.w0 / d.scale0;
+      let nw = Math.max(12, Math.min(baseW, d.w0 + dx / d.k));
+      let nh = Math.max(8, d.h0 + dy / d.k);
+      it.q.scale = nw / baseW;
+      it.q.aspect = nh / nw;
+      chip.style.width = (nw * d.k) + 'px';
+      chip.style.height = (nh * d.k) + 'px';
+    } else {
+      chip.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      showDropLine(e.clientX, e.clientY, d.it.q.id);
+    }
+  });
+  const end = (e) => {
+    const d = dragState; if (!d || d.chip !== chip) return;
+    chip.classList.remove('dragging'); chip.style.transform = '';
+    dragState = null; hideDropLine();
+    if (!d.moved) return;
+    suppressClick = true;
+    if (d.mode === 'rz') { refreshNow(); return; }
+    const target = dropTarget(e.clientX, e.clientY, d.it.q.id);
+    if (target) moveQuestion(d.it.q.id, target); else refreshNow();
+  };
+  chip.addEventListener('pointerup', end);
+  chip.addEventListener('pointercancel', end);
+  chip.addEventListener('click', (e) => {
+    if (suppressClick) { suppressClick = false; return; }
+    const act = e.target.dataset.act;
+    if (act === 'edit') return editFromPaper(it.q);
+    if (act === 'crop') return openImgCrop(it.q);
+    if (act === 'fit') { it.q.scale = 1; it.q.aspect = undefined; return refreshNow(); }
+    if (it.q.type === 'text') editFromPaper(it.q);
+  });
+}
+/* MEB logosu için sadece boyutlandırma (pozisyon sabit) — köşeden sürükleyerek
+   genişlik ve yükseklik bağımsız değiştirilir; wide/dar gelen görsel elle düzeltilebilir. */
+/* Çoklu sürükleme ve mıknatıs (snap) hizalama yöneticisi.
+   İmleç merkez çizgiye (PW / 2) yaklaştığında kırmızı dikey kılavuz çizgisi gösterilir. */
+let headerDragState = null;
+function syncHeaderSelectionDom(){
+  document.querySelectorAll('.pvTextChip,.pvLogoChip').forEach((chip)=>{
+    chip.classList.toggle('selected', selectedHeaderItems.has(chip.dataset.hid));
+  });
+}
+function startHeaderDrag(e, startId, k, isLogo, isRz) {
+  if (isRz) {
+    // Sadece Logo boyutlandırma tutamacı tetiklendiyse
+    headerDragState = {
+      mode: 'resize_logo',
+      sx: e.clientX, sy: e.clientY,
+      w0: S.logoW || 26, h0: S.logoH || 26,
+      k, moved: false
+    };
+    return;
+  }
+  
+  // Eğer tıklanan eleman seçili değilse, çoklu seçim değilse tek seçim yap
+  if (!selectedHeaderItems.has(startId)) {
+    if (!e.ctrlKey && !e.shiftKey) {
+      selectedHeaderItems.clear();
+    }
+    selectedHeaderItems.add(startId);
+    syncHeaderSelectionDom();
+  }
+  
+  // Seçili tüm elemanların başlangıç koordinatlarını kaydet
+  const itemsState = {};
+  const pg = pvPages[pvIndex];
+  
+  selectedHeaderItems.forEach((id) => {
+    if (id === 'logo') {
+      const box = getMebLogoBox(S.margin || 10);
+      itemsState[id] = { x0: box.x, y0: box.y, w: box.w, h: box.h };
+    } else if (pg.mebHeaderItems && pg.mebHeaderItems[id]) {
+      const it = pg.mebHeaderItems[id];
+      itemsState[id] = { x0: it.x, y0: it.y, w: it.w, h: it.h };
+    }
+  });
+  
+  headerDragState = {
+    mode: 'drag',
+    sx: e.clientX, sy: e.clientY,
+    k, itemsState, moved: false,
+    startId
+  };
+}
+
+function moveHeaderDrag(e) {
+  const d = headerDragState; if (!d) return;
+  const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+  if (Math.abs(dx) + Math.abs(dy) > 2) d.moved = true;
+  if (!d.moved) return;
+  
+  const snapLine = $('pvSnapLine');
+  const pg = pvPages[pvIndex];
+  const [PW, PH] = pageSizeMM();
+  const pageCenter = PW / 2;
+  
+  if (d.mode === 'resize_logo') {
+    const nw = Math.max(8, d.w0 + dx / d.k);
+    const nh = Math.max(8, d.h0 + dy / d.k);
+    const logoChip = document.querySelector('.pvLogoChip');
+    if (logoChip) {
+      logoChip.style.width = (nw * d.k) + 'px';
+      logoChip.style.height = (nh * d.k) + 'px';
+    }
+    d.nw = nw; d.nh = nh;
+    return;
+  }
+  
+  // Sürükleme akışı: tüm seçili elemanları hareket ettir + Snap kontrolü
+  let deltaX = dx / d.k;
+  let deltaY = dy / d.k;
+  
+  // Snap (mıknatıs) hizalama kontrolü: sürüklenen elemanlardan herhangi biri merkez çizgisine yakın mı?
+  let snapX = null;
+  const SNAP_THRESHOLD = 1.6; // 1.6 mm tolerans
+  
+  for (const [id, s] of Object.entries(d.itemsState)) {
+    const targetX = s.x0 + deltaX;
+    const targetCenterX = targetX + s.w / 2;
+    if (Math.abs(targetCenterX - pageCenter) < SNAP_THRESHOLD) {
+      // Snap tetiklendi! Grubu bu elemanın tam sayfa ortasına ortalanacağı şekilde hizala
+      const exactDeltaX = (pageCenter - s.w / 2) - s.x0;
+      deltaX = exactDeltaX;
+      snapX = pageCenter;
+      break;
+    }
+  }
+  
+  // Snap çizgisinin gösterilmesi/gizlenmesi
+  if (snapX !== null) {
+    snapLine.style.display = 'block';
+    snapLine.style.left = (snapX * d.k) + 'px';
+    snapLine.style.height = '100%';
+  } else {
+    snapLine.style.display = 'none';
+  }
+  
+  // DOM üzerindeki elemanların konumlarını anlık güncelle
+  const chips = document.querySelectorAll('.pvChip');
+  chips.forEach((chip) => {
+    const id = chip.dataset.hid;
+    if (!id || !d.itemsState[id]) return;
+    const s = d.itemsState[id];
+    chip.style.left = ((s.x0 + deltaX) * d.k) + 'px';
+    chip.style.top = ((s.y0 + deltaY) * d.k) + 'px';
+  });
+  
+  d.deltaX = deltaX;
+  d.deltaY = deltaY;
+}
+
+function endHeaderDrag(e) {
+  const d = headerDragState; if (!d) return;
+  headerDragState = null;
+  $('pvSnapLine').style.display = 'none';
+  
+  if (!d.moved) return;
+  suppressClick = true;
+  
+  if (d.mode === 'resize_logo') {
+    S.logoW = d.nw; S.logoH = d.nh;
+    refreshNow();
+    return;
+  }
+  
+  // Sürüklenen tüm elemanların yeni konumlarını kalıcı olarak kaydet
+  S.mebPos = S.mebPos || {};
+  
+  for (const [id, s] of Object.entries(d.itemsState)) {
+    const nx = s.x0 + d.deltaX;
+    const ny = s.y0 + d.deltaY;
+    if (id === 'logo') {
+      S.logoX = nx;
+      S.logoY = ny;
+    } else {
+      S.mebPos[id] = { x: nx, y: ny };
+    }
+  }
+  
+  refreshNow();
+}
+
+function wireHeaderChip(chip, it, k) {
+  chip.addEventListener('pointerdown', (e) => {
+    chip.setPointerCapture(e.pointerId);
+    startHeaderDrag(e, it.id, k, false, false);
+    e.stopPropagation();
+  });
+  chip.addEventListener('pointermove', (e) => {
+    moveHeaderDrag(e);
+    e.stopPropagation();
+  });
+  const up = (e) => {
+    try { chip.releasePointerCapture(e.pointerId); } catch (err) {}
+    endHeaderDrag(e);
+    e.stopPropagation();
+  };
+  chip.addEventListener('pointerup', up);
+  chip.addEventListener('pointercancel', up);
+}
+
+function wireLogoChipCombined(chip, k) {
+  chip.addEventListener('click', (e) => {
+    if (e.target.dataset.act === 'logofix') {
+      e.stopPropagation();
+      fixLogoAspect();
+    }
+  });
+  chip.addEventListener('pointerdown', (e) => {
+    if (e.target.dataset.act === 'logofix') { e.stopPropagation(); return; }
+    const isRz = e.target.dataset.act === 'rz';
+    chip.setPointerCapture(e.pointerId);
+    startHeaderDrag(e, 'logo', k, true, isRz);
+    e.stopPropagation();
+  });
+  chip.addEventListener('pointermove', (e) => {
+    moveHeaderDrag(e);
+    e.stopPropagation();
+  });
+  const up = (e) => {
+    try { chip.releasePointerCapture(e.pointerId); } catch (err) {}
+    endHeaderDrag(e);
+    e.stopPropagation();
+  };
+  chip.addEventListener('pointerup', up);
+  chip.addEventListener('pointercancel', up);
+}
+function pvPageCoords(clientX, clientY){
+  const pg = pvPages[pvIndex], cv = $('pvBigCanvas'), r = cv.getBoundingClientRect();
+  const k = r.width / pg.w;
+  return { mx: (clientX - r.left) / k, my: (clientY - r.top) / k, k };
+}
+function dropTarget(cx, cy, selfId){
+  const pg = pvPages[pvIndex]; if (!pg) return null;
+  const { mx, my } = pvPageCoords(cx, cy);
+  let best = null, bd = Infinity;
+  (pg.items || []).forEach((it) => {
+    if (it.q.id === selfId) return;
+    const dd = Math.hypot(it.x + it.w / 2 - mx, it.y + it.h / 2 - my);
+    if (dd < bd) { bd = dd; best = it; }
+  });
+  return best ? { id: best.q.id, after: my > best.y + best.h / 2 } : null;
+}
+function showDropLine(cx, cy, selfId){
+  const pg = pvPages[pvIndex]; if (!pg) return;
+  const target = dropTarget(cx, cy, selfId);
+  if (!target) return hideDropLine();
+  const it = (pg.items || []).find((i) => i.q.id === target.id); if (!it) return;
+  const { mx, my, k } = pvPageCoords(cx, cy);
+  const line = $('pvDropLine');
+  line.style.display = 'block';
+  line.style.left = (it.x * k) + 'px';
+  line.style.width = (it.w * k) + 'px';
+  line.style.top = ((target.after ? it.y + it.h : it.y) * k - 1) + 'px';
+}
+function hideDropLine(){ $('pvDropLine').style.display = 'none'; }
+function moveQuestion(dragId, target){
+  const di = questions.findIndex((q) => q.id === dragId);
+  if (di < 0 || dragId === target.id) return refreshNow();
+  const [dq] = questions.splice(di, 1);
+  const ti = questions.findIndex((q) => q.id === target.id);
+  const at = ti < 0 ? questions.length : ti + (target.after ? 1 : 0);
+  questions.splice(at, 0, dq);
+  render(); refreshNow();
+}
+
+/* Metin sorusunu kağıt üzerinden düzenle */
+function editFromPaper(q){
+  $('pvBig').classList.remove('open');   // editör her zaman önizlemenin üstünde ve tek başına kalsın
+  openText(q);
+}
+
+/* Görsel soruyu kağıt üzerinden kırp */
+let icTarget = null, icSel = null, icDraw = false, icP0 = { x: 0, y: 0 };
+function openImgCrop(q){
+  icTarget = q; icSel = null;
+  $('icImg').src = q.src;
+  $('imgCropModal').classList.add('open');
+  requestAnimationFrame(drawIcRect);
+}
+function icPos(e){
+  const im = $('icImg'), r = im.getBoundingClientRect();
+  return { x: Math.max(0, Math.min(r.width, e.clientX - r.left)), y: Math.max(0, Math.min(r.height, e.clientY - r.top)) };
+}
+$('icStage').addEventListener('pointerdown', (e) => {
+  icDraw = true; const p = icPos(e); icP0 = { x: p.x, y: p.y };
+  icSel = { x: p.x, y: p.y, w: 0, h: 0 };
+  $('icStage').setPointerCapture(e.pointerId); drawIcRect(); e.preventDefault();
+});
+$('icStage').addEventListener('pointermove', (e) => {
+  if (!icDraw) return; const p = icPos(e);
+  icSel = { x: Math.min(icP0.x, p.x), y: Math.min(icP0.y, p.y), w: Math.abs(p.x - icP0.x), h: Math.abs(p.y - icP0.y) };
+  drawIcRect();
+});
+$('icStage').addEventListener('pointerup', () => { icDraw = false; });
+function drawIcRect(){
+  const r = $('icRect');
+  if (!icSel || icSel.w < 2 || icSel.h < 2) { r.style.display = 'none'; return; }
+  r.style.display = 'block';
+  r.style.left = icSel.x + 'px'; r.style.top = icSel.y + 'px';
+  r.style.width = icSel.w + 'px'; r.style.height = icSel.h + 'px';
+}
+$('icReset').onclick = () => { icSel = null; drawIcRect(); };
+$('icClose').onclick = () => { $('imgCropModal').classList.remove('open'); icTarget = null; };
+$('imgCropModal').onclick = (e) => { if (e.target === $('imgCropModal')) { $('imgCropModal').classList.remove('open'); icTarget = null; } };
+$('icApply').onclick = () => {
+  if (!icTarget) return;
+  const im = $('icImg');
+  if (!icSel || icSel.w < 6 || icSel.h < 6) { alert('Önce kırpılacak alanı çerçeveleyin.'); return; }
+  const sc = im.naturalWidth / Math.max(1, im.clientWidth);
+  const c = document.createElement('canvas');
+  c.width = Math.round(icSel.w * sc); c.height = Math.round(icSel.h * sc);
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(im, icSel.x * sc, icSel.y * sc, icSel.w * sc, icSel.h * sc, 0, 0, c.width, c.height);
+  icTarget.src = c.toDataURL('image/jpeg', 0.92);
+  icTarget.w = c.width; icTarget.h = c.height;
+  icTarget.scale = 1; icTarget.aspect = undefined;
+  delete imgCache[icTarget.id];
+  $('imgCropModal').classList.remove('open');
+  icTarget = null;
+  render(); refreshNow();
+};
+
+$('pvOpenBig').onclick = () => { pvZoom = 0; $('pvBig').classList.add('open'); requestAnimationFrame(showPvBig); };
+function closePvBig(){
+  $('pvBig').classList.remove('open');
+  pvZoom = 0;
+  selectedHeaderItems.clear();
+}
+$('pvBigClose').onclick = closePvBig;
+$('pvBig').onclick = (e) => { if (e.target === $('pvBig')) closePvBig(); };
+$('pvBigPrev').onclick = () => { if (pvIndex > 0) { pvIndex--; showPvPage(); } };
+$('pvBigNext').onclick = () => { if (pvIndex < pvPages.length - 1) { pvIndex++; showPvPage(); } };
+$('pvZoomReset').onclick = () => { pvZoom = pvFitZoom; applyPreviewZoom(); };
+$('pvBigWrap').addEventListener('wheel', (e) => {
+  if (!$('pvBig').classList.contains('open') || !pvZoom) return;
+  e.preventDefault();
+  const wrap = $('pvBigWrap'), cv = $('pvBigCanvas'), old = pvZoom;
+  const next = Math.max(pvFitZoom * .55, Math.min(3.5, old * Math.exp(-e.deltaY * .0015)));
+  if (Math.abs(next - old) < .001) return;
+  const cr = cv.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+  const pointX = wrap.scrollLeft + e.clientX - cr.left;
+  const pointY = wrap.scrollTop + e.clientY - cr.top;
+  const mouseX = e.clientX - wr.left, mouseY = e.clientY - wr.top;
+  pvZoom = next; applyPreviewZoom();
+  const ratio = next / old;
+  requestAnimationFrame(() => {
+    wrap.scrollLeft = pointX * ratio - mouseX;
+    wrap.scrollTop = pointY * ratio - mouseY;
+  });
+}, { passive:false });
+
+/* Boş kağıt ve arka plan alanlarında pointer hareketleri:
+   1. Normal sürükleme: Sayfayı yukarı/aşağı kaydırır (Grab Pan).
+   2. Shift tuşuna basılıyken sürükleme: Mavi seçim kutusu (Marquee) çizer ve toplu seçim yapar.
+   3. Boş alana tıklama: Seçimleri temizler. */
+let pvPan = null;
+const pvBigWrap = $('pvBigWrap');
+pvBigWrap.addEventListener('pointerdown', (e) => {
+  if (!$('pvBig').classList.contains('open') || e.button !== 0) return;
+  
+  // Çiplerden birine tıklandıysa, kaydırma/seçim yapma
+  if (e.target.closest && e.target.closest('.pvChip')) return;
+  
+  const isMarqueeMode = e.shiftKey;
+  const rect = $('pvOverlay').getBoundingClientRect();
+  const startX = e.clientX - rect.left;
+  const startY = e.clientY - rect.top;
+  
+  pvPan = {
+    id: e.pointerId,
+    mode: isMarqueeMode ? 'marquee' : 'pan',
+    x: e.clientX, y: e.clientY,
+    startX, startY,
+    left: pvBigWrap.scrollLeft, top: pvBigWrap.scrollTop,
+    moved: false
+  };
+  
+  if (isMarqueeMode) {
+    const marq = $('pvMarquee');
+    marq.style.display = 'block';
+    marq.style.left = startX + 'px';
+    marq.style.top = startY + 'px';
+    marq.style.width = '0px';
+    marq.style.height = '0px';
+  } else {
+    pvBigWrap.classList.add('panning');
+  }
+  
+  pvBigWrap.setPointerCapture(e.pointerId);
+});
+
+pvBigWrap.addEventListener('pointermove', (e) => {
+  if (!pvPan || pvPan.id !== e.pointerId) return;
+  const dx = e.clientX - pvPan.x, dy = e.clientY - pvPan.y;
+  if (Math.abs(dx) + Math.abs(dy) > 3) pvPan.moved = true;
+  
+  if (pvPan.mode === 'marquee') {
+    const rect = $('pvOverlay').getBoundingClientRect();
+    const curX = e.clientX - rect.left;
+    const curY = e.clientY - rect.top;
+    
+    const x = Math.min(pvPan.startX, curX);
+    const y = Math.min(pvPan.startY, curY);
+    const w = Math.abs(curX - pvPan.startX);
+    const h = Math.abs(curY - pvPan.startY);
+    
+    const marq = $('pvMarquee');
+    marq.style.left = x + 'px';
+    marq.style.top = y + 'px';
+    marq.style.width = w + 'px';
+    marq.style.height = h + 'px';
+  } else {
+    pvBigWrap.scrollLeft = pvPan.left - dx;
+    pvBigWrap.scrollTop = pvPan.top - dy;
+  }
+  e.preventDefault();
+});
+
+function stopPvPan(e){
+  if (!pvPan || pvPan.id !== e.pointerId) return;
+  
+  if (pvPan.mode === 'marquee') {
+    const marq = $('pvMarquee');
+    marq.style.display = 'none';
+    
+    // Çerçeve içindeki tüm metin çipleri ve logo çipini seç
+    if (pvPan.moved) {
+      const mx = parseFloat(marq.style.left);
+      const my = parseFloat(marq.style.top);
+      const mw = parseFloat(marq.style.width);
+      const mh = parseFloat(marq.style.height);
+      
+      if (!e.ctrlKey && !e.shiftKey) {
+        selectedHeaderItems.clear();
+      }
+      
+      const chips = document.querySelectorAll('.pvTextChip, .pvLogoChip');
+      chips.forEach((chip) => {
+        const cx = parseFloat(chip.style.left);
+        const cy = parseFloat(chip.style.top);
+        const cw = parseFloat(chip.style.width);
+        const ch = parseFloat(chip.style.height);
+        if (cx < mx + mw && cx + cw > mx && cy < my + mh && cy + ch > my) {
+          const id = chip.dataset.hid;
+          if (id) selectedHeaderItems.add(id);
+        }
+      });
+      layoutOverlay();
+    }
+  } else {
+    pvBigWrap.classList.remove('panning');
+    // Eğer hiç hareket ettirmeden boş alana tıklandıysa tüm seçimi temizle
+    if (!pvPan.moved) {
+      selectedHeaderItems.clear();
+      layoutOverlay();
+    }
+  }
+  
+  try { pvBigWrap.releasePointerCapture(e.pointerId); } catch (err) {}
+  pvPan = null;
+}
+pvBigWrap.addEventListener('pointerup', stopPvPan);
+pvBigWrap.addEventListener('pointercancel', stopPvPan);
+window.addEventListener('resize', () => {
+  if (!$('pvBig').classList.contains('open')) return;
+  pvFitZoom = fitPreviewZoom();
+  pvZoom = Math.max(pvFitZoom * .55, Math.min(3.5, pvZoom));
+  applyPreviewZoom();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if ($('imgCropModal').classList.contains('open')) $('imgCropModal').classList.remove('open');
+  else if ($('textModal').classList.contains('flex')) closeModal('textModal');
+  else if ($('pvBig').classList.contains('open')) closePvBig();
+});
+
+/* ---------- Ayarlar açılınca önizleme sağa süzülür ---------- */
+function pvDock(open){
+  const pane = $('previewPane'), card = pane && pane.querySelector('.pv-card');
+  if (!card) return;
+  const first = card.getBoundingClientRect();
+  document.body.classList.toggle('pv-docked', open);
+  const last = card.getBoundingClientRect();
+  if (!first.width || !last.width) return;
+  const dx = first.left - last.left, dy = first.top - last.top;
+  const sx = first.width / last.width, sy = first.height / last.height;
+  card.style.transformOrigin = 'top left';
+  card.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx + ',' + sy + ')';
+  requestAnimationFrame(() => {
+    card.style.transition = 'transform .55s cubic-bezier(.22,1,.36,1)';
+    card.style.transform = 'translate(0,0) scale(1,1)';
+    setTimeout(() => { card.style.transition = ''; card.style.transform = ''; card.style.transformOrigin = ''; }, 600);
+  });
+}
+
+/* Kağıdı sayfa sayfa çizer (PDF ile birebir aynı motor, sadece ekrana) */
+/* Görsel soru boyutlandırma: q.scale (genişlik çarpanı) + q.aspect (h/w oranı) */
+function imgItem(q, w, maxH){
+  const ar0 = q.h / Math.max(1, q.w);
+  const custom = (q.scale != null && q.scale !== 1) || q.aspect != null;
+  if (!custom) { let h = ar0 * w; if (h > maxH) h = maxH; return { q, w, h }; }
+  let iw = w * (q.scale || 1); if (iw > w) iw = w; if (iw < 8) iw = 8;
+  let ih = (q.aspect != null ? q.aspect : ar0) * iw;
+  if (ih > maxH) ih = maxH;
+  return { q, w: iw, h: ih };
+}
+function trackItem(pg, o){ if (!pg.items) pg.items = []; pg.items.push(o); }
+
+async function buildPreviewPages(){
+  await ensureFont();
+  const t = parseTags(S.title);
+  const [PW, PH] = pageSizeMM();
+  const M = S.margin || 10;
+  const version = LETTERS[0];
+  const gap = S.spacing ? Math.max(5, S.spacingValue) : 7;
+  const ordered = booklet(questions, 0);
+  const title = t.noUppercase ? t.clean : t.clean.toLocaleUpperCase('tr-TR');
+  const pages = [createPage(PW, PH)];
+  pages[0].items = [];
+  /* MEB şablonunda logo yalnızca ilk sayfada var; "Büyüt ve Düzenle" ekranında
+     boyutlandırma tutamacı gösterebilmek için kutusunu sayfaya kaydediyoruz. */
+  if (S.template === 'meb') {
+    const lb = getMebLogoBox(M);
+    if (lb.show) pages[0].logoBox = lb;
+    /* Metin çipleri için koordinatları topluyoruz.
+       Çipler sayfa canvasının üstünde tam text sınırlarıyla görüntülenecektir. */
+    const tempCanvas = createPage(PW, PH).canvas;
+    const tempCtx = tempCanvas.getContext('2d');
+    pages[0].mebHeaderItems = getMEBHeaderItems(tempCtx, PW, PH, M, t, version);
+  }
+  let page = pages[0];
+  const contentTop = drawHeader(page.ctx, PW, PH, M, t, version, title, true);
+  const isMeb = S.template === 'meb';
+  const footerH = t.noPageNumber ? 0 : (!isMeb && S.testType === 'yaprak' ? 10 : 5);
+  const subTop = !isMeb && S.testType === 'yaprak' ? M + 16 : M + 8;
+  const wantsFooterNote = isMeb || S.testType === 'yazili';
+  const bottomAdj = PH - M - footerH;
+  const usableH = bottomAdj - contentTop;
+  const maxH = Math.max(20, usableH * 0.88);
+  const numCols = S.columns || 2;
+  const colGap = 8;
+  const colW = (PW - 2 * M - colGap * (numCols - 1)) / numCols;
+  await Promise.all(ordered.filter((q) => q.type !== 'text' || q.imgSrc).map(getImg));
+  const sharedBank = [];
+  ordered.forEach((q) => { if (q.kind === 'bosluk' && q.bankShared) (q.wordBank || []).forEach((w) => { if (!sharedBank.includes(w)) sharedBank.push(w); }); });
+  let sharedBankDrawn = false;
+  const yStart = contentTop;
+  let items = ordered.map((q) => {
+    const w = colW - 6;
+    if (q.type === 'text') { const it = { q, w, h: maxH }; prepText(it, page.ctx); it.h = Math.min(it.h, maxH); return it; }
+    return imgItem(q, w, maxH);
+  });
+  if (S.smartLayout && numCols > 1) items = smartOrder(items, bottomAdj - yStart, gap, page.ctx, colW).map((it, i) => ({ ...it, num: i + 1 }));
+  let c = 0, y = yStart, firstPage = true, pageIndex = 1, placedThisPage = 0;
+  for (let n = 0; n < items.length; n++) {
+    const it = items[n]; if (it.num === undefined) it.num = n + 1;
+    let stemH = 0;
+    if (it.q.stem) { setFont(page.ctx, { size: PT(8.5), bold: true }); stemH = wrapText(page.ctx, it.q.stem, colW * SCALE - PX(4)).length * 4.2 + 4; }
+    if (y + stemH + it.h > bottomAdj && placedThisPage > 0) {
+      c++;
+      if (c >= numCols) {
+        finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottomAdj, wantsFooterNote);
+        pageIndex++; page = createPage(PW, PH); pages.push(page); firstPage = false;
+        drawHeader(page.ctx, PW, PH, M, t, version, title, false); c = 0; placedThisPage = 0;
+      }
+      y = firstPage ? yStart : subTop;
+    }
+    const x = M + c * (colW + colGap);
+    if (!sharedBankDrawn && sharedBank.length && it.q.kind === 'bosluk') {
+      setFont(page.ctx, { size: PT(8.5) });
+      const bankLines = wrapText(page.ctx, sharedBank.join('   •   '), (colW - 6) * SCALE);
+      const bankBoxH = bankLines.length * 4.6 + 8;
+      if (y + bankBoxH + it.h > bottomAdj && placedThisPage > 0) {
+        c++;
+        if (c >= numCols) {
+          finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottomAdj, wantsFooterNote);
+          pageIndex++; page = createPage(PW, PH); pages.push(page); firstPage = false;
+          drawHeader(page.ctx, PW, PH, M, t, version, title, false); c = 0; placedThisPage = 0;
+        }
+        y = firstPage ? yStart : subTop;
+      }
+      const bx = M + c * (colW + colGap);
+      page.ctx.fillStyle = '#fffbeb'; page.ctx.fillRect(PX(bx), PX(y), PX(colW), PX(bankBoxH));
+      page.ctx.strokeStyle = '#f59e0b'; page.ctx.lineWidth = Math.max(1, 0.35 * SCALE);
+      page.ctx.strokeRect(PX(bx), PX(y), PX(colW), PX(bankBoxH));
+      drawText(page.ctx, 'KELİME HAVUZU', bx + 3, y + 4.5, { size: PT(8), bold: true, color: '#92400e' });
+      bankLines.forEach((l, i) => { drawText(page.ctx, l, bx + 3, y + 9.5 + i * 4.6, { size: PT(8.5), color: '#78350f' }); });
+      y += bankBoxH + 3; sharedBankDrawn = true;
+    }
+    if (it.q.stem) y += drawStemBox(page.ctx, it.q.stem, x, y, colW);
+    drawQ(page.ctx, it, x, y);
+    trackItem(page, { q: it.q, x, y, w: it.w, h: it.h, num: it.num, p: pageIndex });
+    y += it.h + gap;
+    placedThisPage++;
+  }
+  finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottomAdj, wantsFooterNote);
+  if (S.optic) { const op = createPage(PW, PH); drawOptic(op.ctx, PW, items.length, title, version); pages.push(op); }
+  return pages;
+}
+
+/* render() her çağrıldığında önizlemeyi de tazele */
+(function hookRender(){
+  const _r = render;
+  render = function(){
+    try { _r.apply(this, arguments); }
+    catch (e) { console.error('render hatası:', e); }
+    schedulePreview();
+  };
+})();
+
+/* Ayar panelindeki her değişiklik önizlemeyi günceller */
+['input','change'].forEach(ev=>{
+  $('sidebarPanel').addEventListener(ev, schedulePreview);
+});
+[...$('typeTabs').children].forEach(b=>b.addEventListener('click', schedulePreview));
+$('advBtn').addEventListener('click', schedulePreview);
+
 ensureFont();
 render();
+runPreview();
 </script>
 </body>
 </html>
