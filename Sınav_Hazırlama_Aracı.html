@@ -222,7 +222,20 @@
   body.pv-docked .pv-card{height:100%;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(2,6,23,.5),0 0 0 1px rgba(148,163,184,.28)}
   body.pv-docked #pvWrap{max-height:none;flex:1}
   @media (max-width:1023px){
-    body.pv-docked #previewPane{width:calc(100vw - 1.1rem);left:50%;top:3.7rem;bottom:.55rem}
+    /* Tablet: önizleme yalnızca sidebar'ın sağında kalan alanı kullanır. */
+    #sidebarPanel.open{z-index:48}
+    body.pv-docked #previewPane{
+      left:calc(260px + .55rem);right:.55rem;
+      width:auto;max-width:none;
+      top:3.7rem;bottom:.55rem;
+      transform:none;z-index:46;
+    }
+    body.pv-docked .pv-card{min-width:0}
+  }
+  @media (max-width:559px){
+    /* Dar telefonlarda kalan alan bir kağıdı okunur göstermeye yetmez.
+       Ayarlar tamamen erişilebilir kalsın diye dock önizlemesi gizlenir. */
+    body.pv-docked #previewPane{display:none}
   }
 
   .pv-big-btn{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}
@@ -369,6 +382,87 @@
   html.dark .icFoot button{background:#1e293b;border-color:#334155;color:#cbd5e1}
   html.dark #icApply{background:#f1f5f9;color:#0f172a}
 
+  /* ===== TEMPLATE BUILDER (Şablon Yükleme & Alan Belirleme) ===== */
+  #tbModal{position:fixed;inset:0;z-index:62;display:none;background:rgba(2,6,23,.9);backdrop-filter:blur(4px)}
+  #tbModal.open{display:flex;align-items:stretch;justify-content:stretch}
+  .tb-shell{flex:1;display:flex;flex-direction:column;background:#0f172a;color:#e2e8f0;min-height:0}
+  .tb-head{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.65rem .9rem;border-bottom:1px solid rgba(255,255,255,.08);background:#020617}
+  .tb-title{font-size:.85rem;font-weight:700;color:#fff;margin-right:.5rem}
+  .tb-btn{display:inline-flex;align-items:center;gap:.3rem;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#e2e8f0;border-radius:.4rem;padding:.35rem .7rem;font-size:.72rem;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
+  .tb-btn:hover:not(:disabled){background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3)}
+  .tb-btn:disabled{opacity:.4;cursor:default}
+  .tb-btn-primary{background:linear-gradient(135deg,#3b82f6,#2563eb);border-color:transparent;color:#fff}
+  .tb-btn-primary:hover:not(:disabled){background:linear-gradient(135deg,#60a5fa,#3b82f6)}
+  .tb-btn-ghost{background:transparent;border-color:transparent;color:#94a3b8}
+  .tb-btn-ghost:hover{background:rgba(255,255,255,.08);color:#fff}
+  .tb-select,.tb-input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:.4rem;padding:.32rem .55rem;font-size:.72rem;color:#e2e8f0;outline:none}
+  .tb-input{width:170px}
+  .tb-input::placeholder{color:#64748b}
+  .tb-select:focus,.tb-input:focus{border-color:#3b82f6}
+  #tbPdfBar.flex{display:flex}
+  .tb-body{flex:1;display:flex;min-height:0;overflow:hidden}
+  .tb-stage-wrap{flex:1;position:relative;overflow:auto;background:#1e293b;padding:1rem;display:flex;justify-content:center;align-items:flex-start}
+  .tb-stage{position:relative;line-height:0;background:#fff;box-shadow:0 12px 40px rgba(0,0,0,.5);display:none}
+  .tb-stage.on{display:block}
+  #tbCanvas{display:block;max-width:none;width:100%;height:auto}
+  #tbZoneLayer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+  .tb-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#94a3b8;padding:2rem;pointer-events:none}
+  .tb-empty.hide{display:none}
+  .tb-busy{position:absolute;top:.7rem;right:.9rem;background:rgba(2,6,23,.85);color:#fff;padding:.3rem .7rem;border-radius:.4rem;font-size:.7rem;font-weight:600}
+  .tb-side{width:300px;flex-shrink:0;background:#020617;border-left:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;padding:.85rem;overflow-y:auto}
+  .tb-section-title{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin-bottom:.5rem}
+  .tb-zone-list{display:flex;flex-direction:column;gap:.35rem}
+  .tb-zone-item{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:.4rem;font-size:.7rem;transition:.12s;cursor:pointer}
+  .tb-zone-item:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+  .tb-zone-item.active{border-color:#3b82f6;background:rgba(59,130,246,.15)}
+  .tb-zone-chip{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+  .tb-zone-item select{flex:1;background:transparent;border:none;color:#e2e8f0;font-size:.7rem;font-weight:600;outline:none;cursor:pointer;padding:2px 0}
+  .tb-zone-item select option{background:#0f172a;color:#e2e8f0}
+  .tb-zone-item .tb-del{color:#f87171;background:transparent;border:none;cursor:pointer;font-size:.9rem;line-height:1;padding:2px 4px;border-radius:3px}
+  .tb-zone-item .tb-del:hover{background:rgba(248,113,113,.15)}
+  .tb-json{flex:1;min-height:120px;max-height:280px;overflow:auto;background:#0f172a;border:1px solid rgba(255,255,255,.08);border-radius:.4rem;padding:.6rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.63rem;line-height:1.5;color:#93c5fd;white-space:pre-wrap;word-break:break-word}
+  .tb-hint{font-size:.65rem;color:#64748b;line-height:1.45;margin:0}
+
+  /* Sürüklenebilir/boyutlandırılabilir alan kutuları */
+  .tb-zone{position:absolute;pointer-events:auto;border:2px solid;background:rgba(59,130,246,.12);cursor:move;box-sizing:border-box;transition:box-shadow .12s}
+  .tb-zone:hover{box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+  .tb-zone.active{box-shadow:0 0 0 3px rgba(59,130,246,.4)}
+  .tb-zone-badge{position:absolute;top:-11px;left:-2px;font-size:9px;font-weight:700;color:#fff;padding:2px 6px;border-radius:3px;pointer-events:none;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;font-family:ui-sans-serif,system-ui,sans-serif}
+  .tb-zone-handle{position:absolute;width:11px;height:11px;background:#fff;border:2px solid;border-radius:2px;box-sizing:border-box}
+  .tb-zone-handle.nw{top:-6px;left:-6px;cursor:nwse-resize}
+  .tb-zone-handle.ne{top:-6px;right:-6px;cursor:nesw-resize}
+  .tb-zone-handle.sw{bottom:-6px;left:-6px;cursor:nesw-resize}
+  .tb-zone-handle.se{bottom:-6px;right:-6px;cursor:nwse-resize}
+  /* Alan tiplerine göre renkler */
+  .tb-zone[data-type="header"]{border-color:#f59e0b;background:rgba(245,158,11,.13)}
+  .tb-zone[data-type="header"] .tb-zone-badge{background:#f59e0b}
+  .tb-zone[data-type="header"] .tb-zone-handle{border-color:#f59e0b}
+  .tb-zone[data-type="question_area"]{border-color:#3b82f6;background:rgba(59,130,246,.12)}
+  .tb-zone[data-type="question_area"] .tb-zone-badge{background:#3b82f6}
+  .tb-zone[data-type="question_area"] .tb-zone-handle{border-color:#3b82f6}
+  .tb-zone[data-type="answer_key"]{border-color:#10b981;background:rgba(16,185,129,.12)}
+  .tb-zone[data-type="answer_key"] .tb-zone-badge{background:#10b981}
+  .tb-zone[data-type="answer_key"] .tb-zone-handle{border-color:#10b981}
+  .tb-zone[data-type="footer"]{border-color:#8b5cf6;background:rgba(139,92,246,.12)}
+  .tb-zone[data-type="footer"] .tb-zone-badge{background:#8b5cf6}
+  .tb-zone[data-type="footer"] .tb-zone-handle{border-color:#8b5cf6}
+  .tb-zone[data-type="logo"]{border-color:#ec4899;background:rgba(236,72,153,.13)}
+  .tb-zone[data-type="logo"] .tb-zone-badge{background:#ec4899}
+  .tb-zone[data-type="logo"] .tb-zone-handle{border-color:#ec4899}
+  .tb-zone[data-type="free"]{border-color:#64748b;background:rgba(100,116,139,.13)}
+  .tb-zone[data-type="free"] .tb-zone-badge{background:#64748b}
+  .tb-zone[data-type="free"] .tb-zone-handle{border-color:#64748b}
+  .tb-saved-item{display:flex;align-items:center;gap:.35rem;padding:.3rem .45rem;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.3);border-radius:.3rem;font-size:.68rem;color:#1e40af}
+  .tb-saved-item .tb-saved-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+  html.dark .tb-saved-item{background:rgba(59,130,246,.15);border-color:rgba(96,165,250,.3);color:#bfdbfe}
+  .tb-saved-item button{background:transparent;border:none;color:inherit;cursor:pointer;opacity:.6;padding:0 3px;font-size:.75rem}
+  .tb-saved-item button:hover{opacity:1}
+  @media (max-width:900px){
+    .tb-side{width:100%;border-left:none;border-top:1px solid rgba(255,255,255,.08);max-height:40vh}
+    .tb-body{flex-direction:column}
+    .tb-input{width:130px}
+  }
+
   /* Gelişmiş Ayarlar butonu - dikkat çeken parıltı efekti */
   #advBtn{
     position:relative;
@@ -472,6 +566,13 @@
             <span class="tpl-name">MEB Resmî Şablon</span>
             <span class="tpl-desc">Logolu resmî sınav başlığı</span>
           </button>
+        </div>
+        <div class="mt-2 border-t border-slate-200 dark:border-slate-700 pt-2">
+          <button id="tbOpenBtn" type="button" class="w-full rounded-lg border border-dashed border-blue-400 bg-blue-50 px-2 py-1.5 text-[11px] font-semibold text-blue-700 hover:bg-blue-100 hover:border-blue-500 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40 transition">
+            📐 Kendi Şablonunu Yükle & Alan Belirle
+          </button>
+          <p class="mt-1.5 text-[9px] leading-snug text-slate-400">PNG, JPG veya PDF yükleyip alanları otomatik algılayabilir; kutuları elle düzenleyip JSON olarak kaydedebilirsin.</p>
+          <div id="tbSavedList" class="mt-1.5 space-y-1 hidden"></div>
         </div>
       </div>
     </div>
@@ -733,6 +834,55 @@
   </div>
 </div>
 
+<!-- =========================================================
+     TEMPLATE BUILDER — Şablon Yükleme & Otomatik Alan Algılama
+     Tamamen izole modül. Mevcut kodu etkilemez.
+     ========================================================= -->
+<div id="tbModal">
+  <div class="tb-shell">
+    <div class="tb-head">
+      <span class="tb-title">📐 Şablon Yükle & Alan Belirle</span>
+      <label class="tb-btn tb-btn-primary">
+        <span>📁 Dosya Seç (PNG/JPG/PDF)</span>
+        <input id="tbFile" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" class="hidden">
+      </label>
+      <div id="tbPdfBar" class="hidden items-center gap-1">
+        <span class="text-[11px] text-white/60">Sayfa:</span>
+        <select id="tbPdfSelect" class="tb-select"></select>
+      </div>
+      <button id="tbAutoDetect" class="tb-btn hidden">🔍 Otomatik Algıla</button>
+      <button id="tbAddZone" class="tb-btn hidden">＋ Alan Ekle</button>
+      <div class="ml-auto flex items-center gap-1">
+        <input id="tbTplName" type="text" placeholder="Şablon Adı" class="tb-input hidden">
+        <button id="tbSaveJson" class="tb-btn tb-btn-primary hidden">💾 Kaydet</button>
+        <button id="tbExportJson" class="tb-btn hidden" title="JSON dışa aktar">⤓ JSON</button>
+        <button id="tbClose" class="tb-btn tb-btn-ghost">✕ Kapat</button>
+      </div>
+    </div>
+    <div class="tb-body">
+      <div id="tbStageWrap" class="tb-stage-wrap">
+        <div id="tbStage" class="tb-stage">
+          <canvas id="tbCanvas"></canvas>
+          <div id="tbZoneLayer"></div>
+        </div>
+        <div id="tbEmpty" class="tb-empty">
+          <div style="font-size:32px">📐</div>
+          <p class="mt-3 text-[13px] font-semibold">Sınav şablonu görselini veya PDF'ini yükleyin</p>
+          <p class="mt-1 text-[11px] opacity-70">Sistem yatay/dikey piksel projeksiyonu ile Header · Sütun · Footer bölgelerini otomatik algılar.</p>
+        </div>
+        <div id="tbBusy" class="tb-busy hidden">⏳ İşleniyor...</div>
+      </div>
+      <aside class="tb-side">
+        <div class="tb-section-title">Alanlar</div>
+        <div id="tbZoneList" class="tb-zone-list"><p class="tb-hint">Henüz alan yok. Şablon yükleyip "Otomatik Algıla" butonuna basın.</p></div>
+        <div class="tb-section-title mt-4">JSON Önizleme</div>
+        <pre id="tbJsonPreview" class="tb-json">{ }</pre>
+        <p class="tb-hint mt-2">Koordinatlar sayfa boyutuna göre yüzde (%) olarak saklanır — farklı ekran/baskı boyutlarına duyarlıdır.</p>
+      </aside>
+    </div>
+  </div>
+</div>
+
 <footer class="pb-10 pt-6 text-center">
   <span class="text-xs text-slate-400 dark:text-slate-500">Egemen Bilim'in Eğitim Teknolojileri</span>
 </footer>
@@ -834,7 +984,7 @@
           Soru kökünü <b class="text-slate-800 dark:text-slate-100">* ile başlayıp * ile biten</b> yazarsanız otomatik algılanır.
         </p>
         <div class="mt-2.5 flex items-start gap-2">
-          <pre id="aiPrompt" class="flex-1 select-all whitespace-pre-wrap rounded-lg border border-slate-200 bg-white p-3 text-[11px] leading-relaxed text-slate-700 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-300">Yüklenen soruları analiz et ve öncül / soru kökü / şık ayrımı yap. Soru kökünün ilk sözcüğü önüne ve son sözcüğü bittikten sonra * koyarak çıktıyı ver. Bu formatı asla bozma ve bu şekilde indirilebilir pdf halinde soruları sırala. Cevapları ) ile belirt. A) B) C) D) E) gibi olmalıdır. A.   B. olanları da A) şekline çevir. Soru numarası başta sadece numara olarak bulunsun. Her sorunun Altında Doğru Ceva: X şeklinde yazsın</pre>
+          <pre id="aiPrompt" class="flex-1 select-all whitespace-pre-wrap rounded-lg border border-slate-200 bg-white p-3 text-[11px] leading-relaxed text-slate-700 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-300">Yüklenen soruları analiz et ve öncül / soru kökü / şık ayrımı yap. Soru kökünün ilk sözcüğü önüne ve son sözcüğü bittikten sonra * koyarak çıktıyı ver. Bu formatı asla bozma ve bu şekilde indirilebilir pdf halinde soruları sırala. Cevapları ) ile belirt. A) B) C) D) E) gibi olmalıdır. A.   B. olanları da A) şekline çevir. Soru numarası başta sadece numara olarak bulunsun. Her sorunun Altında Doğru Cevap: X şeklinde yazsın</pre>
           <button id="copyPrompt" type="button" class="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-medium text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">Kopyala</button>
         </div>
       </div>
@@ -3578,6 +3728,506 @@ $('advBtn').addEventListener('click', schedulePreview);
 ensureFont();
 render();
 runPreview();
+
+/* =============================================================
+   TEMPLATE BUILDER MODULE — Şablon Yükleme & Otomatik Alan Algılama
+   Tamamen izole. Ana Testmaker akışına dokunmaz; sadece kendi
+   DOM elemanları (#tb*) ve localStorage anahtarı (testmaker-tpl-*) kullanır.
+   ============================================================= */
+(function TemplateBuilder(){
+  const $tb = (id) => document.getElementById(id);
+  const STORE_KEY = 'testmaker-tpl-library';
+
+  const state = {
+    imgW: 0, imgH: 0,            // Yüklenen görselin gerçek pixel boyutları
+    displayScale: 1,             // Ekranda gösterim ölçeği
+    zones: [],                   // { id, type, x, y, w, h } — piksel cinsinden
+    activeId: null,
+    pdfPages: [],
+    currentPdfPage: 1,
+    dirty: false
+  };
+
+  const ZONE_TYPES = [
+    { v: 'header',        n: 'Header',        c: '#f59e0b' },
+    { v: 'question_area', n: 'Soru Alanı',    c: '#3b82f6' },
+    { v: 'answer_key',    n: 'Cevap Anahtarı',c: '#10b981' },
+    { v: 'footer',        n: 'Footer',        c: '#8b5cf6' },
+    { v: 'logo',          n: 'Logo',          c: '#ec4899' },
+    { v: 'free',          n: 'Serbest Alan',  c: '#64748b' }
+  ];
+
+  /* ---------------- Modal aç/kapat ---------------- */
+  function open() {
+    $tb('tbModal').classList.add('open');
+    renderSavedList();
+  }
+  function close() {
+    if (state.dirty && state.zones.length && !confirm('Kaydedilmemiş değişiklikler var. Kapatılsın mı?')) return;
+    $tb('tbModal').classList.remove('open');
+  }
+  $tb('tbOpenBtn').onclick = open;
+  $tb('tbClose').onclick = close;
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $tb('tbModal').classList.contains('open')) {
+      if (!$tb('imgCropModal').classList.contains('open') && !$tb('textModal').classList.contains('flex')) close();
+    }
+  });
+
+  /* ---------------- Dosya yükleme (PNG/JPG/PDF) ---------------- */
+  $tb('tbFile').onchange = async (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    setBusy(true);
+    try {
+      if (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) {
+        await loadPdf(f);
+      } else {
+        await loadImage(URL.createObjectURL(f));
+        $tb('tbPdfBar').classList.add('hidden');
+      }
+    } catch (err) {
+      alert('Dosya yüklenemedi: ' + (err && err.message ? err.message : err));
+    }
+    setBusy(false);
+    e.target.value = '';
+  };
+
+  function setBusy(on) {
+    $tb('tbBusy').classList.toggle('hidden', !on);
+  }
+
+  async function loadPdf(file) {
+    if (!window.pdfjsLib) throw new Error('PDF kütüphanesi yüklenemedi.');
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    state.pdfPages = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 2 });
+      const c = document.createElement('canvas');
+      c.width = viewport.width; c.height = viewport.height;
+      await page.render({ canvasContext: c.getContext('2d'), viewport }).promise;
+      state.pdfPages.push(c.toDataURL('image/jpeg', 0.92));
+    }
+    const sel = $tb('tbPdfSelect');
+    sel.innerHTML = state.pdfPages.map((_, i) => `<option value="${i + 1}">Sayfa ${i + 1}</option>`).join('');
+    sel.onchange = () => selectPdfPage(+sel.value);
+    $tb('tbPdfBar').classList.remove('hidden');
+    $tb('tbPdfBar').classList.add('flex');
+    selectPdfPage(1);
+  }
+
+  function selectPdfPage(n) {
+    state.currentPdfPage = n;
+    loadImage(state.pdfPages[n - 1]);
+  }
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const im = new Image();
+      im.onload = () => {
+        state.imgW = im.naturalWidth;
+        state.imgH = im.naturalHeight;
+        const canvas = $tb('tbCanvas');
+        canvas.width = state.imgW;
+        canvas.height = state.imgH;
+        canvas.getContext('2d').drawImage(im, 0, 0);
+        /* Ekranda görüntülenirken ölçek ayarla */
+        computeDisplayScale();
+        $tb('tbStage').classList.add('on');
+        $tb('tbEmpty').classList.add('hide');
+        ['tbAutoDetect','tbAddZone','tbSaveJson','tbExportJson','tbTplName'].forEach(id => $tb(id).classList.remove('hidden'));
+        state.zones = [];
+        state.activeId = null;
+        renderZones();
+        state.dirty = false;
+        resolve();
+      };
+      im.onerror = reject;
+      im.src = src;
+    });
+  }
+
+  function computeDisplayScale() {
+    const wrap = $tb('tbStageWrap');
+    const availW = wrap.clientWidth - 32;
+    const availH = wrap.clientHeight - 32;
+    const scaleW = availW / state.imgW;
+    const scaleH = availH / state.imgH;
+    state.displayScale = Math.min(1.2, Math.max(0.15, Math.min(scaleW, scaleH)));
+    const stage = $tb('tbStage');
+    stage.style.width = (state.imgW * state.displayScale) + 'px';
+    stage.style.height = (state.imgH * state.displayScale) + 'px';
+    $tb('tbCanvas').style.width = '100%';
+    $tb('tbCanvas').style.height = '100%';
+  }
+  window.addEventListener('resize', () => {
+    if ($tb('tbModal').classList.contains('open') && state.imgW) {
+      computeDisplayScale();
+      renderZones();
+    }
+  });
+
+  /* ---------------- OTOMATIK ALAN ALGILAMA ---------------- */
+  /* Yatay ve dikey piksel projeksiyonu ile Header/Footer ve
+     çok sütunlu düzenlerdeki ayraç çizgilerini tespit eder. */
+  $tb('tbAutoDetect').onclick = () => {
+    if (!state.imgW) return;
+    setBusy(true);
+    setTimeout(() => {
+      try {
+        const zones = detectZones();
+        state.zones = zones;
+        state.activeId = zones[0] ? zones[0].id : null;
+        renderZones();
+        state.dirty = true;
+      } catch (e) {
+        alert('Otomatik algılama sırasında hata: ' + e.message);
+      }
+      setBusy(false);
+    }, 30);
+  };
+
+  function detectZones() {
+    const canvas = $tb('tbCanvas');
+    const w = canvas.width, h = canvas.height;
+    /* Performans için maks 1200px kısa kenara indirgeyerek örnekleme yap */
+    const sampleScale = Math.min(1, 1200 / Math.max(w, h));
+    const sw = Math.max(50, Math.round(w * sampleScale));
+    const sh = Math.max(50, Math.round(h * sampleScale));
+    const off = document.createElement('canvas');
+    off.width = sw; off.height = sh;
+    const octx = off.getContext('2d');
+    octx.drawImage(canvas, 0, 0, sw, sh);
+    const data = octx.getImageData(0, 0, sw, sh).data;
+    /* İkili matris: koyu piksel = 1, açık = 0 */
+    const THRESH = 200;
+    const bin = new Uint8Array(sw * sh);
+    for (let i = 0; i < sw * sh; i++) {
+      const idx = i * 4;
+      const gray = (data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114);
+      bin[i] = gray < THRESH ? 1 : 0;
+    }
+    /* Yatay projeksiyon: her satırdaki koyu piksel sayısı */
+    const rowProj = new Uint32Array(sh);
+    for (let y = 0; y < sh; y++) {
+      let s = 0;
+      const base = y * sw;
+      for (let x = 0; x < sw; x++) s += bin[base + x];
+      rowProj[y] = s;
+    }
+    /* Dikey projeksiyon */
+    const colProj = new Uint32Array(sw);
+    for (let x = 0; x < sw; x++) {
+      let s = 0;
+      for (let y = 0; y < sh; y++) s += bin[y * sw + x];
+      colProj[x] = s;
+    }
+
+    /* Header tespiti: üst %30'daki en yoğun bloğun bittiği yer */
+    const topLimit = Math.round(sh * 0.30);
+    let headerEnd = 0;
+    /* Yoğun satırlardan sonra gelen ilk uzun boşluk = header sonu */
+    const rowThresh = Math.max(3, Math.round(sw * 0.02));
+    let inContent = false, gapStart = 0;
+    for (let y = 0; y < topLimit; y++) {
+      if (rowProj[y] > rowThresh) { inContent = true; headerEnd = y; gapStart = 0; }
+      else if (inContent) {
+        if (!gapStart) gapStart = y;
+        if (y - gapStart > sh * 0.02) break;
+      }
+    }
+    if (headerEnd < sh * 0.05) headerEnd = Math.round(sh * 0.10);
+    else headerEnd = Math.min(topLimit, headerEnd + Math.round(sh * 0.015));
+
+    /* Footer tespiti: alt %20'de içerik başlangıcı */
+    const bottomLimit = Math.round(sh * 0.80);
+    let footerStart = sh;
+    inContent = false;
+    for (let y = sh - 1; y >= bottomLimit; y--) {
+      if (rowProj[y] > rowThresh) { inContent = true; footerStart = y; }
+      else if (inContent && (footerStart - y > sh * 0.02)) break;
+    }
+    if (footerStart >= sh * 0.99) footerStart = sh;
+    else footerStart = Math.max(bottomLimit, footerStart - Math.round(sh * 0.015));
+
+    /* Sütun ayraç tespiti: soru alanı içindeki dikey projeksiyonda
+       merkez civarındaki yoğun dikey çizgi ya da geniş boşluk */
+    const contentTop = headerEnd, contentBot = footerStart;
+    const colProjContent = new Uint32Array(sw);
+    for (let x = 0; x < sw; x++) {
+      let s = 0;
+      for (let y = contentTop; y < contentBot; y++) s += bin[y * sw + x];
+      colProjContent[x] = s;
+    }
+    /* Merkez bölgesinde en düşük yoğunluklu (boşluk) sütunu ara */
+    const centerL = Math.round(sw * 0.42), centerR = Math.round(sw * 0.58);
+    let minVal = Infinity, minIdx = -1;
+    for (let x = centerL; x <= centerR; x++) {
+      if (colProjContent[x] < minVal) { minVal = colProjContent[x]; minIdx = x; }
+    }
+    const avgCol = colProjContent.reduce((a, b) => a + b, 0) / sw;
+    const twoColumn = minIdx > 0 && minVal < avgCol * 0.35;
+
+    /* Piksel koordinatlarına geri ölçekle */
+    const invS = 1 / sampleScale;
+    const zones = [];
+    const pageMarginX = 0.03 * state.imgW;
+    if (headerEnd > 0) {
+      zones.push({
+        id: uid(), type: 'header',
+        x: pageMarginX, y: 0,
+        w: state.imgW - pageMarginX * 2,
+        h: Math.max(state.imgH * 0.05, headerEnd * invS)
+      });
+    }
+    const qTop = headerEnd * invS;
+    const qBot = footerStart * invS;
+    if (twoColumn) {
+      const midX = minIdx * invS;
+      const gap = 8;
+      zones.push({
+        id: uid(), type: 'question_area',
+        x: pageMarginX, y: qTop,
+        w: midX - pageMarginX - gap,
+        h: qBot - qTop
+      });
+      zones.push({
+        id: uid(), type: 'question_area',
+        x: midX + gap, y: qTop,
+        w: state.imgW - midX - gap - pageMarginX,
+        h: qBot - qTop
+      });
+    } else {
+      zones.push({
+        id: uid(), type: 'question_area',
+        x: pageMarginX, y: qTop,
+        w: state.imgW - pageMarginX * 2,
+        h: qBot - qTop
+      });
+    }
+    if (footerStart < sh) {
+      zones.push({
+        id: uid(), type: 'footer',
+        x: pageMarginX, y: footerStart * invS,
+        w: state.imgW - pageMarginX * 2,
+        h: state.imgH - footerStart * invS
+      });
+    }
+    return zones;
+  }
+
+  function uid() { return 'z' + Math.random().toString(36).slice(2, 9); }
+
+  /* ---------------- Manuel alan ekleme ---------------- */
+  $tb('tbAddZone').onclick = () => {
+    const zone = {
+      id: uid(), type: 'free',
+      x: state.imgW * 0.1, y: state.imgH * 0.1,
+      w: state.imgW * 0.3, h: state.imgH * 0.15
+    };
+    state.zones.push(zone);
+    state.activeId = zone.id;
+    renderZones();
+    state.dirty = true;
+  };
+
+  /* ---------------- Alan Katmanı Render ---------------- */
+  function renderZones() {
+    const layer = $tb('tbZoneLayer');
+    layer.innerHTML = '';
+    const s = state.displayScale;
+    state.zones.forEach((z) => {
+      const el = document.createElement('div');
+      el.className = 'tb-zone' + (state.activeId === z.id ? ' active' : '');
+      el.dataset.type = z.type;
+      el.dataset.id = z.id;
+      el.style.left = (z.x * s) + 'px';
+      el.style.top = (z.y * s) + 'px';
+      el.style.width = (z.w * s) + 'px';
+      el.style.height = (z.h * s) + 'px';
+      const badge = ZONE_TYPES.find(t => t.v === z.type);
+      el.innerHTML =
+        '<span class="tb-zone-badge">' + (badge ? badge.n : z.type) + '</span>' +
+        '<span class="tb-zone-handle nw" data-h="nw"></span>' +
+        '<span class="tb-zone-handle ne" data-h="ne"></span>' +
+        '<span class="tb-zone-handle sw" data-h="sw"></span>' +
+        '<span class="tb-zone-handle se" data-h="se"></span>';
+      layer.appendChild(el);
+      wireZone(el, z);
+    });
+    renderZoneList();
+    renderJsonPreview();
+  }
+
+  function renderZoneList() {
+    const list = $tb('tbZoneList');
+    if (!state.zones.length) {
+      list.innerHTML = '<p class="tb-hint">Henüz alan yok. Şablon yükleyip "Otomatik Algıla" butonuna basın.</p>';
+      return;
+    }
+    list.innerHTML = '';
+    state.zones.forEach((z) => {
+      const info = ZONE_TYPES.find(t => t.v === z.type) || ZONE_TYPES[5];
+      const row = document.createElement('div');
+      row.className = 'tb-zone-item' + (state.activeId === z.id ? ' active' : '');
+      row.innerHTML =
+        '<span class="tb-zone-chip" style="background:' + info.c + '"></span>' +
+        '<select data-zid="' + z.id + '">' +
+          ZONE_TYPES.map(t => '<option value="' + t.v + '"' + (t.v === z.type ? ' selected' : '') + '>' + t.n + '</option>').join('') +
+        '</select>' +
+        '<button class="tb-del" data-del="' + z.id + '" title="Alanı sil">✕</button>';
+      list.appendChild(row);
+      row.onclick = (e) => {
+        if (e.target.tagName === 'SELECT' || e.target.classList.contains('tb-del')) return;
+        state.activeId = z.id;
+        renderZones();
+      };
+      row.querySelector('select').onchange = (e) => {
+        z.type = e.target.value;
+        renderZones();
+        state.dirty = true;
+      };
+      row.querySelector('[data-del]').onclick = (e) => {
+        e.stopPropagation();
+        state.zones = state.zones.filter(x => x.id !== z.id);
+        if (state.activeId === z.id) state.activeId = null;
+        renderZones();
+        state.dirty = true;
+      };
+    });
+  }
+
+  /* ---------------- Sürükle & Boyutlandır ---------------- */
+  function wireZone(el, z) {
+    el.onclick = (e) => { e.stopPropagation(); };
+    el.addEventListener('pointerdown', (e) => {
+      const handle = e.target.dataset.h;
+      state.activeId = z.id;
+      renderZones();
+      const startX = e.clientX, startY = e.clientY;
+      const x0 = z.x, y0 = z.y, w0 = z.w, h0 = z.h;
+      const s = state.displayScale;
+      const activeEl = $tb('tbZoneLayer').querySelector('[data-id="' + z.id + '"]');
+      const move = (ev) => {
+        const dx = (ev.clientX - startX) / s;
+        const dy = (ev.clientY - startY) / s;
+        if (!handle) {
+          z.x = Math.max(0, Math.min(state.imgW - z.w, x0 + dx));
+          z.y = Math.max(0, Math.min(state.imgH - z.h, y0 + dy));
+        } else {
+          if (handle.includes('e')) z.w = Math.max(20, Math.min(state.imgW - x0, w0 + dx));
+          if (handle.includes('s')) z.h = Math.max(20, Math.min(state.imgH - y0, h0 + dy));
+          if (handle.includes('w')) {
+            const nx = Math.max(0, Math.min(x0 + w0 - 20, x0 + dx));
+            z.w = w0 + (x0 - nx); z.x = nx;
+          }
+          if (handle.includes('n')) {
+            const ny = Math.max(0, Math.min(y0 + h0 - 20, y0 + dy));
+            z.h = h0 + (y0 - ny); z.y = ny;
+          }
+        }
+        if (activeEl) {
+          activeEl.style.left = (z.x * s) + 'px';
+          activeEl.style.top = (z.y * s) + 'px';
+          activeEl.style.width = (z.w * s) + 'px';
+          activeEl.style.height = (z.h * s) + 'px';
+        }
+      };
+      const up = () => {
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        renderJsonPreview();
+        state.dirty = true;
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  }
+
+  /* ---------------- JSON çıktısı (yüzde tabanlı) ---------------- */
+  function buildJson(name) {
+    const pct = (v, total) => Math.round(v / total * 10000) / 100;
+    return {
+      templateName: name || $tb('tbTplName').value.trim() || 'İsimsiz Şablon',
+      pageSize: { width: state.imgW, height: state.imgH },
+      zones: state.zones.map(z => ({
+        id: z.id, type: z.type,
+        x: pct(z.x, state.imgW),
+        y: pct(z.y, state.imgH),
+        w: pct(z.w, state.imgW),
+        h: pct(z.h, state.imgH)
+      }))
+    };
+  }
+  function renderJsonPreview() {
+    $tb('tbJsonPreview').textContent = JSON.stringify(buildJson(), null, 2);
+  }
+
+  /* ---------------- Kaydet / İndir ---------------- */
+  $tb('tbSaveJson').onclick = () => {
+    if (!state.zones.length) { alert('Kaydetmek için en az bir alan tanımlayın.'); return; }
+    const name = $tb('tbTplName').value.trim();
+    if (!name) { alert('Şablon adı girin.'); $tb('tbTplName').focus(); return; }
+    const data = buildJson(name);
+    try {
+      const lib = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+      const existing = lib.findIndex(x => x.templateName === name);
+      if (existing >= 0) {
+        if (!confirm('"' + name + '" isminde şablon zaten var. Üstüne yazılsın mı?')) return;
+        lib[existing] = data;
+      } else lib.push(data);
+      localStorage.setItem(STORE_KEY, JSON.stringify(lib));
+      state.dirty = false;
+      renderSavedList();
+      alert('Şablon kaydedildi: ' + name);
+    } catch (e) {
+      alert('Kaydetme başarısız: ' + e.message);
+    }
+  };
+
+  $tb('tbExportJson').onclick = () => {
+    if (!state.zones.length) { alert('Dışa aktarılacak alan yok.'); return; }
+    const data = buildJson();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (data.templateName.replace(/[^\wçğıöşüÇĞİÖŞÜ.-]+/g, '_')) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
+
+  /* ---------------- Kaydedilmiş şablonlar (sidebar) ---------------- */
+  function renderSavedList() {
+    const holder = $tb('tbSavedList');
+    let lib;
+    try { lib = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch (e) { lib = []; }
+    if (!lib.length) { holder.classList.add('hidden'); holder.innerHTML = ''; return; }
+    holder.classList.remove('hidden');
+    holder.innerHTML = '<div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kayıtlı Şablonlar</div>' +
+      lib.map((t, i) => `<div class="tb-saved-item"><span class="tb-saved-name" title="${escAttr(t.templateName)}">${escHtml(t.templateName)}</span><button data-i="${i}" data-act="del" title="Sil">✕</button></div>`).join('');
+    holder.querySelectorAll('[data-act="del"]').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const i = +btn.dataset.i;
+        try {
+          const cur = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+          if (!confirm('"' + cur[i].templateName + '" silinsin mi?')) return;
+          cur.splice(i, 1);
+          localStorage.setItem(STORE_KEY, JSON.stringify(cur));
+          renderSavedList();
+        } catch (err) {}
+      };
+    });
+  }
+  function escHtml(s) { return String(s || '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+  function escAttr(s) { return escHtml(s).replace(/"/g, '&quot;'); }
+
+  renderSavedList();
+})();
 </script>
 </body>
 </html>
