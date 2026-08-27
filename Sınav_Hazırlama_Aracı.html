@@ -7,6 +7,8 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config = { darkMode: 'class' }</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
@@ -36,6 +38,8 @@
   html.dark .btn-mini:hover{background:#334155}
   html.dark .lbl{color:#94a3b8}
   #cropStage{touch-action:none;-webkit-user-select:none;-webkit-touch-callout:none;transform-origin:0 0;will-change:transform}
+  #pdfPageSelect,#pdfPageSelect option{color:#fff !important;background:#1e293b !important}
+  #pdfPageSelect option:checked,#pdfPageSelect option:hover{background:#334155 !important;color:#fff !important}
 
   /* Sidebar overlay + panel */
   #sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:40;backdrop-filter:blur(2px)}
@@ -661,6 +665,7 @@
         <div class="pv-foot-make">
           <span id="pvMeta" class="pv-meta-bottom">—</span>
           <button id="makeBtn" class="pv-make-btn pv-make-wide"><span class="pvMakeSpark">✨</span> Sınav Kağıdını Oluştur</button>
+          <button id="wordBtn" type="button" class="w-full mt-1.5 rounded-lg border border-slate-200 bg-white py-2 text-[12px] font-semibold text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">📄 Word olarak indir</button>
         </div>
       </div>
     </section>
@@ -761,6 +766,18 @@
 </div>
 
 <div id="preview" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60 p-6 backdrop-blur-sm"><div id="previewBody" class="fade-in max-h-full max-w-3xl overflow-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 dark:text-slate-200"></div></div>
+
+<div id="restoreModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+  <div class="fade-in w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 dark:text-slate-200">
+    <h3 class="text-[15px] font-semibold text-slate-900 dark:text-slate-100">Kaldığınız yerden devam</h3>
+    <p class="mt-1.5 text-[13px] leading-relaxed text-slate-500">Tarayıcınızda kaydedilmiş bir çalışma bulundu. Devam etmek ister misiniz?</p>
+    <p id="restoreMeta" class="mt-2 text-[12px] text-slate-400"></p>
+    <div class="mt-5 flex justify-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+      <button id="restoreNo" class="rounded-lg px-4 py-2 text-[13px] font-medium text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800">Yeni Başla</button>
+      <button id="restoreYes" class="rounded-lg bg-slate-900 px-5 py-2 text-[13px] font-medium text-white transition hover:bg-slate-700">Devam Et</button>
+    </div>
+  </div>
+</div>
 
 <div id="groupModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
   <div class="fade-in max-h-[85vh] w-full max-w-2xl overflow-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 dark:text-slate-200">
@@ -937,7 +954,7 @@
       <input id="cropFile" type="file" accept="image/*,application/pdf,.pdf" class="hidden"></label>
     <div id="pdfPageBar" class="hidden items-center gap-2">
       <span class="text-[13px] text-white/70">Sayfa:</span>
-      <select id="pdfPageSelect" class="rounded-lg border border-white/20 bg-white/10 px-2.5 py-1.5 text-[13px] text-white outline-none transition focus:border-white/50"></select>
+      <select id="pdfPageSelect" class="rounded-lg border border-white/20 bg-slate-800 px-2.5 py-1.5 text-[13px] text-white outline-none transition focus:border-white/50" style="color-scheme:dark"></select>
       <span id="pdfPageCount" class="text-[12px] text-white/50"></span>
     </div>
     <label class="flex items-center gap-2 text-[13px] text-white/70"><input type="checkbox" id="autoTrim" checked class="!accent-white"> Boşlukları temizle</label>
@@ -959,6 +976,10 @@
         <button id="cropAddBtn" type="button"
           class="rounded-md bg-white px-3 py-1 text-[12px] font-semibold text-slate-900 transition hover:bg-slate-100">
           Ekle
+        </button>
+        <button id="cropOcrBtn" type="button"
+          class="rounded-md bg-amber-400 px-3 py-1 text-[12px] font-semibold text-slate-900 transition hover:bg-amber-300">
+          Metni oku
         </button>
       </div>
       <div id="cropHint" class="p-12 text-center text-[13px] leading-relaxed text-white/40">
@@ -1373,10 +1394,10 @@ function render(){
              </div>`
            : `<div class="relative h-36 overflow-hidden rounded-lg bg-slate-50 p-2.5 pt-6 text-left text-[11px] leading-snug dark:bg-slate-800">
                 ${q.imgSrc ? `<span class="absolute right-2 bottom-2 z-10 rounded bg-slate-900/75 px-1.5 py-0.5 text-[9px] font-medium text-white">📷 Görsel</span>` : ''}
-                ${q.text ? `<div class="text-slate-500">${esc(q.text)}</div>` : ''}
-                ${q.root ? `<div class="mt-1 font-semibold text-slate-900 dark:text-slate-100">${esc(q.root)}</div>` : ''}
-                <div class="mt-1.5 ${q.layout==='h'?'flex flex-wrap gap-2':'space-y-0.5'} text-slate-600 dark:text-slate-300">${(q.options||[]).filter(Boolean)
-                  .map((o,k)=>`<div><span class="font-medium text-slate-400">${LETTERS[k]}</span> ${esc(o)}</div>`).join('')}</div>
+                 ${q.text ? `<div class="text-slate-500">${esc(q.text)}</div>` : ''}
+                 ${q.root ? `<div class="mt-1 font-semibold text-slate-900 dark:text-slate-100">${esc(q.root)}</div>` : ''}
+                 <div class="mt-1.5 ${q.layout==='h'?'flex flex-wrap gap-2':'space-y-0.5'} text-slate-600 dark:text-slate-300">${(q.options||[]).filter(Boolean)
+                   .map((o,k)=>`<div><span class="font-medium text-slate-400">${LETTERS[k]}</span> ${esc(o)}</div>`).join('')}</div>
                 ${q.blank ? `<div class="mt-1.5 text-[10px] text-slate-300">${q.blank} mm cevap satırı</div>` : ''}
               </div>`)
         : `<img src="${q.src}" class="h-36 w-full rounded-lg object-contain">`}
@@ -1409,10 +1430,10 @@ function showPreview(q){
     $('previewBody').innerHTML = q.type==='text'
       ? `<div class="text-sm leading-relaxed">
            ${q.imgSrc ? `<img src="${q.imgSrc}" class="mb-3 max-h-56 rounded-lg border border-slate-200">` : ''}
-           ${q.text ? `<div class="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">${esc(q.text)}</div>` : ''}
-           ${q.root ? `<div class="mt-2 font-bold text-slate-900 dark:text-slate-100 whitespace-pre-wrap">${esc(q.root)}</div>` : ''}
-           <div class="mt-3 ${q.layout==='h'?'flex flex-wrap gap-4':'space-y-1.5'}">${(q.options||[]).filter(Boolean)
-             .map((o,k)=>`<div><b class="text-slate-900 dark:text-slate-100">${LETTERS[k]})</b> ${esc(o)}</div>`).join('')}</div>
+            ${q.text ? `<div class="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">${esc(q.text)}</div>` : ''}
+            ${q.root ? `<div class="mt-2 font-bold text-slate-900 dark:text-slate-100 whitespace-pre-wrap">${esc(q.root)}</div>` : ''}
+            <div class="mt-3 ${q.layout==='h'?'flex flex-wrap gap-4':'space-y-1.5'}">${(q.options||[]).filter(Boolean)
+              .map((o,k)=>`<div><b class="text-slate-900 dark:text-slate-100">${LETTERS[k]})</b> ${esc(o)}</div>`).join('')}</div>
            ${q.blank ? `<div class="mt-3 border-t pt-2 text-xs italic text-slate-400">Klasik / Açık uçlu soru (${q.blank} mm boşluk)</div>` : ''}
          </div>`
       : `<img src="${q.src}" class="max-h-[80vh]">`;
@@ -1750,7 +1771,13 @@ $('cropAns').querySelectorAll('[data-c]').forEach(b=>b.onclick=(e)=>{
   paintCropAns();
 });
 $('openCrop').onclick=()=>$('cropTool').classList.replace('hidden','flex');
-$('cropClose').onclick=()=>$('cropTool').classList.replace('flex','hidden');
+$('cropClose').onclick=()=>{
+  $('cropTool').classList.replace('flex','hidden');
+  /* Modal kapanınca ağır PDF cache'ini serbest bırak */
+  clearPdfCache();
+  selectedPdfPage=null;
+  $('pdfPageBar').classList.add('hidden'); $('pdfPageBar').classList.remove('flex');
+};
 
 let zoom = { s: 1, tx: 0, ty: 0 };
 let pinch = null;
@@ -1759,45 +1786,122 @@ function applyZoom(){
   if (st) st.style.transform = 'translate(' + zoom.tx + 'px,' + zoom.ty + 'px) scale(' + zoom.s + ')';
 }
 function resetZoom(){ zoom = { s: 1, tx: 0, ty: 0 }; pinch = null; applyZoom(); }
-function selectPdfPage(n){
-  const found = pdfPages.find(p => p.page === n);
-  if (!found) return;
-  selectedPdfPage = n; cropSrc = found.img;
-  const im = $('cropImg'); im.src = cropSrc; im.classList.remove('hidden'); $('cropHint').classList.add('hidden');
-  rect=null; drawRect(); hideCropAdd(); resetZoom();
-  const sel = $('pdfPageSelect'); if (sel) sel.value = String(n);
+/* pdfPages artık {page, canvas, blobUrl} tutan seyrek bir dizidir.
+   Sayfalar YALNIZCA istendiğinde render edilir; render edilen sayfalar
+   cache'lenir, aynı sayfaya dönüldüğünde yeniden render edilmez. */
+let pdfDoc = null;                 // Aktif pdf.js belge nesnesi
+let pdfRenderTasks = {};           // page => {promise, task}  (concurrent-safe)
+
+function pdfLoadingShow(msg){
+  const el = $('pdfLoading'); if (!el) return;
+  el.textContent = msg || 'PDF açılıyor...';
+  el.classList.remove('hidden'); el.classList.add('flex');
 }
+function pdfLoadingHide(){
+  const el = $('pdfLoading'); if (!el) return;
+  el.classList.add('hidden'); el.classList.remove('flex');
+}
+
+/* Tüm cache'i (canvas + blob URL) temizle — bellek sızıntısına karşı. */
+function clearPdfCache(){
+  pdfPages.forEach(p => {
+    if (p && p.blobUrl) { try { URL.revokeObjectURL(p.blobUrl); } catch(e){} }
+    /* Canvas'ı 1x1'e küçültmek büyük backing store'u serbest bırakır. */
+    if (p && p.canvas) { try { p.canvas.width = 0; p.canvas.height = 0; } catch(e){} }
+  });
+  pdfPages = [];
+  Object.values(pdfRenderTasks).forEach(t => { try { t.task && t.task.cancel(); } catch(e){} });
+  pdfRenderTasks = {};
+  if (pdfDoc) { try { pdfDoc.destroy(); } catch(e){} pdfDoc = null; }
+}
+
+/* Tek bir sayfayı adaptif ölçekte render edip cache'e koyar. */
+async function renderPdfPage(n){
+  if (pdfPages[n - 1]) return pdfPages[n - 1];
+  if (pdfRenderTasks[n]) return pdfRenderTasks[n].promise;
+  const promise = (async () => {
+    const page = await pdfDoc.getPage(n);
+    const base = page.getViewport({ scale: 1 });
+    /* Adaptif ölçek: hedef ~1500px genişlik, ama scale <= 1.5 */
+    const scale = Math.min(1.5, 1500 / Math.max(1, base.width));
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.floor(viewport.width));
+    canvas.height = Math.max(1, Math.floor(viewport.height));
+    const task = page.render({ canvasContext: canvas.getContext('2d'), viewport });
+    pdfRenderTasks[n].task = task;
+    await task.promise;
+    /* toDataURL yerine daha hızlı ve küçük olan toBlob + object URL */
+    const blobUrl = await new Promise((res) => {
+      if (!canvas.toBlob) { res(canvas.toDataURL('image/jpeg', 0.9)); return; }
+      canvas.toBlob(b => res(b ? URL.createObjectURL(b) : canvas.toDataURL('image/jpeg', 0.9)), 'image/jpeg', 0.9);
+    });
+    pdfPages[n - 1] = { page: n, canvas, blobUrl };
+    return pdfPages[n - 1];
+  })();
+  pdfRenderTasks[n] = { promise, task: null };
+  try { const out = await promise; return out; }
+  finally { delete pdfRenderTasks[n]; }
+}
+
+async function selectPdfPage(n){
+  if (!pdfDoc) return;
+  const sel = $('pdfPageSelect'); if (sel) sel.value = String(n);
+  selectedPdfPage = n;
+  const cached = pdfPages[n - 1];
+  if (!cached) pdfLoadingShow(n + '. sayfa hazırlanıyor…');
+  try {
+    const p = await renderPdfPage(n);
+    /* Kullanıcı bu arada başka sayfaya geçtiyse bu render'ı gösterme */
+    if (selectedPdfPage !== n) return;
+    cropSrc = p.blobUrl;
+    const im = $('cropImg');
+    im.src = cropSrc;
+    im.classList.remove('hidden');
+    $('cropHint').classList.add('hidden');
+    rect = null; drawRect(); hideCropAdd(); resetZoom();
+  } catch (e) {
+    if (e && e.name === 'RenderingCancelledException') return;
+    console.error(e); alert(n + '. sayfa açılamadı.');
+  } finally {
+    if (selectedPdfPage === n) pdfLoadingHide();
+  }
+}
+
 async function loadPdfFile(file){
   if (!window.pdfjsLib) { alert('PDF kütüphanesi yüklenemedi.'); return; }
-  $('pdfLoading').classList.remove('hidden'); $('pdfLoading').classList.add('flex');
+  /* Önceki PDF'i tamamen boşalt */
+  clearPdfCache();
+  pdfLoadingShow('PDF açılıyor...');
   try {
     const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-    pdfPages = [];
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale: 1.5 });
-      const canvas = document.createElement('canvas');
-      canvas.width = viewport.width; canvas.height = viewport.height;
-      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-      pdfPages.push({ page: i, img: canvas.toDataURL('image/jpeg', 0.92) });
-    }
+    pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
+    pdfPages = new Array(pdfDoc.numPages);
+    /* Dropdown'ı doldur ama HİÇBİR sayfayı otomatik render etme */
     $('pdfPageBar').classList.remove('hidden');
     $('pdfPageBar').classList.add('flex');
     const sel = $('pdfPageSelect');
-    sel.innerHTML = pdfPages.map(p => `<option value="${p.page}">Sayfa ${p.page}</option>`).join('');
-    $('pdfPageCount').textContent = '/ ' + pdfPages.length;
+    let opts = '';
+    for (let i = 1; i <= pdfDoc.numPages; i++) opts += '<option value="' + i + '">Sayfa ' + i + '</option>';
+    sel.innerHTML = opts;
+    $('pdfPageCount').textContent = '/ ' + pdfDoc.numPages;
     sel.onchange = () => selectPdfPage(+sel.value);
-    if (pdfPages.length) selectPdfPage(1);
-  } catch (e) { console.error(e); alert('PDF yüklenirken hata oluştu.'); }
-  finally { $('pdfLoading').classList.add('hidden'); $('pdfLoading').classList.remove('flex'); }
+    /* Yalnızca 1. sayfayı göster */
+    if (pdfDoc.numPages) await selectPdfPage(1);
+    else pdfLoadingHide();
+  } catch (e) {
+    console.error(e); alert('PDF yüklenirken hata oluştu.');
+    pdfLoadingHide();
+  }
 }
 
 $('cropFile').onchange=e=>{
   const f=e.target.files[0]; if(!f)return;
   if (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) loadPdfFile(f);
   else {
-    pdfPages=[]; selectedPdfPage=null; $('pdfPageBar').classList.add('hidden'); $('pdfPageBar').classList.remove('flex');
+    /* Görsel yüklendi — varsa PDF önbelleğini boşalt */
+    clearPdfCache(); selectedPdfPage=null;
+    $('pdfPageBar').classList.add('hidden'); $('pdfPageBar').classList.remove('flex');
     const r=new FileReader();
     r.onload=()=>{ cropSrc=r.result; const im=$('cropImg'); im.src=cropSrc; im.classList.remove('hidden'); $('cropHint').classList.add('hidden'); resetZoom(); };
     r.readAsDataURL(f);
@@ -1870,18 +1974,35 @@ window.addEventListener('touchend',()=>{ drawing=false; });
 function drawRect(){ const r=$('cropRect'); if(!rect){r.classList.add('hidden');return;}
   r.classList.remove('hidden'); r.style.left=rect.x+'px'; r.style.top=rect.y+'px'; r.style.width=rect.w+'px'; r.style.height=rect.h+'px'; }
 function showCropAddAt(clientX, clientY){
-  const bar=$('cropAddBar'); const wb=$('cropWrap').getBoundingClientRect();
+  const bar=$('cropAddBar'); const wrap=$('cropWrap'); const wb=wrap.getBoundingClientRect();
   bar.classList.remove('hidden'); bar.classList.add('flex');
   const bw = bar.offsetWidth || 240;
-  let left = clientX - wb.left + $('cropWrap').scrollLeft - bw + 30;
+  const bh = bar.offsetHeight || 36;
+  const gap = 8;
+  /* Kutu, imlecin son konumunun HEMEN ALTINDA konumlanır; varsayılan sağa açılır.
+     Sağ kenara taşıyorsa sola yaslanır; alt kenara taşıyorsa üste alınır (kırpma çerçevesinin üstüne). */
+  let left = clientX - wb.left + wrap.scrollLeft + gap;
+  let top  = clientY - wb.top  + wrap.scrollTop  + gap;
+  const maxLeft = wrap.scrollLeft + wrap.clientWidth - bw - 4;
+  const maxTop  = wrap.scrollTop  + wrap.clientHeight - bh - 4;
+  if (left > maxLeft) left = Math.max(4, clientX - wb.left + wrap.scrollLeft - bw - gap);
   if (left < 4) left = 4;
+  if (top > maxTop)   top  = Math.max(4, clientY - wb.top  + wrap.scrollTop  - bh - gap);
+  if (top < 4) top = 4;
   bar.style.left = left + 'px';
-  bar.style.top = (clientY - wb.top + $('cropWrap').scrollTop - 46) + 'px';
+  bar.style.top  = top  + 'px';
 }
 function hideCropAdd(){ const bar=$('cropAddBar'); bar.classList.add('hidden'); bar.classList.remove('flex'); }
 ['mousedown','mouseup','touchstart','touchend','pointerdown','pointerup'].forEach(ev =>
   $('cropAddBar').addEventListener(ev, e => e.stopPropagation()));
 $('cropAddBtn').addEventListener('click', e => { e.stopPropagation(); $('cutBtn').click(); hideCropAdd(); });
+$('cropOcrBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  $('cutBtn').click();
+  hideCropAdd();
+  const last = cuts[cuts.length - 1];
+  if (last) ocrCutToText(last);
+});
 
 function trimCanvas(c){
   const ctx=c.getContext('2d'), w=c.width, h=c.height, d=ctx.getImageData(0,0,w,h).data;
@@ -1911,9 +2032,11 @@ function renderCuts(){
   $('cutList').innerHTML='<div class="mb-2.5 text-[11px] font-medium uppercase tracking-wide text-white/40">Kesilenler</div>'+
     (cuts.length?cuts.map((c,i)=>`<div class="group relative mb-2 overflow-hidden rounded-lg bg-white p-1"><img src="${c.src}" class="w-full">
       <span class="absolute left-1.5 top-1.5 rounded bg-slate-900/80 px-1.5 text-[10px] font-medium text-white">${i+1}${c.answer?' · '+c.answer:''}</span>
+      <button data-ocr="${i}" class="absolute left-1.5 bottom-1.5 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-semibold text-slate-900">Metni oku</button>
       <button data-i="${i}" class="absolute right-1.5 top-1.5 rounded bg-slate-900/80 px-1.5 text-[10px] text-white opacity-0 transition group-hover:opacity-100 hover:bg-rose-600">✕</button></div>`).join('')
       :'<div class="mt-4 text-center text-[11px] text-white/30">Henüz soru kesilmedi</div>');
   $('cutList').querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{cuts.splice(+b.dataset.i,1);renderCuts();});
+  $('cutList').querySelectorAll('[data-ocr]').forEach(b=>b.onclick=(e)=>{e.stopPropagation(); ocrCutToText(cuts[+b.dataset.ocr]);});
 }
 renderCuts();
 $('cropUpload').onclick=()=>{ questions=questions.concat(cuts).slice(0,MAX); cuts=[]; renderCuts(); render(); $('cropTool').classList.replace('flex','hidden'); };
@@ -2178,7 +2301,9 @@ function getMEBHeaderItems(ctx, PW, PH, M, t, version) {
   const defSchool = { x: textCx - wSchool / 2, y: y, w: wSchool, h: 4.8 };
   if (S.mebSchool) y += 7.5;
 
-  y = Math.max(y + 1.5, M + (showLogo ? logoBox.h + 4 : 7));
+  /* Logo boyutu ne kadar değişirse değişsin header akışı büyüyüp küçülmesin.
+     Metin satırları sabit tipografik akışa göre yerleşir. */
+  y = Math.max(y + 1.5, M + 7);
   const dash = (v) => (v && String(v).trim() ? String(v).trim() : '...............');
   const lessonText = dash(S.mebLesson);
   /* Sınıf ve Sınav Adı tek bir sürüklenebilir metin kutusunda birleştirilir. */
@@ -2321,7 +2446,8 @@ function drawMEBHeader(ctx, PW, PH, M, t, version, first) {
   });
 
   const labelY = Math.max(items.mebNameLbl.y, items.mebClassLbl.y, items.mebNoLbl.y, items.mebScoreLbl.y);
-  let y = labelY + 6.2;
+  /* Header / soru alanı ayırıcı çizgisini bir tık yukarı al. */
+  let y = labelY + 4.5;
   if (!t.hideVersion && S.groups > 1) {
     drawText(ctx, 'Kitapçık: ' + version, PW - M - 2, y - 6.2, { size: PT(9), bold: true, align: 'right' });
   }
@@ -2760,7 +2886,7 @@ function showResult(files) {
     row.className = 'flex items-center gap-2 rounded-xl border border-slate-200 p-2.5 dark:border-slate-700';
     row.innerHTML = '<span class="flex-1 truncate text-[13px] font-medium text-slate-700 dark:text-slate-300">' + f.name + '</span>' +
       '<a href="' + url + '" download="' + f.name + '" class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700">İndir</a>' +
-      '<button class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-900 dark:border-slate-700 dark:text-slate-300">Aç</button>';
+      '<button class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-900 dark:border-slate-700 dark:text-slate-300">Önizle</button>';
     row.querySelector('button').onclick = () => window.open(url, '_blank');
     list.appendChild(row);
     const a = document.createElement('a'); a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
@@ -3590,521 +3716,159 @@ async function buildPreviewPages(){
 [...$('typeTabs').children].forEach(b=>b.addEventListener('click', schedulePreview));
 $('advBtn').addEventListener('click', schedulePreview);
 
+/* ================= OTOMATİK KAYIT ================= */
+const AS_KEY = 'testmaker-autosave';
+let asTimer = null, asReady = false, asRestoring = false;
+function asOpenDB(){
+  return new Promise((res, rej) => {
+    if (!window.indexedDB) return rej(new Error('no idb'));
+    const r = indexedDB.open('egemen-testmaker', 1);
+    r.onupgradeneeded = () => { try { r.result.createObjectStore('kv'); } catch(e){} };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function asPut(data){
+  return asOpenDB().then((db) => new Promise((res, rej) => {
+    const tx = db.transaction('kv', 'readwrite');
+    tx.objectStore('kv').put(data, AS_KEY);
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  })).catch(() => {
+    try { localStorage.setItem(AS_KEY, JSON.stringify({ t: data.t, n: data.questions.length })); } catch(e){}
+  });
+}
+function asGet(){
+  return asOpenDB().then((db) => new Promise((res, rej) => {
+    const tx = db.transaction('kv', 'readonly');
+    const q = tx.objectStore('kv').get(AS_KEY);
+    q.onsuccess = () => res(q.result || null);
+    q.onerror = () => rej(q.error);
+  })).catch(() => null);
+}
+function asClear(){
+  return asOpenDB().then((db) => new Promise((res) => {
+    const tx = db.transaction('kv', 'readwrite');
+    tx.objectStore('kv').delete(AS_KEY);
+    tx.oncomplete = () => res();
+    tx.onerror = () => res();
+  })).catch(() => {});
+}
+function scheduleAutosave(){
+  if (!asReady || asRestoring) return;
+  clearTimeout(asTimer);
+  asTimer = setTimeout(runAutosave, 2000);
+}
+function runAutosave(){
+  try {
+    collect();
+    const payload = { t: Date.now(), questions, settings: S };
+    asPut(payload);
+  } catch (e) {}
+}
+async function offerRestore(){
+  let data = null;
+  try { data = await asGet(); } catch (e) {}
+  if (!data || !Array.isArray(data.questions) || !data.questions.length) { asReady = true; return; }
+  const d = new Date(data.t || Date.now());
+  const p = (n) => String(n).padStart(2,'0');
+  $('restoreMeta').textContent = data.questions.length + ' soru · ' + p(d.getDate()) + '.' + p(d.getMonth()+1) + '.' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  openModal('restoreModal');
+  $('restoreYes').onclick = () => {
+    asRestoring = true;
+    try {
+      questions = data.questions;
+      if (data.settings && typeof data.settings === 'object') Object.assign(S, data.settings);
+      syncUI(); render();
+    } catch (e) { console.error(e); }
+    closeModal('restoreModal');
+    asRestoring = false; asReady = true;
+  };
+  $('restoreNo').onclick = () => { asClear(); closeModal('restoreModal'); asReady = true; };
+}
+(function hookAutosaveRender(){
+  const _r = render;
+  render = function(){ _r.apply(this, arguments); scheduleAutosave(); };
+})();
+
+/* ================= OCR (Tesseract.js, isteğe bağlı) ================= */
+async function ocrCutToText(cut){
+  if (!cut || !cut.src) return;
+  if (!window.Tesseract) { alert('OCR kütüphanesi yüklenemedi. İnternet bağlantısını kontrol edin.'); return; }
+  const btnWait = document.querySelector('[data-ocr]');
+  try {
+    if ($('progress')) { $('progress').classList.remove('hidden'); $('progress').textContent = 'Metin okunuyor…'; }
+    const result = await window.Tesseract.recognize(cut.src, 'tur', {
+      logger: (m) => {
+        if (m.status === 'recognizing text' && $('progress'))
+          $('progress').textContent = 'Metin okunuyor… ' + Math.round((m.progress || 0) * 100) + '%';
+      }
+    });
+    const text = (result && result.data && result.data.text) ? result.data.text.trim() : '';
+    if ($('progress')) $('progress').classList.add('hidden');
+    if (!text) { alert('Metin okunamadı. Daha net bir kesim deneyin.'); return; }
+    $('cropTool').classList.replace('flex', 'hidden');
+    openText(null);
+    $('txtPreamble').value = text;
+    autoParseQuestion(text);
+  } catch (e) {
+    if ($('progress')) $('progress').classList.add('hidden');
+    alert('OCR hatası: ' + (e && e.message ? e.message : e));
+  }
+}
+
+/* ================= WORD DIŞA AKTARMA (docx.js, client-side) ================= */
+$('wordBtn').onclick = async () => {
+  collect();
+  if (!questions.length) return alert('Önce soru yükleyin.');
+  const D = window.docx;
+  if (!D) { alert('Word kütüphanesi yüklenemedi. İnternet bağlantısını kontrol edin.'); return; }
+  $('wordBtn').disabled = true; $('wordBtn').textContent = '⏳ Hazırlanıyor...';
+  try {
+    const children = [];
+    const heading = [S.school, S.lesson, S.title].filter(Boolean).join(' — ') || 'Sınav';
+    children.push(new D.Paragraph({ children: [new D.TextRun({ text: heading, bold: true, size: 28 })], spacing: { after: 200 } }));
+    if (S.description) children.push(new D.Paragraph({ children: [new D.TextRun({ text: S.description, italics: true, size: 20 })], spacing: { after: 300 } }));
+    const stripTex = (s) => String(s||'').replace(/\$([^$]+)\$/g, '$1');
+    questions.forEach((q, i) => {
+      const n = (i+1) + '. ';
+      if (q.type === 'text') {
+        if (q.kind === 'bosluk') {
+          children.push(new D.Paragraph({ children: [new D.TextRun({ text: n + stripTex(q.blankText || ''), size: 22 })], spacing: { after: 120 } }));
+        } else {
+          if (q.text) children.push(new D.Paragraph({ children: [new D.TextRun({ text: n + stripTex(q.text), size: 22 })], spacing: { after: 60 } }));
+          if (q.root) children.push(new D.Paragraph({ children: [new D.TextRun({ text: (q.text ? '' : n) + stripTex(q.root), bold: true, size: 22 })], spacing: { after: 80 } }));
+          (q.options || []).filter(Boolean).forEach((o, k) => {
+            children.push(new D.Paragraph({ children: [new D.TextRun({ text: '   ' + LETTERS[k] + ') ' + stripTex(o), size: 20 })], spacing: { after: 40 } }));
+          });
+        }
+      } else {
+        children.push(new D.Paragraph({ children: [new D.TextRun({ text: n + '[Görsel soru]', italics: true, size: 20 })], spacing: { after: 120 } }));
+      }
+    });
+    if (S.showAnswerKey && questions.some((q) => q.answer)) {
+      children.push(new D.Paragraph({ children: [new D.TextRun({ text: 'CEVAP ANAHTARI', bold: true, size: 24 })], spacing: { before: 400, after: 120 } }));
+      const key = questions.map((q, i) => (i+1) + ') ' + (q.answer || '-')).join('   ');
+      children.push(new D.Paragraph({ children: [new D.TextRun({ text: key, size: 20 })] }));
+    }
+    const doc = new D.Document({ sections: [{ properties: {}, children }] });
+    const blob = await D.Packer.toBlob(doc);
+    const tParsed = parseTags(S.title);
+    const name = defaultBaseName(tParsed.clean) + ' - ' + todayStr() + '.docx';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch (e) {
+    alert('Word oluşturulurken hata: ' + (e && e.message ? e.message : e));
+    console.error(e);
+  }
+  $('wordBtn').disabled = false; $('wordBtn').textContent = '📄 Word olarak indir';
+};
+
 ensureFont();
 render();
 runPreview();
-
-/* ============ TEMPLATE BUILDER MODÜLÜ KALDIRILDI ============ */
-/* TB_REMOVED_START */ (function tbRemoved(){ if (false) {
-  const $tb = (id) => document.getElementById(id);
-  const STORE_KEY = 'testmaker-tpl-library';
-
-  const state = {
-    imgW: 0, imgH: 0,            // Yüklenen görselin gerçek pixel boyutları
-    displayScale: 1,             // Ekranda gösterim ölçeği
-    zones: [],                   // { id, type, x, y, w, h } — piksel cinsinden
-    activeId: null,
-    pdfPages: [],
-    currentPdfPage: 1,
-    dirty: false
-  };
-
-  const ZONE_TYPES = [
-    { v: 'header',        n: 'Header',        c: '#f59e0b' },
-    { v: 'question_area', n: 'Soru Alanı',    c: '#3b82f6' },
-    { v: 'answer_key',    n: 'Cevap Anahtarı',c: '#10b981' },
-    { v: 'footer',        n: 'Footer',        c: '#8b5cf6' },
-    { v: 'logo',          n: 'Logo',          c: '#ec4899' },
-    { v: 'free',          n: 'Serbest Alan',  c: '#64748b' }
-  ];
-
-  /* ---------------- Modal aç/kapat ---------------- */
-  function open() {
-    $tb('tbModal').classList.add('open');
-    renderSavedList();
-  }
-  function close() {
-    if (state.dirty && state.zones.length && !confirm('Kaydedilmemiş değişiklikler var. Kapatılsın mı?')) return;
-    $tb('tbModal').classList.remove('open');
-  }
-  $tb('tbOpenBtn').onclick = open;
-  $tb('tbClose').onclick = close;
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && $tb('tbModal').classList.contains('open')) {
-      if (!$tb('imgCropModal').classList.contains('open') && !$tb('textModal').classList.contains('flex')) close();
-    }
-  });
-
-  /* ---------------- Dosya yükleme (PNG/JPG/PDF) ---------------- */
-  $tb('tbFile').onchange = async (e) => {
-    const f = e.target.files && e.target.files[0]; if (!f) return;
-    setBusy(true);
-    try {
-      if (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) {
-        await loadPdf(f);
-      } else {
-        await loadImage(URL.createObjectURL(f));
-        $tb('tbPdfBar').classList.add('hidden');
-      }
-    } catch (err) {
-      alert('Dosya yüklenemedi: ' + (err && err.message ? err.message : err));
-    }
-    setBusy(false);
-    e.target.value = '';
-  };
-
-  function setBusy(on) {
-    $tb('tbBusy').classList.toggle('hidden', !on);
-  }
-
-  async function loadPdf(file) {
-    if (!window.pdfjsLib) throw new Error('PDF kütüphanesi yüklenemedi.');
-    const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-    state.pdfPages = [];
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale: 2 });
-      const c = document.createElement('canvas');
-      c.width = viewport.width; c.height = viewport.height;
-      await page.render({ canvasContext: c.getContext('2d'), viewport }).promise;
-      state.pdfPages.push(c.toDataURL('image/jpeg', 0.92));
-    }
-    const sel = $tb('tbPdfSelect');
-    sel.innerHTML = state.pdfPages.map((_, i) => `<option value="${i + 1}">Sayfa ${i + 1}</option>`).join('');
-    sel.onchange = () => selectPdfPage(+sel.value);
-    $tb('tbPdfBar').classList.remove('hidden');
-    $tb('tbPdfBar').classList.add('flex');
-    selectPdfPage(1);
-  }
-
-  function selectPdfPage(n) {
-    state.currentPdfPage = n;
-    loadImage(state.pdfPages[n - 1]);
-  }
-
-  function loadImage(src) {
-    return new Promise((resolve, reject) => {
-      const im = new Image();
-      im.onload = () => {
-        state.imgSrc = src;
-        state.imgW = im.naturalWidth;
-        state.imgH = im.naturalHeight;
-        const canvas = $tb('tbCanvas');
-        canvas.width = state.imgW;
-        canvas.height = state.imgH;
-        canvas.getContext('2d').drawImage(im, 0, 0);
-        /* Ekranda görüntülenirken ölçek ayarla */
-        computeDisplayScale();
-        $tb('tbStage').classList.add('on');
-        $tb('tbEmpty').classList.add('hide');
-        ['tbAutoDetect','tbAddZone','tbSaveJson','tbExportJson','tbTplName'].forEach(id => $tb(id).classList.remove('hidden'));
-        state.zones = [];
-        state.activeId = null;
-        renderZones();
-        state.dirty = false;
-        resolve();
-      };
-      im.onerror = reject;
-      im.src = src;
-    });
-  }
-
-  function computeDisplayScale() {
-    const wrap = $tb('tbStageWrap');
-    const availW = wrap.clientWidth - 32;
-    const availH = wrap.clientHeight - 32;
-    const scaleW = availW / state.imgW;
-    const scaleH = availH / state.imgH;
-    state.displayScale = Math.min(1.2, Math.max(0.15, Math.min(scaleW, scaleH)));
-    const stage = $tb('tbStage');
-    stage.style.width = (state.imgW * state.displayScale) + 'px';
-    stage.style.height = (state.imgH * state.displayScale) + 'px';
-    $tb('tbCanvas').style.width = '100%';
-    $tb('tbCanvas').style.height = '100%';
-  }
-  window.addEventListener('resize', () => {
-    if ($tb('tbModal').classList.contains('open') && state.imgW) {
-      computeDisplayScale();
-      renderZones();
-    }
-  });
-
-  /* ---------------- OTOMATIK ALAN ALGILAMA ---------------- */
-  /* Yatay ve dikey piksel projeksiyonu ile Header/Footer ve
-     çok sütunlu düzenlerdeki ayraç çizgilerini tespit eder. */
-  $tb('tbAutoDetect').onclick = () => {
-    if (!state.imgW) return;
-    setBusy(true);
-    setTimeout(() => {
-      try {
-        const zones = detectZones();
-        state.zones = zones;
-        state.activeId = zones[0] ? zones[0].id : null;
-        renderZones();
-        state.dirty = true;
-      } catch (e) {
-        alert('Otomatik algılama sırasında hata: ' + e.message);
-      }
-      setBusy(false);
-    }, 30);
-  };
-
-  function detectZones() {
-    const canvas = $tb('tbCanvas');
-    const w = canvas.width, h = canvas.height;
-    /* Performans için maks 1200px kısa kenara indirgeyerek örnekleme yap */
-    const sampleScale = Math.min(1, 1200 / Math.max(w, h));
-    const sw = Math.max(50, Math.round(w * sampleScale));
-    const sh = Math.max(50, Math.round(h * sampleScale));
-    const off = document.createElement('canvas');
-    off.width = sw; off.height = sh;
-    const octx = off.getContext('2d');
-    octx.drawImage(canvas, 0, 0, sw, sh);
-    const data = octx.getImageData(0, 0, sw, sh).data;
-    /* İkili matris: koyu piksel = 1, açık = 0 */
-    const THRESH = 200;
-    const bin = new Uint8Array(sw * sh);
-    for (let i = 0; i < sw * sh; i++) {
-      const idx = i * 4;
-      const gray = (data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114);
-      bin[i] = gray < THRESH ? 1 : 0;
-    }
-    /* Yatay projeksiyon: her satırdaki koyu piksel sayısı */
-    const rowProj = new Uint32Array(sh);
-    for (let y = 0; y < sh; y++) {
-      let s = 0;
-      const base = y * sw;
-      for (let x = 0; x < sw; x++) s += bin[base + x];
-      rowProj[y] = s;
-    }
-    /* Dikey projeksiyon */
-    const colProj = new Uint32Array(sw);
-    for (let x = 0; x < sw; x++) {
-      let s = 0;
-      for (let y = 0; y < sh; y++) s += bin[y * sw + x];
-      colProj[x] = s;
-    }
-
-    /* Header tespiti: üst %30'daki en yoğun bloğun bittiği yer */
-    const topLimit = Math.round(sh * 0.30);
-    let headerEnd = 0;
-    /* Yoğun satırlardan sonra gelen ilk uzun boşluk = header sonu */
-    const rowThresh = Math.max(3, Math.round(sw * 0.02));
-    let inContent = false, gapStart = 0;
-    for (let y = 0; y < topLimit; y++) {
-      if (rowProj[y] > rowThresh) { inContent = true; headerEnd = y; gapStart = 0; }
-      else if (inContent) {
-        if (!gapStart) gapStart = y;
-        if (y - gapStart > sh * 0.02) break;
-      }
-    }
-    if (headerEnd < sh * 0.05) headerEnd = Math.round(sh * 0.10);
-    else headerEnd = Math.min(topLimit, headerEnd + Math.round(sh * 0.015));
-
-    /* Footer tespiti: alt %20'de içerik başlangıcı */
-    const bottomLimit = Math.round(sh * 0.80);
-    let footerStart = sh;
-    inContent = false;
-    for (let y = sh - 1; y >= bottomLimit; y--) {
-      if (rowProj[y] > rowThresh) { inContent = true; footerStart = y; }
-      else if (inContent && (footerStart - y > sh * 0.02)) break;
-    }
-    if (footerStart >= sh * 0.99) footerStart = sh;
-    else footerStart = Math.max(bottomLimit, footerStart - Math.round(sh * 0.015));
-
-    /* Sütun ayraç tespiti: soru alanı içindeki dikey projeksiyonda
-       merkez civarındaki yoğun dikey çizgi ya da geniş boşluk */
-    const contentTop = headerEnd, contentBot = footerStart;
-    const colProjContent = new Uint32Array(sw);
-    for (let x = 0; x < sw; x++) {
-      let s = 0;
-      for (let y = contentTop; y < contentBot; y++) s += bin[y * sw + x];
-      colProjContent[x] = s;
-    }
-    /* Merkez bölgesinde en düşük yoğunluklu (boşluk) sütunu ara */
-    const centerL = Math.round(sw * 0.42), centerR = Math.round(sw * 0.58);
-    let minVal = Infinity, minIdx = -1;
-    for (let x = centerL; x <= centerR; x++) {
-      if (colProjContent[x] < minVal) { minVal = colProjContent[x]; minIdx = x; }
-    }
-    const avgCol = colProjContent.reduce((a, b) => a + b, 0) / sw;
-    const twoColumn = minIdx > 0 && minVal < avgCol * 0.35;
-
-    /* Piksel koordinatlarına geri ölçekle */
-    const invS = 1 / sampleScale;
-    const zones = [];
-    const pageMarginX = 0.03 * state.imgW;
-    if (headerEnd > 0) {
-      zones.push({
-        id: uid(), type: 'header',
-        x: pageMarginX, y: 0,
-        w: state.imgW - pageMarginX * 2,
-        h: Math.max(state.imgH * 0.05, headerEnd * invS)
-      });
-    }
-    const qTop = headerEnd * invS;
-    const qBot = footerStart * invS;
-    if (twoColumn) {
-      const midX = minIdx * invS;
-      const gap = 8;
-      zones.push({
-        id: uid(), type: 'question_area',
-        x: pageMarginX, y: qTop,
-        w: midX - pageMarginX - gap,
-        h: qBot - qTop
-      });
-      zones.push({
-        id: uid(), type: 'question_area',
-        x: midX + gap, y: qTop,
-        w: state.imgW - midX - gap - pageMarginX,
-        h: qBot - qTop
-      });
-    } else {
-      zones.push({
-        id: uid(), type: 'question_area',
-        x: pageMarginX, y: qTop,
-        w: state.imgW - pageMarginX * 2,
-        h: qBot - qTop
-      });
-    }
-    if (footerStart < sh) {
-      zones.push({
-        id: uid(), type: 'footer',
-        x: pageMarginX, y: footerStart * invS,
-        w: state.imgW - pageMarginX * 2,
-        h: state.imgH - footerStart * invS
-      });
-    }
-    return zones;
-  }
-
-  function uid() { return 'z' + Math.random().toString(36).slice(2, 9); }
-
-  /* ---------------- Manuel alan ekleme ---------------- */
-  $tb('tbAddZone').onclick = () => {
-    const zone = {
-      id: uid(), type: 'free',
-      x: state.imgW * 0.1, y: state.imgH * 0.1,
-      w: state.imgW * 0.3, h: state.imgH * 0.15
-    };
-    state.zones.push(zone);
-    state.activeId = zone.id;
-    renderZones();
-    state.dirty = true;
-  };
-
-  /* ---------------- Alan Katmanı Render ---------------- */
-  function renderZones() {
-    const layer = $tb('tbZoneLayer');
-    layer.innerHTML = '';
-    const s = state.displayScale;
-    state.zones.forEach((z) => {
-      const el = document.createElement('div');
-      el.className = 'tb-zone' + (state.activeId === z.id ? ' active' : '');
-      el.dataset.type = z.type;
-      el.dataset.id = z.id;
-      el.style.left = (z.x * s) + 'px';
-      el.style.top = (z.y * s) + 'px';
-      el.style.width = (z.w * s) + 'px';
-      el.style.height = (z.h * s) + 'px';
-      const badge = ZONE_TYPES.find(t => t.v === z.type);
-      el.innerHTML =
-        '<span class="tb-zone-badge">' + (badge ? badge.n : z.type) + '</span>' +
-        '<span class="tb-zone-handle nw" data-h="nw"></span>' +
-        '<span class="tb-zone-handle ne" data-h="ne"></span>' +
-        '<span class="tb-zone-handle sw" data-h="sw"></span>' +
-        '<span class="tb-zone-handle se" data-h="se"></span>';
-      layer.appendChild(el);
-      wireZone(el, z);
-    });
-    renderZoneList();
-    renderJsonPreview();
-  }
-
-  function renderZoneList() {
-    const list = $tb('tbZoneList');
-    if (!state.zones.length) {
-      list.innerHTML = '<p class="tb-hint">Henüz alan yok. Şablon yükleyip "Otomatik Algıla" butonuna basın.</p>';
-      return;
-    }
-    list.innerHTML = '';
-    state.zones.forEach((z) => {
-      const info = ZONE_TYPES.find(t => t.v === z.type) || ZONE_TYPES[5];
-      const row = document.createElement('div');
-      row.className = 'tb-zone-item' + (state.activeId === z.id ? ' active' : '');
-      row.innerHTML =
-        '<span class="tb-zone-chip" style="background:' + info.c + '"></span>' +
-        '<select data-zid="' + z.id + '">' +
-          ZONE_TYPES.map(t => '<option value="' + t.v + '"' + (t.v === z.type ? ' selected' : '') + '>' + t.n + '</option>').join('') +
-        '</select>' +
-        '<button class="tb-del" data-del="' + z.id + '" title="Alanı sil">✕</button>';
-      list.appendChild(row);
-      row.onclick = (e) => {
-        if (e.target.tagName === 'SELECT' || e.target.classList.contains('tb-del')) return;
-        state.activeId = z.id;
-        renderZones();
-      };
-      row.querySelector('select').onchange = (e) => {
-        z.type = e.target.value;
-        renderZones();
-        state.dirty = true;
-      };
-      row.querySelector('[data-del]').onclick = (e) => {
-        e.stopPropagation();
-        state.zones = state.zones.filter(x => x.id !== z.id);
-        if (state.activeId === z.id) state.activeId = null;
-        renderZones();
-        state.dirty = true;
-      };
-    });
-  }
-
-  /* ---------------- Sürükle & Boyutlandır ---------------- */
-  function wireZone(el, z) {
-    el.onclick = (e) => { e.stopPropagation(); };
-    el.addEventListener('pointerdown', (e) => {
-      const handle = e.target.dataset.h;
-      state.activeId = z.id;
-      renderZones();
-      const startX = e.clientX, startY = e.clientY;
-      const x0 = z.x, y0 = z.y, w0 = z.w, h0 = z.h;
-      const s = state.displayScale;
-      const activeEl = $tb('tbZoneLayer').querySelector('[data-id="' + z.id + '"]');
-      const move = (ev) => {
-        const dx = (ev.clientX - startX) / s;
-        const dy = (ev.clientY - startY) / s;
-        if (!handle) {
-          z.x = Math.max(0, Math.min(state.imgW - z.w, x0 + dx));
-          z.y = Math.max(0, Math.min(state.imgH - z.h, y0 + dy));
-        } else {
-          if (handle.includes('e')) z.w = Math.max(20, Math.min(state.imgW - x0, w0 + dx));
-          if (handle.includes('s')) z.h = Math.max(20, Math.min(state.imgH - y0, h0 + dy));
-          if (handle.includes('w')) {
-            const nx = Math.max(0, Math.min(x0 + w0 - 20, x0 + dx));
-            z.w = w0 + (x0 - nx); z.x = nx;
-          }
-          if (handle.includes('n')) {
-            const ny = Math.max(0, Math.min(y0 + h0 - 20, y0 + dy));
-            z.h = h0 + (y0 - ny); z.y = ny;
-          }
-        }
-        if (activeEl) {
-          activeEl.style.left = (z.x * s) + 'px';
-          activeEl.style.top = (z.y * s) + 'px';
-          activeEl.style.width = (z.w * s) + 'px';
-          activeEl.style.height = (z.h * s) + 'px';
-        }
-      };
-      const up = () => {
-        window.removeEventListener('pointermove', move);
-        window.removeEventListener('pointerup', up);
-        renderJsonPreview();
-        state.dirty = true;
-      };
-      window.addEventListener('pointermove', move);
-      window.addEventListener('pointerup', up);
-      e.preventDefault();
-      e.stopPropagation();
-    });
-  }
-
-  /* ---------------- JSON çıktısı (yüzde tabanlı) ---------------- */
-  function buildJson(name, includeImage) {
-    const pct = (v, total) => Math.round(v / total * 10000) / 100;
-    const out = {
-      templateName: name || $tb('tbTplName').value.trim() || 'İsimsiz Şablon',
-      pageSize: { width: state.imgW, height: state.imgH },
-      zones: state.zones.map(z => ({
-        id: z.id, type: z.type,
-        x: pct(z.x, state.imgW),
-        y: pct(z.y, state.imgH),
-        w: pct(z.w, state.imgW),
-        h: pct(z.h, state.imgH)
-      }))
-    };
-    if (includeImage && state.imgSrc) out.image = state.imgSrc;
-    return out;
-  }
-  function renderJsonPreview() {
-    $tb('tbJsonPreview').textContent = JSON.stringify(buildJson(undefined, false), null, 2);
-  }
-
-  /* ---------------- Kaydet / İndir ---------------- */
-  $tb('tbSaveJson').onclick = () => {
-    if (!state.zones.length) { alert('Kaydetmek için en az bir alan tanımlayın.'); return; }
-    const name = $tb('tbTplName').value.trim();
-    if (!name) { alert('Şablon adı girin.'); $tb('tbTplName').focus(); return; }
-    /* Kayıtta görseli dahil et — çünkü bu şablonun sınav oluştururken
-       arka planda kullanılması için gereklidir. */
-    const data = buildJson(name, true);
-    try {
-      const lib = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
-      const existing = lib.findIndex(x => x.templateName === name);
-      if (existing >= 0) {
-        if (!confirm('"' + name + '" isminde şablon zaten var. Üstüne yazılsın mı?')) return;
-        lib[existing] = data;
-      } else lib.push(data);
-      try {
-        localStorage.setItem(STORE_KEY, JSON.stringify(lib));
-      } catch (storageErr) {
-        alert('Şablon kütüphanesi doldu ya da tarayıcı depolaması yetersiz. Eski bir şablonu silip tekrar deneyin.\n' + storageErr.message);
-        return;
-      }
-      state.dirty = false;
-      renderSavedList();
-      /* Sınav Şablonları listesini yenile ki sidebar'da anında kart olarak görünsün */
-      if (typeof window.refreshCustomTemplates === 'function') window.refreshCustomTemplates();
-      alert('Şablon kaydedildi ve "Sınav Şablonları" listesine eklendi: ' + name);
-    } catch (e) {
-      alert('Kaydetme başarısız: ' + e.message);
-    }
-  };
-
-  $tb('tbExportJson').onclick = () => {
-    if (!state.zones.length) { alert('Dışa aktarılacak alan yok.'); return; }
-    const data = buildJson();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = (data.templateName.replace(/[^\wçğıöşüÇĞİÖŞÜ.-]+/g, '_')) + '.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
-  };
-
-  /* ---------------- Kaydedilmiş şablonlar (sidebar) ---------------- */
-  function renderSavedList() {
-    const holder = $tb('tbSavedList');
-    let lib;
-    try { lib = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch (e) { lib = []; }
-    if (!lib.length) { holder.classList.add('hidden'); holder.innerHTML = ''; return; }
-    holder.classList.remove('hidden');
-    holder.innerHTML = '<div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kayıtlı Şablonlar</div>' +
-      lib.map((t, i) => `<div class="tb-saved-item"><span class="tb-saved-name" title="${escAttr(t.templateName)}">${escHtml(t.templateName)}</span><button data-i="${i}" data-act="del" title="Sil">✕</button></div>`).join('');
-    holder.querySelectorAll('[data-act="del"]').forEach(btn => {
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        const i = +btn.dataset.i;
-        try {
-          const cur = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
-          if (!confirm('"' + cur[i].templateName + '" silinsin mi?')) return;
-          const removedName = cur[i].templateName;
-          cur.splice(i, 1);
-          localStorage.setItem(STORE_KEY, JSON.stringify(cur));
-          renderSavedList();
-          /* Aktif olan silindiyse varsayılana dön */
-          if (typeof window.customTemplateDeleted === 'function') window.customTemplateDeleted(removedName);
-          if (typeof window.refreshCustomTemplates === 'function') window.refreshCustomTemplates();
-        } catch (err) {}
-      };
-    });
-  }
-  function escHtml(s) { return String(s || '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
-  function escAttr(s) { return escHtml(s).replace(/"/g, '&quot;'); }
-
-  renderSavedList();
-} })();
+offerRestore();
 </script>
 </body>
 </html>
