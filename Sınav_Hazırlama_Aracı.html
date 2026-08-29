@@ -9,6 +9,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
@@ -873,12 +875,18 @@
     </details>
 
     <div id="preamblePanel" class="mt-4">
-      <label class="lbl">Öncül / Bilgi Metni / Paragraf <span class="font-normal text-slate-400">(İsteğe bağlı • Normal Font)</span></label>
+      <div class="flex items-center justify-between">
+        <label class="lbl">Öncül / Bilgi Metni / Paragraf <span class="font-normal text-slate-400">(İsteğe bağlı • Normal Font)</span></label>
+        <button type="button" class="math-trigger shrink-0 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-500 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:text-slate-400" data-target="txtPreamble">∑ Formül</button>
+      </div>
       <textarea id="txtPreamble" class="inp mt-1.5 h-20 leading-relaxed" placeholder="I. TBMM'nin açılması&#10;II. Saltanatın kaldırılması&#10;III. Cumhuriyetin ilanı"></textarea>
     </div>
 
     <div id="rootPanel" class="mt-3">
-      <label class="lbl">Soru Kökü / Yönerge Cümlesi <span class="font-normal text-slate-400">(PDF'te KALIN / BOLD yazılır)</span></label>
+      <div class="flex items-center justify-between">
+        <label class="lbl">Soru Kökü / Yönerge Cümlesi <span class="font-normal text-slate-400">(PDF'te KALIN / BOLD yazılır)</span></label>
+        <button type="button" class="math-trigger shrink-0 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-500 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:text-slate-400" data-target="txtRoot">∑ Formül</button>
+      </div>
       <textarea id="txtRoot" class="inp mt-1.5 h-14 font-medium leading-relaxed" placeholder="Yukarıdaki gelişmelerin kronolojik sıralaması aşağıdakilerden hangisidir?"></textarea>
     </div>
 
@@ -889,22 +897,27 @@
         <div class="flex items-center gap-2 px-2.5 py-1.5 transition focus-within:bg-slate-50 dark:focus-within:bg-slate-800">
           <button type="button" data-opt-answer="A" class="opt-answer w-7 shrink-0 rounded-md py-1 text-xs font-bold text-slate-400 transition">A)</button>
           <input id="opt0" class="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-300" placeholder="Birinci seçenek">
+          <button type="button" class="math-trigger shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium text-slate-400 transition hover:text-slate-900" data-target="opt0" title="Formül ekle">∑</button>
         </div>
         <div class="flex items-center gap-2 px-2.5 py-1.5 transition focus-within:bg-slate-50 dark:focus-within:bg-slate-800">
           <button type="button" data-opt-answer="B" class="opt-answer w-7 shrink-0 rounded-md py-1 text-xs font-bold text-slate-400 transition">B)</button>
           <input id="opt1" class="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-300" placeholder="İkinci seçenek">
+          <button type="button" class="math-trigger shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium text-slate-400 transition hover:text-slate-900" data-target="opt1" title="Formül ekle">∑</button>
         </div>
         <div class="flex items-center gap-2 px-2.5 py-1.5 transition focus-within:bg-slate-50 dark:focus-within:bg-slate-800">
           <button type="button" data-opt-answer="C" class="opt-answer w-7 shrink-0 rounded-md py-1 text-xs font-bold text-slate-400 transition">C)</button>
           <input id="opt2" class="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-300" placeholder="Üçüncü seçenek">
+          <button type="button" class="math-trigger shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium text-slate-400 transition hover:text-slate-900" data-target="opt2" title="Formül ekle">∑</button>
         </div>
         <div class="flex items-center gap-2 px-2.5 py-1.5 transition focus-within:bg-slate-50 dark:focus-within:bg-slate-800">
           <button type="button" data-opt-answer="D" class="opt-answer w-7 shrink-0 rounded-md py-1 text-xs font-bold text-slate-400 transition">D)</button>
           <input id="opt3" class="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-300" placeholder="Dördüncü seçenek">
+          <button type="button" class="math-trigger shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium text-slate-400 transition hover:text-slate-900" data-target="opt3" title="Formül ekle">∑</button>
         </div>
         <div class="flex items-center gap-2 px-2.5 py-1.5 transition focus-within:bg-slate-50 dark:focus-within:bg-slate-800">
           <button type="button" data-opt-answer="E" class="opt-answer w-7 shrink-0 rounded-md py-1 text-xs font-bold text-slate-400 transition">E)</button>
           <input id="opt4" class="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-300" placeholder="Beşinci seçenek">
+          <button type="button" class="math-trigger shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium text-slate-400 transition hover:text-slate-900" data-target="opt4" title="Formül ekle">∑</button>
         </div>
       </div>
     </div>
@@ -932,6 +945,21 @@
       <button id="txtCancel" class="rounded-lg px-4 py-2 text-[13px] font-medium text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800">İptal</button>
       <button id="txtSaveNew" class="rounded-lg border border-slate-200 px-4 py-2 text-[13px] font-medium text-slate-700 transition hover:border-slate-900 dark:border-slate-700 dark:text-slate-300">Kaydet ve Devam</button>
       <button id="txtSave" class="rounded-lg bg-slate-900 px-5 py-2 text-[13px] font-medium text-white transition hover:bg-slate-700">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<div id="mathModal" class="fixed inset-0 hidden items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm" style="z-index:70">
+  <div class="fade-in max-h-[90vh] w-full max-w-2xl overflow-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 dark:text-slate-200">
+    <div class="flex items-center justify-between">
+      <h3 class="text-[15px] font-semibold text-slate-900 dark:text-slate-100">Formül Ekle</h3>
+      <button type="button" id="mathModalClose" class="rounded-lg px-2 py-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800">✕</button>
+    </div>
+    <p class="mt-1 text-[13px] text-slate-500">Aşağıdaki hazır yapılardan birine tıklayın, sarı ile işaretli kısımları kendi değerlerinizle değiştirin (Tab ile bir sonrakine geçebilirsiniz).</p>
+    <div id="eqedContainer" class="mt-4"></div>
+    <div class="mt-5 flex justify-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+      <button type="button" id="mathModalCancel" class="rounded-lg px-4 py-2 text-[13px] font-medium text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800">İptal</button>
+      <button type="button" id="mathModalInsert" class="rounded-lg bg-slate-900 px-5 py-2 text-[13px] font-medium text-white transition hover:bg-slate-700">Alana Ekle</button>
     </div>
   </div>
 </div>
@@ -2073,7 +2101,7 @@ function smartItemTotalH(it, ctx, colW){
   let th = it.h;
   if (it.q && it.q.stem && ctx) {
     setFont(ctx, { size: PT(8.5), bold: true });
-    th += wrapText(ctx, it.q.stem, colW * SCALE - PX(4)).length * 4.2 + 4;
+    th += wrapAuto(ctx, it.q.stem, colW * SCALE - PX(4)).length * 4.2 + 4;
   }
   return th;
 }
@@ -2154,7 +2182,503 @@ function setFont(ctx, o = {}) {
   ctx.font = (o.italic ? 'italic ' : 'normal ') + (o.bold ? '700 ' : '400 ') + size + 'px ' + FONT;
   return size;
 }
+
+/* ==========================================================================
+   MİNİ LaTeX RENDER MOTORU (canvas tabanlı)
+   Amaç: Soru metinlerindeki $...$ blokları hem PDF çıktısında hem
+   "Büyüt ve Düzenle" önizlemesinde KaTeX önizlemesindeki gibi GERÇEK
+   sembollerle (kesir çizgisi, kök işareti, üst/alt indis, integral,
+   toplam, Yunan harfleri, eşitsizlik/küme sembolleri vb.) çizilsin.
+   Bu motor tam bir TeX motoru değildir; sınav sorularında en sık
+   kullanılan yapıları kapsayan hafif bir geometrik+Unicode render'dır.
+   ========================================================================== */
+const LATEX_SYMS = {
+  '\\times':'×', '\\cdot':'·', '\\div':'÷', '\\pm':'±', '\\mp':'∓',
+  '\\leq':'≤', '\\le':'≤', '\\geq':'≥', '\\ge':'≥', '\\neq':'≠', '\\ne':'≠',
+  '\\approx':'≈', '\\equiv':'≡', '\\sim':'∼', '\\propto':'∝',
+  '\\infty':'∞', '\\partial':'∂', '\\nabla':'∇', '\\forall':'∀', '\\exists':'∃',
+  '\\in':'∈', '\\notin':'∉', '\\ni':'∋', '\\subset':'⊂', '\\subseteq':'⊆',
+  '\\supset':'⊃', '\\supseteq':'⊇', '\\cup':'∪', '\\cap':'∩', '\\setminus':'∖',
+  '\\emptyset':'∅', '\\varnothing':'∅', '\\complement':'∁',
+  '\\to':'→', '\\rightarrow':'→', '\\leftarrow':'←', '\\leftrightarrow':'↔',
+  '\\Rightarrow':'⇒', '\\Leftarrow':'⇐', '\\Leftrightarrow':'⇔',
+  '\\circ':'°', '\\degree':'°', '\\perp':'⊥', '\\parallel':'∥', '\\angle':'∠',
+  '\\triangle':'△', '\\therefore':'∴', '\\because':'∵',
+  '\\alpha':'α', '\\beta':'β', '\\gamma':'γ', '\\delta':'δ', '\\epsilon':'ε',
+  '\\varepsilon':'ε', '\\zeta':'ζ', '\\eta':'η', '\\theta':'θ', '\\vartheta':'ϑ',
+  '\\iota':'ι', '\\kappa':'κ', '\\lambda':'λ', '\\mu':'μ', '\\nu':'ν', '\\xi':'ξ',
+  '\\pi':'π', '\\rho':'ρ', '\\sigma':'σ', '\\tau':'τ', '\\upsilon':'υ',
+  '\\phi':'φ', '\\varphi':'φ', '\\chi':'χ', '\\psi':'ψ', '\\omega':'ω',
+  '\\Gamma':'Γ', '\\Delta':'Δ', '\\Theta':'Θ', '\\Lambda':'Λ', '\\Xi':'Ξ',
+  '\\Pi':'Π', '\\Sigma':'Σ', '\\Phi':'Φ', '\\Psi':'Ψ', '\\Omega':'Ω',
+  '\\ldots':'…', '\\dots':'…', '\\cdots':'⋯', '\\vdots':'⋮', '\\ddots':'⋱',
+  '\\quad':'  ', '\\qquad':'    ', '\\,':' ', '\\;':' ', '\\:':' ', '\\ ':' ',
+  '\\%':'%', '\\_':'_', '\\&':'&', '\\#':'#',
+};
+/* Bir LaTeX token akışını (basit özyinelemeli iniş ile) düzen ağacına çevirir.
+   Düğüm tipleri: text, frac, sqrt, sup, sub, group, row, func */
+function latexParse(src) {
+  let i = 0;
+  const n = src.length;
+  function peek() { return src[i]; }
+  function readCommand() {
+    // '\' işaretinden sonrasını oku
+    let j = i + 1;
+    if (j < n && !/[a-zA-Z]/.test(src[j])) { i = j + 1; return '\\' + src[j - 1 + 1 - 1] ; }
+    let cmd = '';
+    while (j < n && /[a-zA-Z]/.test(src[j])) { cmd += src[j]; j++; }
+    i = j;
+    return '\\' + cmd;
+  }
+  function readGroup() {
+    // '{' varsayılır tüketilmemiş
+    if (peek() === '{') {
+      i++;
+      const node = readRow('}');
+      if (peek() === '}') i++;
+      return node;
+    }
+    // tek karakter / tek komut
+    if (peek() === '\\') {
+      const cmd = readCommand();
+      return atomFromCommand(cmd);
+    }
+    const ch = peek();
+    i++;
+    return { type: 'text', value: ch || '' };
+  }
+  function atomFromCommand(cmd) {
+    if (LATEX_SYMS[cmd] !== undefined) return { type: 'text', value: LATEX_SYMS[cmd] };
+    if (cmd === '\\frac') {
+      const num = readGroup();
+      const den = readGroup();
+      return { type: 'frac', num, den };
+    }
+    if (cmd === '\\sqrt') {
+      let idx = null;
+      if (peek() === '[') {
+        i++;
+        let s = '';
+        while (i < n && peek() !== ']') { s += src[i]; i++; }
+        if (peek() === ']') i++;
+        idx = s;
+      }
+      const rad = readGroup();
+      return { type: 'sqrt', idx, rad };
+    }
+    if (cmd === '\\left') {
+      let delim = '';
+      if (peek()) { delim = peek(); i++; }
+      const inner = readRow('\\right');
+      if (src.slice(i, i + 6) === '\\right') {
+        i += 6;
+        let rdelim = '';
+        if (peek()) { rdelim = peek(); i++; }
+        return { type: 'delim', l: delim, r: rdelim, inner };
+      }
+      return { type: 'delim', l: delim, r: '', inner };
+    }
+    if (cmd === '\\vec') {
+      const g = readGroup();
+      return { type: 'vec', body: g };
+    }
+    if (cmd === '\\overline' || cmd === '\\bar') {
+      const g = readGroup();
+      return { type: 'overline', body: g };
+    }
+    if (cmd === '\\hat') {
+      const g = readGroup();
+      return { type: 'hat', body: g };
+    }
+    if (cmd === '\\sum' || cmd === '\\int' || cmd === '\\prod' || cmd === '\\oint' || cmd === '\\lim') {
+      const glyph = { '\\sum': 'Σ', '\\int': '∫', '\\prod': 'Π', '\\oint': '∮', '\\lim': 'lim' }[cmd];
+      return { type: 'bigop', glyph, isLim: cmd === '\\lim' };
+    }
+    if (cmd === '\\log' || cmd === '\\ln' || cmd === '\\sin' || cmd === '\\cos' || cmd === '\\tan' ||
+        cmd === '\\cot' || cmd === '\\sec' || cmd === '\\csc' || cmd === '\\arcsin' || cmd === '\\arccos' ||
+        cmd === '\\arctan' || cmd === '\\min' || cmd === '\\max' || cmd === '\\det' || cmd === '\\gcd') {
+      return { type: 'func', name: cmd.slice(1) };
+    }
+    if (cmd === '\\begin') {
+      let env = '';
+      if (peek() === '{') { i++; while (i < n && peek() !== '}') { env += src[i]; i++; } if (peek() === '}') i++; }
+      const rows = [];
+      let curRow = [];
+      const endTag = '\\end{' + env + '}';
+      while (i < n && src.slice(i, i + endTag.length) !== endTag) {
+        if (src.slice(i, i + 2) === '\\\\') { rows.push(curRow); curRow = []; i += 2; continue; }
+        if (peek() === '&') { curRow.push({ type: 'text', value: '   ' }); i++; continue; }
+        curRow.push(readAtom());
+      }
+      if (curRow.length) rows.push(curRow);
+      if (src.slice(i, i + endTag.length) === endTag) i += endTag.length;
+      return { type: 'env', env, rows };
+    }
+    // bilinmeyen komut: ismini düz metin olarak göster (kayıp içerik olmasın)
+    return { type: 'text', value: cmd.replace('\\', '') };
+  }
+  function readAtom() {
+    if (peek() === '^') { i++; const g = readGroup(); return { type: '_sup_pending', g }; }
+    if (peek() === '_') { i++; const g = readGroup(); return { type: '_sub_pending', g }; }
+    if (peek() === '{') { return readGroup(); }
+    if (peek() === '\\') {
+      const cmd = readCommand();
+      return atomFromCommand(cmd);
+    }
+    if (peek() === "'") { i++; return { type: 'text', value: '′' }; }
+    const ch = peek();
+    i++;
+    return { type: 'text', value: ch === undefined ? '' : ch };
+  }
+  function readRow(stopStr) {
+    const atoms = [];
+    while (i < n) {
+      if (stopStr === '}' && peek() === '}') break;
+      if (stopStr === '\\right' && src.slice(i, i + 6) === '\\right') break;
+      let atom = readAtom();
+      // ^ / _ önceki atomu üst/alt indis olarak sarmalar
+      if (atom.type === '_sup_pending') {
+        const base = atoms.pop() || { type: 'text', value: '' };
+        atoms.push({ type: 'sup', base, sup: atom.g });
+      } else if (atom.type === '_sub_pending') {
+        const base = atoms.pop() || { type: 'text', value: '' };
+        atoms.push({ type: 'sub', base, sub: atom.g });
+      } else {
+        atoms.push(atom);
+      }
+    }
+    return { type: 'row', atoms };
+  }
+  try {
+    const row = readRow(null);
+    return row;
+  } catch (e) {
+    return { type: 'row', atoms: [{ type: 'text', value: src }] };
+  }
+}
+
+/* Ayrıştırılmış LaTeX ağacının genişlik/yükseklik ölçümü ve çizimi.
+   measureLatexNode -> {w,h,asc,desc} (mm cinsinden, SCALE'e göre PX ile)
+   drawLatexNode(ctx,node,x,y,baseSize) -> baseline y'de sol-hizalı çizer */
+function measureLatexNode(ctx, node, size) {
+  const savedFont = ctx.font;
+  const fs = size;
+  ctx.font = fs + 'px ' + FONT;
+  let res;
+  switch (node.type) {
+    case 'text': {
+      const w = ctx.measureText(node.value).width;
+      res = { w, asc: fs * 0.72, desc: fs * 0.22 };
+      break;
+    }
+    case 'row': {
+      let w = 0, asc = fs * 0.72, desc = fs * 0.22;
+      node.atoms.forEach((a) => {
+        const m = measureLatexNode(ctx, a, size);
+        w += m.w;
+        asc = Math.max(asc, m.asc); desc = Math.max(desc, m.desc);
+      });
+      res = { w, asc, desc };
+      break;
+    }
+    case 'frac': {
+      const subSize = size;
+      const mn = measureLatexNode(ctx, node.num, subSize * 0.92);
+      const md = measureLatexNode(ctx, node.den, subSize * 0.92);
+      const w = Math.max(mn.w, md.w) + fs * 0.28;
+      const asc = mn.asc + mn.desc + fs * 0.14;
+      const desc = md.asc + md.desc + fs * 0.14;
+      res = { w, asc, desc };
+      break;
+    }
+    case 'sqrt': {
+      const mi = node.idx ? (function(){ ctx.font = (fs*0.55)+'px '+FONT; return ctx.measureText(node.idx).width; })() : 0;
+      const mr = measureLatexNode(ctx, node.rad, size * 0.95);
+      const w = mi + fs * 0.55 + mr.w + fs * 0.12;
+      const asc = mr.asc + fs * 0.22;
+      const desc = mr.desc;
+      res = { w, asc, desc };
+      break;
+    }
+    case 'sup': {
+      const mb = measureLatexNode(ctx, node.base, size);
+      const ms = measureLatexNode(ctx, node.sup, size * 0.62);
+      const w = mb.w + ms.w + fs * 0.06;
+      const asc = mb.asc + ms.asc * 0.85 + fs * 0.06;
+      res = { w, asc, desc: mb.desc };
+      break;
+    }
+    case 'sub': {
+      const mb = measureLatexNode(ctx, node.base, size);
+      const ms = measureLatexNode(ctx, node.sub, size * 0.62);
+      const w = mb.w + ms.w + fs * 0.06;
+      const desc = mb.desc + ms.asc * 0.7 + fs * 0.06;
+      res = { w, asc: mb.asc, desc: Math.max(mb.desc, desc) };
+      break;
+    }
+    case 'delim': {
+      const mi = measureLatexNode(ctx, node.inner, size);
+      const dw = fs * 0.32;
+      res = { w: mi.w + dw * (node.l ? 1 : 0) + dw * (node.r ? 1 : 0), asc: mi.asc, desc: mi.desc };
+      break;
+    }
+    case 'vec': case 'overline': case 'hat': {
+      const mb = measureLatexNode(ctx, node.body, size);
+      res = { w: mb.w, asc: mb.asc + fs * 0.16, desc: mb.desc };
+      break;
+    }
+    case 'bigop': {
+      ctx.font = (fs*1.35)+'px '+FONT;
+      const w = ctx.measureText(node.glyph).width + fs * 0.14;
+      res = { w, asc: fs * 0.85, desc: fs * 0.35 };
+      break;
+    }
+    case 'func': {
+      ctx.font = fs+'px '+FONT;
+      const w = ctx.measureText(node.name).width + fs * 0.1;
+      res = { w, asc: fs * 0.72, desc: fs * 0.22 };
+      break;
+    }
+    case 'env': {
+      // basit satır-sütun matris/parçalı fonksiyon ölçümü: en geniş satırı al
+      let maxW = 0, totalH = 0;
+      const rowH = size * 1.35;
+      node.rows.forEach((r) => {
+        let rw = 0;
+        r.forEach((a) => { rw += measureLatexNode(ctx, a, size * 0.92).w; });
+        maxW = Math.max(maxW, rw);
+        totalH += rowH;
+      });
+      const bracketW = node.env === 'cases' ? fs * 0.45 : fs * 0.5;
+      res = { w: maxW + bracketW, asc: totalH / 2 + rowH / 2, desc: totalH / 2 - rowH / 2 + size * 0.2, rowH, isEnv: true };
+      break;
+    }
+    default:
+      res = { w: 0, asc: fs * 0.72, desc: fs * 0.22 };
+  }
+  ctx.font = savedFont;
+  return res;
+}
+function drawLatexNode(ctx, node, x, y, size, color) {
+  const fs = size;
+  ctx.fillStyle = color;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  switch (node.type) {
+    case 'text': {
+      ctx.font = fs + 'px ' + FONT;
+      ctx.fillText(node.value, x, y);
+      return x + ctx.measureText(node.value).width;
+    }
+    case 'row': {
+      let cx = x;
+      node.atoms.forEach((a) => { cx = drawLatexNode(ctx, a, cx, y, size, color); });
+      return cx;
+    }
+    case 'frac': {
+      const subSize = size * 0.92;
+      const mn = measureLatexNode(ctx, node.num, subSize);
+      const md = measureLatexNode(ctx, node.den, subSize);
+      const w = Math.max(mn.w, md.w) + fs * 0.28;
+      const cx = x + w / 2;
+      const barY = y - fs * 0.32;
+      // pay (üst)
+      drawLatexNode(ctx, node.num, cx - mn.w / 2, barY - fs * 0.14 - mn.desc, subSize, color);
+      // çizgi
+      ctx.strokeStyle = color; ctx.lineWidth = Math.max(1, fs * 0.045);
+      ctx.beginPath(); ctx.moveTo(x + fs * 0.06, barY); ctx.lineTo(x + w - fs * 0.06, barY); ctx.stroke();
+      // payda (alt)
+      drawLatexNode(ctx, node.den, cx - md.w / 2, barY + fs * 0.14 + md.asc, subSize, color);
+      return x + w;
+    }
+    case 'sqrt': {
+      const radSize = size * 0.95;
+      const mr = measureLatexNode(ctx, node.rad, radSize);
+      const stemW = fs * 0.55;
+      const h = mr.asc + mr.desc + fs * 0.22;
+      const topY = y - mr.asc - fs * 0.22;
+      const botY = y + mr.desc;
+      let ix = x;
+      if (node.idx) {
+        ctx.font = (fs * 0.55) + 'px ' + FONT;
+        ctx.fillText(node.idx, ix, topY + fs * 0.3);
+        ix += ctx.measureText(node.idx).width + fs * 0.05;
+      }
+      // kök işareti (checkmark benzeri çizgi)
+      ctx.strokeStyle = color; ctx.lineWidth = Math.max(1, fs * 0.045);
+      ctx.beginPath();
+      ctx.moveTo(ix, y - h * 0.32);
+      ctx.lineTo(ix + stemW * 0.28, botY);
+      ctx.lineTo(ix + stemW * 0.5, topY);
+      ctx.lineTo(ix + stemW + mr.w + fs * 0.1, topY);
+      ctx.stroke();
+      drawLatexNode(ctx, node.rad, ix + stemW, y, radSize, color);
+      return ix + stemW + mr.w + fs * 0.1;
+    }
+    case 'sup': {
+      const mb = measureLatexNode(ctx, node.base, size);
+      const supSize = size * 0.62;
+      const bx = drawLatexNode(ctx, node.base, x, y, size, color);
+      drawLatexNode(ctx, node.sup, bx + fs * 0.03, y - mb.asc * 0.55, supSize, color);
+      const ms = measureLatexNode(ctx, node.sup, supSize);
+      return bx + ms.w + fs * 0.06;
+    }
+    case 'sub': {
+      const bx = drawLatexNode(ctx, node.base, x, y, size, color);
+      const subSize = size * 0.62;
+      drawLatexNode(ctx, node.sub, bx + fs * 0.03, y + fs * 0.28, subSize, color);
+      const ms = measureLatexNode(ctx, node.sub, subSize);
+      return bx + ms.w + fs * 0.06;
+    }
+    case 'delim': {
+      const mi = measureLatexNode(ctx, node.inner, size);
+      const dw = fs * 0.32;
+      let cx = x;
+      ctx.font = (fs * 1.05) + 'px ' + FONT;
+      if (node.l) { ctx.fillText(delimGlyph(node.l), cx, y + mi.desc * 0.3); cx += dw; }
+      cx = drawLatexNode(ctx, node.inner, cx, y, size, color);
+      if (node.r) { ctx.font = (fs * 1.05) + 'px ' + FONT; ctx.fillText(delimGlyph(node.r), cx, y + mi.desc * 0.3); cx += dw; }
+      return cx;
+    }
+    case 'vec': {
+      const mb = measureLatexNode(ctx, node.body, size);
+      const bx = drawLatexNode(ctx, node.body, x, y, size, color);
+      ctx.strokeStyle = color; ctx.lineWidth = Math.max(1, fs * 0.04);
+      const ay = y - mb.asc - fs * 0.1;
+      ctx.beginPath(); ctx.moveTo(x, ay); ctx.lineTo(x + mb.w, ay); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + mb.w - fs * 0.08, ay - fs * 0.06); ctx.lineTo(x + mb.w, ay); ctx.lineTo(x + mb.w - fs * 0.08, ay + fs * 0.06); ctx.stroke();
+      return bx;
+    }
+    case 'overline': {
+      const mb = measureLatexNode(ctx, node.body, size);
+      const bx = drawLatexNode(ctx, node.body, x, y, size, color);
+      ctx.strokeStyle = color; ctx.lineWidth = Math.max(1, fs * 0.04);
+      const ay = y - mb.asc - fs * 0.08;
+      ctx.beginPath(); ctx.moveTo(x, ay); ctx.lineTo(x + mb.w, ay); ctx.stroke();
+      return bx;
+    }
+    case 'hat': {
+      const mb = measureLatexNode(ctx, node.body, size);
+      const bx = drawLatexNode(ctx, node.body, x, y, size, color);
+      ctx.font = (fs * 0.7) + 'px ' + FONT;
+      ctx.fillText('^', x + mb.w / 2 - fs * 0.12, y - mb.asc - fs * 0.02);
+      return bx;
+    }
+    case 'bigop': {
+      if (node.isLim) {
+        ctx.font = 'italic ' + fs + 'px ' + FONT;
+        ctx.fillText('lim', x, y);
+        return x + ctx.measureText('lim').width + fs * 0.1;
+      }
+      ctx.font = (fs * 1.35) + 'px ' + FONT;
+      ctx.fillText(node.glyph, x, y + fs * 0.1);
+      return x + ctx.measureText(node.glyph).width + fs * 0.14;
+    }
+    case 'func': {
+      ctx.font = 'normal ' + fs + 'px ' + FONT;
+      ctx.fillText(node.name, x, y);
+      return x + ctx.measureText(node.name).width + fs * 0.1;
+    }
+    case 'env': {
+      const rowH = size * 1.35 * 0.92;
+      const totalH = node.rows.length * rowH;
+      let topY = y - totalH / 2 + rowH * 0.7;
+      const bracketW = fs * (node.env === 'cases' ? 0.45 : 0.5);
+      if (node.env === 'cases') {
+        ctx.strokeStyle = color; ctx.lineWidth = Math.max(1, fs * 0.045);
+        ctx.beginPath();
+        ctx.moveTo(x + bracketW * 0.7, y - totalH / 2);
+        ctx.quadraticCurveTo(x, y - totalH / 2, x, y - rowH * 0.3);
+        ctx.quadraticCurveTo(x, y, x - fs*0.08, y);
+        ctx.quadraticCurveTo(x, y, x, y + rowH * 0.3);
+        ctx.quadraticCurveTo(x, y + totalH / 2, x + bracketW * 0.7, y + totalH / 2);
+        ctx.stroke();
+      }
+      let cx = x + bracketW;
+      node.rows.forEach((r) => {
+        let rx = cx;
+        r.forEach((a) => { rx = drawLatexNode(ctx, a, rx, topY, size * 0.92, color); });
+        topY += rowH;
+      });
+      return x + bracketW + (measureLatexNode(ctx, node, size).w - bracketW);
+    }
+    default:
+      return x;
+  }
+}
+function delimGlyph(d) {
+  const map = { '|': '|', '(': '(', ')': ')', '[': '[', ']': ']', '\\{': '{', '\\}': '}', '.': '' };
+  return map[d] !== undefined ? map[d] : d;
+}
+/* Metni "segment" dizisine böler: düz metin parçaları ve $...$ LaTeX bloklarını
+   ayrı segment olarak işaretler. Satır kaydırma bu segmentler üzerinden yapılır. */
+function tokenizeLatexSegments(text) {
+  const raw = String(text || '');
+  const parts = raw.split(/(\$[^$]+\$)/g);
+  const segs = [];
+  parts.forEach((p) => {
+    if (!p) return;
+    if (/^\$[^$]+\$$/.test(p)) {
+      segs.push({ latex: true, src: p.slice(1, -1) });
+    } else {
+      segs.push({ latex: false, src: p });
+    }
+  });
+  return segs.length ? segs : [{ latex: false, src: '' }];
+}
+/* wrapText'in LaTeX-farkında versiyonu: her satırı { text, latex, node, w }
+   token dizisi olarak döndürür. Düz metin kelime kelime, LaTeX blokları tek
+   parça olarak sarmalanır (satır içinde bölünmez). */
+function wrapRichText(ctx, text, maxW) {
+  const paras = String(text || '').split(/\n/);
+  const lines = [];
+  for (const para of paras) {
+    if (!para.trim()) { lines.push([]); continue; }
+    const segs = tokenizeLatexSegments(para);
+    let cur = []; let curW = 0;
+    const pushLine = () => { lines.push(cur); cur = []; curW = 0; };
+    segs.forEach((seg) => {
+      if (seg.latex) {
+        const node = latexParse(seg.src);
+        const savedFont = ctx.font;
+        const m = measureLatexNode(ctx, node, parseFloat(ctx.font) || PT(9.5));
+        ctx.font = savedFont;
+        if (curW + m.w > maxW && cur.length) pushLine();
+        cur.push({ latex: true, node, w: m.w, asc: m.asc, desc: m.desc });
+        curW += m.w;
+      } else {
+        const words = seg.src.split(/(\s+)/);
+        words.forEach((w) => {
+          if (!w) return;
+          const ww = ctx.measureText(w).width;
+          if (curW + ww > maxW && curW > 0 && !/^\s+$/.test(w)) pushLine();
+          if (!/^\s+$/.test(w) || curW > 0) { cur.push({ latex: false, text: w, w: ww }); curW += ww; }
+        });
+      }
+    });
+    pushLine();
+  }
+  return lines.length ? lines : [[]];
+}
+/* Bir zengin-metin satırını (wrapRichText çıktısından bir satır) canvas'a çizer.
+   x,y: satırın sol-baseline konumu (PX cinsinden, zaten ölçeklenmiş).
+   fontSize: CSS px cinsinden temel punto (PT() çıktısı), color: dolgu rengi. */
+function drawRichLine(ctx, tokens, x, y, fontSize, color, fontSpec) {
+  let cx = x;
+  tokens.forEach((tok) => {
+    if (tok.latex) {
+      cx = drawLatexNode(ctx, tok.node, cx, y, fontSize, color);
+    } else {
+      ctx.font = fontSpec;
+      ctx.fillStyle = color;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(tok.text, cx, y);
+      cx += tok.w;
+    }
+  });
+}
 function wrapText(ctx, text, maxW) {
+  // Basit (LaTeX içermeyen) metinler için eski davranış; MEB header gibi
+  // sabit alanlarda hâlâ kullanılıyor.
   const paras = String(text || '').split(/\n/);
   const lines = [];
   for (const para of paras) {
@@ -2177,6 +2701,23 @@ function drawText(ctx, str, x, y, o = {}) {
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = o.align || 'left';
   const maxW = o.maxW != null ? o.maxW : null;
+  const hasLatex = /\$[^$]+\$/.test(String(str || ''));
+  if (hasLatex) {
+    const fontSpec = ctx.font;
+    const lines = wrapRichText(ctx, str, maxW != null ? maxW : 1e6);
+    lines.forEach((tokens, i) => {
+      // Satır genişliğini hizalama (center/right) için ölçelim
+      let lineW = 0; tokens.forEach((t) => (lineW += t.w));
+      let lx = x * SCALE;
+      if (o.align === 'center') lx = x * SCALE - lineW / 2;
+      else if (o.align === 'right') lx = x * SCALE - lineW;
+      const prevAlign = ctx.textAlign; ctx.textAlign = 'left';
+      drawRichLine(ctx, tokens, lx, y * SCALE + i * lh, size, o.color || '#111111', fontSpec);
+      ctx.textAlign = prevAlign;
+    });
+    ctx.font = fontSpec;
+    return (lines.length * lh) / SCALE;
+  }
   const lines = maxW != null ? wrapText(ctx, str, maxW) : [String(str)];
   lines.forEach((l, i) => { ctx.fillText(l, x * SCALE, y * SCALE + i * lh); });
   return (lines.length * lh) / SCALE;
@@ -2563,6 +3104,20 @@ function wrapBlankSegments(ctx, text, maxW, blankW) {
   pushLine();
   return lines.length ? lines : [[]];
 }
+/* LaTeX-farkında satır sarma sarmalayıcısı: metin $...$ içeriyorsa
+   wrapRichText (token dizileri) döner, aksi halde eski wrapText (string
+   dizisi) döner. Her iki durumda da .length ile satır sayısı okunabilir. */
+function wrapAuto(ctx, text, maxW) {
+  if (/\$[^$]+\$/.test(String(text || ''))) return wrapRichText(ctx, text, maxW);
+  return wrapText(ctx, text, maxW);
+}
+/* wrapAuto çıktısından tek bir satırı (string ya da token dizisi) canvas'a
+   çizer. Zaten ölçeklenmiş PX koordinatları x,y baseline'ı gösterir. */
+function drawAutoLine(ctx, line, x, y, fontSize, color, fontSpec) {
+  if (Array.isArray(line)) { drawRichLine(ctx, line, x, y, fontSize, color, fontSpec); return; }
+  ctx.font = fontSpec; ctx.fillStyle = color; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText(line, x, y);
+}
 function prepText(it, ctx) {
   const q = it.q;
   const contentW = it.w * SCALE - PX(7);
@@ -2584,15 +3139,15 @@ function prepText(it, ctx) {
     it.h = Math.max(h + 1, 8); return;
   }
   setFont(ctx, { size: PT(9.5) });
-  it.preambleLines = q.text ? wrapText(ctx, q.text, contentW) : [];
+  it.preambleLines = q.text ? wrapAuto(ctx, q.text, contentW) : [];
   setFont(ctx, { size: PT(9.5), bold: true });
-  it.rootLines = q.root ? wrapText(ctx, q.root, contentW) : [];
+  it.rootLines = q.root ? wrapAuto(ctx, q.root, contentW) : [];
   if (!it.rootLines.length && it.preambleLines.length) { it.rootLines = it.preambleLines; it.preambleLines = []; }
   const opts = (q.options || []).filter(Boolean);
   setFont(ctx, { size: PT(9) });
   it.optLines = opts.map((o, k) => ({
     letter: LETTERS[k] + ')',
-    lines: wrapText(ctx, o, q.layout === 'h' ? (it.w / Math.max(1, opts.length) - 4) * SCALE : contentW - PX(5)),
+    lines: wrapAuto(ctx, o, q.layout === 'h' ? (it.w / Math.max(1, opts.length) - 4) * SCALE : contentW - PX(5)),
   }));
   it.imgHeight = 0;
   if (q.imgSrc && imgCache[q.id]) {
@@ -2650,13 +3205,13 @@ function drawQ(ctx, it, x, y) {
       ctx.drawImage(im, PX(textX), PX(ty), PX(imgW), PX(imgH)); ty += imgH + 2;
     }
     if (it.preambleLines && it.preambleLines.length) {
-      setFont(ctx, { size: PT(9.5) }); ctx.fillStyle = '#1e293b';
-      it.preambleLines.forEach((l) => { ctx.fillText(l, PX(textX), PX(ty)); ty += LH_MM; });
+      const fSize = PT(9.5); const fSpec = setFont(ctx, { size: fSize }) && ctx.font;
+      it.preambleLines.forEach((l) => { drawAutoLine(ctx, l, PX(textX), PX(ty), fSize, '#1e293b', fSpec); ty += LH_MM; });
       if (it.rootLines && it.rootLines.length) ty += 1.2;
     }
     if (it.rootLines && it.rootLines.length) {
-      setFont(ctx, { size: PT(9.5), bold: true }); ctx.fillStyle = '#0f172a';
-      it.rootLines.forEach((l) => { ctx.fillText(l, PX(textX), PX(ty)); ty += LH_MM; });
+      const fSize = PT(9.5); setFont(ctx, { size: fSize, bold: true }); const fSpec = ctx.font;
+      it.rootLines.forEach((l) => { drawAutoLine(ctx, l, PX(textX), PX(ty), fSize, '#0f172a', fSpec); ty += LH_MM; });
       ty += 1.5;
     }
     if (it.optLines && it.optLines.length) {
@@ -2664,17 +3219,17 @@ function drawQ(ctx, it, x, y) {
         const cw = it.w / Math.max(1, it.optLines.length); let maxL = 1;
         it.optLines.forEach((o, k) => {
           const colX = x + 5.5 + k * cw;
-          setFont(ctx, { size: PT(9), bold: true }); ctx.fillStyle = '#0f172a'; ctx.fillText(o.letter, PX(colX), PX(ty));
-          setFont(ctx, { size: PT(9) }); ctx.fillStyle = '#334155';
-          o.lines.forEach((l, j) => { ctx.fillText(l, PX(colX + 5), PX(ty + j * 4.4)); });
+          setFont(ctx, { size: PT(9), bold: true }); ctx.fillStyle = '#0f172a'; ctx.textAlign = 'left'; ctx.fillText(o.letter, PX(colX), PX(ty));
+          const fSize = PT(9); setFont(ctx, { size: fSize }); const fSpec = ctx.font;
+          o.lines.forEach((l, j) => { drawAutoLine(ctx, l, PX(colX + 5), PX(ty + j * 4.4), fSize, '#334155', fSpec); });
           maxL = Math.max(maxL, o.lines.length);
         });
         ty += maxL * 4.4 + 1;
       } else {
         it.optLines.forEach((o) => {
-          setFont(ctx, { size: PT(9), bold: true }); ctx.fillStyle = '#0f172a'; ctx.fillText(o.letter, PX(x + 6.5), PX(ty));
-          setFont(ctx, { size: PT(9) }); ctx.fillStyle = '#334155';
-          o.lines.forEach((l, j) => { ctx.fillText(l, PX(x + 12), PX(ty + j * 4.4)); });
+          setFont(ctx, { size: PT(9), bold: true }); ctx.fillStyle = '#0f172a'; ctx.textAlign = 'left'; ctx.fillText(o.letter, PX(x + 6.5), PX(ty));
+          const fSize = PT(9); setFont(ctx, { size: fSize }); const fSpec = ctx.font;
+          o.lines.forEach((l, j) => { drawAutoLine(ctx, l, PX(x + 12), PX(ty + j * 4.4), fSize, '#334155', fSpec); });
           ty += o.lines.length * 4.4 + 0.8;
         });
       }
@@ -2692,12 +3247,12 @@ function drawQ(ctx, it, x, y) {
 }
 function drawStemBox(ctx, stem, x, y, w) {
   setFont(ctx, { size: PT(8.5), bold: true });
-  const lines = wrapText(ctx, stem, w * SCALE - PX(4));
+  const lines = wrapAuto(ctx, stem, w * SCALE - PX(4));
   const boxH = lines.length * 4.2 + 2;
   ctx.fillStyle = '#f8fafc'; ctx.fillRect(PX(x), PX(y), PX(w), PX(boxH));
   ctx.fillStyle = '#3b82f6'; ctx.fillRect(PX(x), PX(y), PX(1.5), PX(boxH));
-  setFont(ctx, { size: PT(8.5), bold: true, italic: true }); ctx.fillStyle = '#1e293b';
-  lines.forEach((l, i) => { ctx.fillText(l, PX(x + 3), PX(y + 3.8 + i * 4.2)); });
+  const fSize = PT(8.5); setFont(ctx, { size: fSize, bold: true, italic: true }); const fSpec = ctx.font;
+  lines.forEach((l, i) => { drawAutoLine(ctx, l, PX(x + 3), PX(y + 3.8 + i * 4.2), fSize, '#1e293b', fSpec); });
   return boxH + 2;
 }
 function finishPage(page, PW, PH, M, pageNo, isFirst, contentTop, subTop, bottom, isWritten) {
@@ -2787,7 +3342,7 @@ async function renderPaperToBlob(idx) {
   for (let n = 0; n < items.length; n++) {
     const it = items[n]; if (it.num === undefined) it.num = n + 1;
     let stemH = 0;
-    if (it.q.stem) { setFont(page.ctx, { size: PT(8.5), bold: true }); stemH = wrapText(page.ctx, it.q.stem, colW * SCALE - PX(4)).length * 4.2 + 4; }
+    if (it.q.stem) { setFont(page.ctx, { size: PT(8.5), bold: true }); stemH = wrapAuto(page.ctx, it.q.stem, colW * SCALE - PX(4)).length * 4.2 + 4; }
     if (y + stemH + it.h > bottomAdj && placedThisPage > 0) {
       c++;
       if (c >= numCols) {
@@ -3571,6 +4126,7 @@ window.addEventListener('resize', () => {
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if ($('imgCropModal').classList.contains('open')) $('imgCropModal').classList.remove('open');
+  else if ($('mathModal').classList.contains('flex')) closeModal('mathModal');
   else if ($('textModal').classList.contains('flex')) closeModal('textModal');
   else if ($('pvBig').classList.contains('open')) closePvBig();
 });
@@ -3656,7 +4212,7 @@ async function buildPreviewPages(){
   for (let n = 0; n < items.length; n++) {
     const it = items[n]; if (it.num === undefined) it.num = n + 1;
     let stemH = 0;
-    if (it.q.stem) { setFont(page.ctx, { size: PT(8.5), bold: true }); stemH = wrapText(page.ctx, it.q.stem, colW * SCALE - PX(4)).length * 4.2 + 4; }
+    if (it.q.stem) { setFont(page.ctx, { size: PT(8.5), bold: true }); stemH = wrapAuto(page.ctx, it.q.stem, colW * SCALE - PX(4)).length * 4.2 + 4; }
     if (y + stemH + it.h > bottomAdj && placedThisPage > 0) {
       c++;
       if (c >= numCols) {
@@ -3869,6 +4425,353 @@ ensureFont();
 render();
 runPreview();
 offerRestore();
+</script>
+<script>
+/* ==========================================================================
+   Formül Editörü (KaTeX) — eqed- namespace
+   Bağımsız, tekrar kullanılabilir bileşen. Tek görevi: LaTeX kodu üretmek.
+   Sınav Hazırlama Aracı'nın PDF/kağıt render motoru (canvas ctx.fillText
+   tabanlı) şu an $...$ içindeki LaTeX'i GÖRSEL olarak render ETMEZ; bu
+   modül sadece doğru sözdizimli LaTeX kaynağını alanlara yazar.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var EQED_MAIN = [
+    { label: 'Kesir', template: '\\frac{PAY}{PAYDA}' },
+    { label: 'Karekök', template: '\\sqrt{SAYI}' },
+    { label: 'Dereceli Kök', template: '\\sqrt[DERECE]{SAYI}' },
+    { label: 'Üslü Sayı', template: 'TABAN^{ÜS}' },
+    { label: 'Alt İndis', template: 'TABAN_{İNDİS}' },
+    { label: 'Mutlak Değer', template: '\\left| SAYI \\right|' },
+    { label: 'Logaritma', dropdown: [
+        { label: 'log₁₀', template: '\\log(SAYI)' },
+        { label: 'Taban Belirt', template: '\\log_{TABAN}(SAYI)' },
+        { label: 'ln (doğal log)', template: '\\ln(SAYI)' }
+      ]},
+    { label: 'Trigonometri', dropdown: [
+        { label: 'sin', template: '\\sin(AÇI)' },
+        { label: 'cos', template: '\\cos(AÇI)' },
+        { label: 'tan', template: '\\tan(AÇI)' },
+        { label: 'cot', template: '\\cot(AÇI)' },
+        { label: 'sec', template: '\\sec(AÇI)' },
+        { label: 'csc', template: '\\csc(AÇI)' },
+        { label: 'arcsin', template: '\\arcsin(SAYI)' },
+        { label: 'arccos', template: '\\arccos(SAYI)' },
+        { label: 'arctan', template: '\\arctan(SAYI)' },
+        { label: 'Derece (°)', insert: '^{\\circ}' }
+      ]},
+    { label: 'Limit', template: '\\lim_{x \\to DEĞER}' },
+    { label: 'Türev', dropdown: [
+        { label: '1. Türev', template: "FONKSİYON'(DEĞİŞKEN)" },
+        { label: '2. Türev', template: "FONKSİYON''(DEĞİŞKEN)" },
+        { label: 'Leibniz Gösterimi', template: '\\frac{d\\,FONKSİYON}{d\\,DEĞİŞKEN}' }
+      ]},
+    { label: 'İntegral', dropdown: [
+        { label: 'Belirsiz İntegral', template: '\\int FONKSİYON \\, dx' },
+        { label: 'Belirli İntegral', template: '\\int_{ALT}^{ÜST} FONKSİYON \\, dx' },
+        { label: 'Çevre İntegrali', template: '\\oint FONKSİYON \\, dx' }
+      ]},
+    { label: 'Toplam Sembolü', template: '\\sum_{i=ALT}^{ÜST} İFADE' },
+    { label: 'Pi/Alfa/Theta', dropdown: [
+        { label: 'π', insert: '\\pi' },
+        { label: 'α', insert: '\\alpha' },
+        { label: 'β', insert: '\\beta' },
+        { label: 'θ', insert: '\\theta' },
+        { label: 'Δ', insert: '\\Delta' },
+        { label: '∞', insert: '\\infty' }
+      ]},
+    { label: 'Eşitsizlik/Karşılaştırma', dropdown: [
+        { label: '≤ küçük eşit', insert: '\\leq' },
+        { label: '≥ büyük eşit', insert: '\\geq' },
+        { label: '≠ eşit değil', insert: '\\neq' },
+        { label: '≈ yaklaşık eşit', insert: '\\approx' },
+        { label: '≡ özdeş', insert: '\\equiv' },
+        { label: '∝ orantılı', insert: '\\propto' }
+      ]},
+    { label: 'Küme İşlemleri', dropdown: [
+        { label: '∈ elemanıdır', insert: '\\in' },
+        { label: '∉ elemanı değildir', insert: '\\notin' },
+        { label: '⊂ alt kümesi', insert: '\\subset' },
+        { label: '⊆ alt küme/eşit', insert: '\\subseteq' },
+        { label: '∪ birleşim', insert: '\\cup' },
+        { label: '∩ kesişim', insert: '\\cap' },
+        { label: '∅ boş küme', insert: '\\emptyset' },
+        { label: '∀ her biri için', insert: '\\forall' },
+        { label: '∃ vardır', insert: '\\exists' }
+      ]},
+    { label: 'Parçalı Fonksiyon', template: '\\begin{cases} DEĞER_1, & KOŞUL_1 \\\\ DEĞER_2, & KOŞUL_2 \\end{cases}' }
+  ];
+
+  var EQED_ADV = [
+    { label: 'Çarpım Sembolü', template: '\\prod_{i=ALT}^{ÜST} İFADE' },
+    { label: 'Vektör', template: '\\vec{V}' },
+    { label: 'Üst Çizgi', template: '\\overline{İFADE}' },
+    { label: 'Şapka (^)', template: '\\hat{DEĞİŞKEN}' },
+    { label: 'İkili Matris', template: '\\begin{pmatrix} A & B \\\\ C & D \\end{pmatrix}' },
+    { label: 'Ok Sembolleri', dropdown: [
+        { label: '→ sağa ok', insert: '\\to' },
+        { label: '⇒ ise (sonuç)', insert: '\\Rightarrow' },
+        { label: '⇔ ancak ve ancak', insert: '\\Leftrightarrow' }
+      ]},
+    { label: 'Geometri', dropdown: [
+        { label: '∠ açı', insert: '\\angle' },
+        { label: '⊥ dik', insert: '\\perp' },
+        { label: '∥ paralel', insert: '\\parallel' },
+        { label: '△ üçgen', insert: '\\triangle' }
+      ]}
+  ];
+
+  var PLACEHOLDER_RE = /[A-ZÇĞİÖŞÜ][A-ZÇĞİÖŞÜ0-9_]*/g;
+
+  function closeAllPopovers(root) {
+    root.querySelectorAll('.eqed-popover').forEach(function (p) { p.classList.add('hidden'); });
+  }
+
+  function makeMainButton(root, textarea, item, onChange) {
+    if (item.dropdown) {
+      var wrap = document.createElement('div');
+      wrap.className = 'relative';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'eqed-btn w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300';
+      btn.textContent = item.label + ' ▾';
+      var pop = document.createElement('div');
+      pop.className = 'eqed-popover hidden absolute left-0 top-full z-10 mt-1 w-40 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900';
+      item.dropdown.forEach(function (sub) {
+        var sb = document.createElement('button');
+        sb.type = 'button';
+        sb.className = 'block w-full rounded-md px-2 py-1.5 text-left text-[12px] text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800';
+        sb.textContent = sub.label;
+        sb.addEventListener('click', function () {
+          if (sub.template != null) insertTemplate(textarea, sub.template);
+          else if (sub.insert != null) insertPlain(textarea, sub.insert);
+          pop.classList.add('hidden');
+          onChange();
+        });
+        pop.appendChild(sb);
+      });
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var wasHidden = pop.classList.contains('hidden');
+        closeAllPopovers(root);
+        if (wasHidden) pop.classList.remove('hidden');
+      });
+      wrap.appendChild(btn);
+      wrap.appendChild(pop);
+      return wrap;
+    }
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'eqed-btn w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300';
+    b.textContent = item.label;
+    b.addEventListener('click', function () {
+      insertTemplate(textarea, item.template);
+      onChange();
+    });
+    return b;
+  }
+
+  function insertPlain(textarea, str) {
+    var start = textarea.selectionStart != null ? textarea.selectionStart : textarea.value.length;
+    var end = textarea.selectionEnd != null ? textarea.selectionEnd : textarea.value.length;
+    var val = textarea.value;
+    textarea.value = val.slice(0, start) + str + val.slice(end);
+    var pos = start + str.length;
+    textarea.focus();
+    textarea.setSelectionRange(pos, pos);
+  }
+
+  function insertTemplate(textarea, template) {
+    var start = textarea.selectionStart != null ? textarea.selectionStart : textarea.value.length;
+    var end = textarea.selectionEnd != null ? textarea.selectionEnd : textarea.value.length;
+    var val = textarea.value;
+    textarea.value = val.slice(0, start) + template + val.slice(end);
+    textarea.focus();
+    PLACEHOLDER_RE.lastIndex = start;
+    var m = PLACEHOLDER_RE.exec(textarea.value);
+    if (m && m.index < start + template.length) {
+      textarea.setSelectionRange(m.index, m.index + m[0].length);
+    } else {
+      var pos = start + template.length;
+      textarea.setSelectionRange(pos, pos);
+    }
+  }
+
+  function jumpToPlaceholder(textarea, direction) {
+    var val = textarea.value;
+    var cursor = direction > 0 ? textarea.selectionEnd : textarea.selectionStart;
+    if (direction > 0) {
+      PLACEHOLDER_RE.lastIndex = cursor;
+      var m = PLACEHOLDER_RE.exec(val);
+      if (m) { textarea.setSelectionRange(m.index, m.index + m[0].length); return true; }
+      return false;
+    }
+    // backward: collect all matches before cursor, take the last one
+    var re = new RegExp(PLACEHOLDER_RE.source, 'g');
+    var last = null, mm;
+    while ((mm = re.exec(val))) {
+      if (mm.index >= cursor) break;
+      last = mm;
+    }
+    if (last) { textarea.setSelectionRange(last.index, last.index + last[0].length); return true; }
+    return false;
+  }
+
+  function buildPreviewUpdater(textarea, previewEl, errorEl) {
+    var t = null;
+    return function schedule() {
+      if (t) clearTimeout(t);
+      t = setTimeout(function () {
+        var src = textarea.value.trim();
+        if (!src) { previewEl.innerHTML = ''; errorEl.classList.add('hidden'); return; }
+        try {
+          window.katex.render(src, previewEl, { throwOnError: true, displayMode: true });
+          errorEl.classList.add('hidden');
+        } catch (e) {
+          previewEl.innerHTML = '';
+          errorEl.textContent = 'Sözdizimi hatası: formülü kontrol edin.';
+          errorEl.classList.remove('hidden');
+        }
+      }, 150);
+    };
+  }
+
+  function initEquationEditor(container, opts) {
+    opts = opts || {};
+    container.innerHTML = '';
+
+    var mainGrid = document.createElement('div');
+    mainGrid.className = 'grid grid-cols-3 gap-1.5 sm:grid-cols-4';
+    container.appendChild(mainGrid);
+
+    var textarea = document.createElement('textarea');
+    textarea.className = 'eqed-input inp mt-3 h-24 font-mono text-[13px]';
+    textarea.placeholder = 'Örn: \\frac{1}{2} + \\sqrt{x}';
+
+    var advWrap = document.createElement('details');
+    advWrap.className = 'eqed-advanced mt-2 rounded-lg border border-slate-200 dark:border-slate-700';
+    var advSummary = document.createElement('summary');
+    advSummary.className = 'cursor-pointer select-none px-3 py-2 text-[12px] font-medium text-slate-500 dark:text-slate-400';
+    advSummary.textContent = '▸ Diğer Yapılar (İntegral, Vektör, Matris...)';
+    var advGrid = document.createElement('div');
+    advGrid.className = 'grid grid-cols-2 gap-1.5 border-t border-slate-100 p-2 dark:border-slate-800 sm:grid-cols-3';
+    advWrap.appendChild(advSummary);
+    advWrap.appendChild(advGrid);
+    container.appendChild(advWrap);
+    container.appendChild(textarea);
+
+    var previewRow = document.createElement('div');
+    previewRow.className = 'mt-2 flex items-center justify-between';
+    var previewLabel = document.createElement('span');
+    previewLabel.className = 'text-[11px] font-medium text-slate-400';
+    previewLabel.textContent = 'Önizleme';
+    var copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'eqed-copy rounded-md border border-slate-200 px-2 py-1 text-[11px] text-slate-500 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:text-slate-400';
+    copyBtn.textContent = 'Panoya Kopyala';
+    previewRow.appendChild(previewLabel);
+    previewRow.appendChild(copyBtn);
+    container.appendChild(previewRow);
+
+    var previewEl = document.createElement('div');
+    previewEl.className = 'eqed-preview mt-1 min-h-[64px] overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60';
+    container.appendChild(previewEl);
+
+    var errorEl = document.createElement('div');
+    errorEl.className = 'eqed-error mt-1 hidden text-[11px] font-medium text-rose-600';
+    container.appendChild(errorEl);
+
+    var scheduleUpdate = buildPreviewUpdater(textarea, previewEl, errorEl);
+
+    EQED_MAIN.forEach(function (item) {
+      mainGrid.appendChild(makeMainButton(container, textarea, item, scheduleUpdate));
+    });
+    EQED_ADV.forEach(function (item) {
+      advGrid.appendChild(makeMainButton(container, textarea, item, scheduleUpdate));
+    });
+
+    textarea.addEventListener('input', scheduleUpdate);
+    textarea.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab') {
+        var ok = jumpToPlaceholder(textarea, e.shiftKey ? -1 : 1);
+        if (ok) e.preventDefault();
+      }
+    });
+    document.addEventListener('click', function () { closeAllPopovers(container); });
+
+    copyBtn.addEventListener('click', function () {
+      var val = textarea.value;
+      if (opts.onCopy) { opts.onCopy(val); return; }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(val);
+    });
+
+    return {
+      textarea: textarea,
+      reset: function () { textarea.value = ''; previewEl.innerHTML = ''; errorEl.classList.add('hidden'); },
+      getValue: function () { return textarea.value; }
+    };
+  }
+
+  window.initEquationEditor = initEquationEditor;
+})();
+
+/* ==========================================================================
+   Entegrasyon kablolaması: "∑ Formül" tetikleyici butonları mathModal'a
+   bağlar ve seçilen LaTeX'i $...$ ile sararak hedef alana yazar.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var mathState = { targetId: null, selStart: 0, selEnd: 0 };
+  var eqedApi = null;
+
+  function ensureEditor() {
+    if (eqedApi) return eqedApi;
+    var container = document.getElementById('eqedContainer');
+    eqedApi = window.initEquationEditor(container, {});
+    return eqedApi;
+  }
+
+  document.querySelectorAll('.math-trigger').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var targetId = btn.getAttribute('data-target');
+      var field = document.getElementById(targetId);
+      if (!field) return;
+      mathState.targetId = targetId;
+      mathState.selStart = field.selectionStart != null ? field.selectionStart : field.value.length;
+      mathState.selEnd = field.selectionEnd != null ? field.selectionEnd : field.value.length;
+      var api = ensureEditor();
+      api.reset();
+      openModal('mathModal');
+      setTimeout(function () { api.textarea.focus(); }, 30);
+    });
+  });
+
+  var closeBtn = document.getElementById('mathModalClose');
+  var cancelBtn = document.getElementById('mathModalCancel');
+  var insertBtn = document.getElementById('mathModalInsert');
+  if (closeBtn) closeBtn.addEventListener('click', function () { closeModal('mathModal'); });
+  if (cancelBtn) cancelBtn.addEventListener('click', function () { closeModal('mathModal'); });
+  if (insertBtn) insertBtn.addEventListener('click', function () {
+    var api = ensureEditor();
+    var latex = api.getValue().trim();
+    if (!latex) { closeModal('mathModal'); return; }
+    var field = document.getElementById(mathState.targetId);
+    if (!field) { closeModal('mathModal'); return; }
+    var wrapped = '$' + latex + '$';
+    var val = field.value;
+    var before = val.slice(0, mathState.selStart);
+    var after = val.slice(mathState.selEnd);
+    field.value = before + wrapped + after;
+    var pos = (before + wrapped).length;
+    field.focus();
+    field.setSelectionRange(pos, pos);
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    closeModal('mathModal');
+  });
+})();
+
 </script>
 </body>
 </html>
