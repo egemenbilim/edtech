@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Öğrenci Takip Sistemi</title>
+  
+  <!-- Özel Modüler Stiller -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="logo">🎓</div>
+    <div>
+      <h1>Öğrenci Takip Sistemi</h1>
+      <p><a href="https://www.instagram.com/egemenbilim/" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(255,255,255,.35)">Egemen</a>'s EdTech</p>
+    </div>
+    <button class="btn gray sm" onclick="$('kullanimModal').classList.remove('hidden')" style="margin-left:12px;white-space:nowrap">📖 Kullanım Kılavuzu</button>
+  </div>
+</header>
+
+<nav class="top wrap">
+  <a data-view="dashboard" class="active">🏠 Ana Sayfa</a>
+  <a data-view="siniflar">🏫 Sınıflar</a>
+  <a data-view="ogrenciler">👩‍🎓 Öğrenciler</a>
+  <a data-view="deneme">📝 Deneme Gir</a>
+  <a data-view="haftalik">📊 Haftalık Soru Kayıtları</a>
+  <a data-view="rapor">📈 Raporlar</a>
+  <a data-view="cikti">💾 Yedek</a>
+</nav>
+
+<main class="wrap">
+
+<!-- DASHBOARD -->
+<section id="dashboard">
+  <div class="card" style="background:#fffbeb;border-color:#fde68a">
+    <h2 style="color:#92400e">⚡ Hızlı Başlangıç</h2>
+    <div style="color:#78350f;line-height:1.8;font-size:13px">
+      <p><b>1.</b> Sınıflar sayfasından sınıf ekleyin.</p>
+      <p><b>2.</b> Öğrenciler sayfasından öğrenci ekleyin (tekli/toplu). Öğrenciye tıklayarak detay grafiğini görün.</p>
+      <p><b>3.</b> Deneme Gir ile sonuçları girin (tekli/toplu).</p>
+      <p><b>4.</b> Haftalık Soru Kayıtları ile çözümleri takip edin.</p>
+      <p><b>5.</b> Raporlar sayfasından ders bazlı analiz ve PDF çıktısı alın.</p>
+    </div>
+  </div>
+  <div class="grid-3 mt-6" id="dashboardStats"></div>
+</section>
+
+<!-- SINIFLAR -->
+<section id="siniflar" class="hidden">
+  <div class="card">
+    <h2 id="sinifFormBaslik">➕ Yeni Sınıf Ekle</h2>
+    <div class="flex">
+      <input id="yeniSinif" placeholder="Sınıf adı (örn: 9-A)">
+      <button class="btn" id="sinifKaydetBtn" onclick="sinifEkle()">Ekle</button>
+      <button class="btn gray hidden" id="sinifIptalBtn" onclick="sinifIptal()">İptal</button>
+    </div>
+    <input type="hidden" id="sinifEditId">
+  </div>
+  <div class="mt-6">
+    <h2 style="font-size:16px;margin-bottom:10px">Mevcut Sınıflar <span id="sinifSayisi" class="muted"></span> <span class="muted" style="font-size:11px;font-weight:400">— detay için sınıfa tıklayın</span></h2>
+    <div id="sinifListesi"></div>
+  </div>
+
+  <!-- AKTİF DERS SÜRECİ -->
+  <div class="card mt-6" id="aktifSurecKart">
+    <div class="flex" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <h2 style="margin:0">📆 Aktif Ders Süreci</h2>
+      <div class="flex" style="flex-wrap:wrap;gap:6px;align-items:flex-end">
+        <div><label style="margin-bottom:3px">Ders Adı</label><input id="surecDers" placeholder="örn: Türkçe" style="width:130px"></div>
+        <div><label style="margin-bottom:3px">Öğretmen Adı</label><input id="surecOgretmen" placeholder="örn: Egemen Bilim" style="width:150px"></div>
+        <div><label style="margin-bottom:3px">Hafta / Dönem</label><input id="surecHafta" placeholder="örn: 12. Hafta" style="width:120px"></div>
+        <div><label style="margin-bottom:3px">Başlangıç</label><input type="date" id="surecBas" style="width:145px"></div>
+        <div><label style="margin-bottom:3px">Bitiş</label><input type="date" id="surecBit" style="width:145px"></div>
+        <button class="btn sm" onclick="aktifSurecRapor()">📄 Rapor Al</button>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding:10px;background:#f8fafc;border:1px solid var(--border);border-radius:8px">
+      <div class="flex" style="flex-wrap:wrap;gap:14px;align-items:flex-start">
+        <div style="flex:1;min-width:180px">
+          <label>Rapora dahil edilecek sınıflar</label>
+          <div id="surecSinifSecim" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px"></div>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label>Rapora dahil edilecek dersler (Ders Takip'ten)</label>
+          <div id="surecDersSecim" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px"></div>
+        </div>
+        <div>
+          <label>Durumlar</label>
+          <div style="margin-top:4px">
+            <label class="chk-wrap"><input type="checkbox" id="surecDurumIslendi" checked> İşlendi</label>
+            <label class="chk-wrap"><input type="checkbox" id="surecDurumIsleniyor" checked> İşleniyor</label>
+            <label class="chk-wrap"><input type="checkbox" id="surecDurumBaslanacak"> Başlanacak</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="aktifSurecOzet" class="mt-3"></div>
+  </div>
+
+  <div id="sinifDetay" class="mt-4"></div>
+</section>
+
+<!-- ÖĞRENCİLER -->
+<section id="ogrenciler" class="hidden">
+  <div class="tabbar">
+    <div class="tab on" id="ogrTabListe" onclick="ogrTab('liste')">📋 Tüm Öğrencileri Gör</div>
+    <div class="tab" id="ogrTabTek" onclick="ogrTab('tek')">➕ Öğrenci Ekle</div>
+    <div class="tab" id="ogrTabToplu" onclick="ogrTab('toplu')">👥 Toplu Öğrenci Ekle</div>
+  </div>
+  <div id="ogrListe">
+    <div class="card">
+      <div class="flex" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <h2 style="margin:0">📋 Öğrenci Listesi</h2>
+          <p class="muted" style="font-size:11px;margin-top:4px">💡 Detay grafiği için öğrenciye tıklayın • ☑️ Seçim yaparak toplu işlem uygulayın</p>
+        </div>
+        <div class="flex" style="flex-wrap:wrap;gap:6px">
+          <select id="filtreSinif" style="width:auto;min-width:140px" onchange="renderOgrenciler()"><option value="">Tüm Sınıflar</option></select>
+          <button class="btn gray sm" onclick="ogrenciSecTumu()">☑️ Tümünü Seç</button>
+          <button class="btn gray sm" onclick="ogrenciSecTemizle()">☐ Temizle</button>
+        </div>
+      </div>
+      <div id="ogrTopluAksiyon" class="hidden" style="margin-top:12px;padding:10px;background:#eff6ff;border-radius:10px;border:1px solid var(--border)">
+        <div class="flex" style="flex-wrap:wrap;gap:8px;align-items:center">
+          <span style="font-weight:700;color:var(--indigo);font-size:13px"><span id="ogrSecilenSayi">0</span> öğrenci seçili</span>
+          <select id="ogrTasimaSinif" style="width:auto;min-width:160px"></select>
+          <button class="btn sm" onclick="ogrenciTasi()">↔️ Sınıfa Taşı</button>
+          <button class="btn sm red" onclick="ogrenciTopluSil()">🗑️ Seçilenleri Sil</button>
+        </div>
+      </div>
+    </div>
+    <div id="ogrenciListesi" class="mt-3"></div>
+    <div id="ogrenciDetay" class="mt-4"></div>
+  </div>
+  <div id="ogrTekli" class="hidden">
+    <div class="card">
+      <h2 id="ogrenciFormBaslik">➕ Yeni Öğrenci Ekle</h2>
+      <div class="grid-2">
+        <div class="field"><label>Ad Soyad *</label><input id="ogrAd" placeholder="Ali Yılmaz"></div>
+        <div class="field"><label>Sınıf *</label><select id="ogrSinif"></select></div>
+        <div class="field"><label>Veli Bilgisi / Telefon</label><input id="ogrVeli" placeholder="Veli adı / Telefon"></div>
+      </div>
+      <input type="hidden" id="ogrEditId">
+      <div class="flex mt-3"><button class="btn" id="ogrKaydetBtn" onclick="ogrenciKaydet()">➕ Ekle</button><button class="btn gray hidden" id="ogrIptalBtn" onclick="ogrenciIptal()">İptal</button></div>
+    </div>
+  </div>
+  <div id="ogrToplu" class="hidden">
+    <div class="card" style="background:#f0fdf4;border-color:#86efac">
+      <h2 style="color:#166534">👥 Toplu Öğrenci Girişi</h2>
+      <p style="color:#15803d;font-size:12.5px;line-height:1.6;margin-bottom:8px">Verilerinizi yapay zeka aracına atın ve şu istemi kullanarak istenilen veri formuna sokun:</p>
+      <div class="prompt-box">
+        <button class="prompt-copy" onclick="promptKopyala('ogrPrompt',this)">📋 Kopyala</button>
+        <pre id="ogrPrompt">Sana göndermiş olduğum verileri bu şekilde düzenle
+
+Öğrenci Adı: Ali Yılmaz
+Sınıfı: 9-A
+Veli Bilgisi / Telefon: Mehmet Yılmaz / 05321234567
+
+Öğrenci Adı: Zeynep Kaya
+Sınıfı: 10-B
+Veli Bilgisi / Telefon: Ayşe Kaya</pre>
+      </div>
+      <p style="color:#15803d;font-size:11px;margin-top:8px">Elde ettiğiniz çıktıyı aşağıdaki kutuya yapıştırın. Her öğrenci bloğu boş satırla ayrılmalıdır.</p>
+    </div>
+    <div class="card mt-3">
+      <h2>📥 Metni Yapıştır</h2>
+      <textarea id="topluOgrMetin" class="copy-area" placeholder="Öğrenci Adı: Ali Yılmaz&#10;Sınıfı: 9-A&#10;Veli Bilgisi / Telefon: 05321234567"></textarea>
+      <div class="flex mt-3"><button class="btn green" onclick="topluOgrKaydet()">💾 Toplu Kaydet</button><button class="btn gray" onclick="$('topluOgrMetin').value='';$('topluOgrSonuc').innerHTML=''">🧹 Temizle</button></div>
+      <div id="topluOgrSonuc" class="mt-3"></div>
+    </div>
+  </div>
+</section>
+
+<!-- DENEME GİR -->
+<section id="deneme" class="hidden">
+  <div class="tabbar">
+    <div class="tab on" id="denTabTek" onclick="denTab('tek')">📝 Tekli Giriş</div>
+    <div class="tab" id="denTabToplu" onclick="denTab('toplu')">📋 Toplu Giriş</div>
+  </div>
+  <div id="denTekli">
+    <div class="card">
+      <h2>1. Deneme Bilgileri</h2>
+      <div class="grid-3">
+        <div class="field"><label>Sınav Türü *</label><select id="denTur" onchange="dersListesiniOlustur()"><option value="TYT">TYT</option><option value="AYT">AYT</option><option value="LGS">LGS</option></select></div>
+        <div class="field hidden" id="denAlanWrap"><label>AYT Alanı *</label><select id="denAlan" onchange="dersListesiniOlustur()"><option value="AYT-SAY">Sayısal</option><option value="AYT-EA">Eşit Ağırlık</option><option value="AYT-SOZ">Sözel</option></select></div>
+        <div class="field"><label>Deneme Adı</label><input id="denAd" placeholder="Özdebir TYT 1"></div>
+        <div class="field"><label>Tarih *</label><input type="date" id="denTarih"></div>
+      </div>
+      <p class="muted" style="font-size:11px">ℹ️ Aynı isimli deneme varsa yeni kayıt açılmaz, mevcut denemeye eklenir.</p>
+    </div>
+    <div class="card mt-3"><h2>2. Öğrenci Seç</h2><select id="denOgrenci"></select></div>
+    <div class="card mt-3">
+      <h2>3. Ders Sonuçları (<span id="denTurLabel">TYT</span>)</h2>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:10px" id="denKural"></p>
+      <p id="denUyari" class="alert err hidden"></p>
+      <div style="overflow-x:auto"><table class="table" id="dersTablosu"></table></div>
+    </div>
+    <div class="mt-3"><button class="btn green" onclick="denemeKaydet()">💾 Kaydet</button></div>
+  </div>
+  <div id="denToplu" class="hidden">
+    <div class="card" style="background:#fffbeb;border-color:#fde68a">
+      <h2 style="color:#92400e">📋 Toplu Deneme Girişi</h2>
+      <p style="color:#78350f;font-size:12.5px;line-height:1.6;margin-bottom:8px">Verilerinizi yapay zeka aracına atın ve şu istemi kullanarak istenilen veri formuna sokun:</p>
+      <div class="prompt-box" style="border-color:var(--amber)">
+        <button class="prompt-copy" style="background:var(--amber)" onclick="promptKopyala('denPrompt',this)">📋 Kopyala</button>
+        <pre id="denPrompt">Sana göndermiş olduğum verileri bu şekilde düzenle
+
+Sınav Türü: AYT
+Sınav Tarihi: 06.03.2027
+Deneme Adı: Özdebir AYT 1
+
+Öğrenci Adı: Ali Yılmaz
+"Matematik    15 / 5
+"Fizik        6 / 0
+
+Öğrenci Adı: Zeynep Kaya
+"Matematik    20 / 3
+"Fizik        8 / 1</pre>
+      </div>
+      <p style="color:#78350f;font-size:11px;margin-top:8px">Elde ettiğiniz çıktıyı aşağıdaki kutuya yapıştırın.</p>
+    </div>
+    <div class="card mt-3">
+      <h2>📥 Metni Yapıştır</h2>
+      <textarea id="topluMetin" class="copy-area"></textarea>
+      <div class="flex mt-3">
+        <button class="btn green" onclick="topluDegerlendir()">👁️ Önizle</button>
+        <button class="btn" onclick="topluKaydet()">💾 Kaydet</button>
+        <button class="btn gray" onclick="topluSonuclariTemizle()">🧹 Temizle</button>
+        <button class="btn gray" onclick="gosterOrnek()">📋 Örnek</button>
+      </div>
+      <p id="topluHata" class="alert err hidden"></p>
+    </div>
+    <div id="topluPreviewCard" class="card mt-3 hidden">
+      <div class="flex" style="justify-content:space-between"><h2 style="margin:0">🔍 Okunan Bilgiler</h2><button class="btn gray sm" onclick="topluSonuclariTemizle()">Kapat</button></div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin:12px 0;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid var(--border)">
+        <div style="flex:1;min-width:90px"><p style="font-size:10px;color:var(--muted)">Sınav Türü</p><span id="pvTur" style="font-weight:700;color:var(--indigo)">—</span></div>
+        <div style="flex:1;min-width:110px"><p style="font-size:10px;color:var(--muted)">Deneme Adı</p><span id="pvDenAd" style="font-weight:700;color:var(--indigo)">—</span></div>
+        <div style="flex:1;min-width:90px"><p style="font-size:10px;color:var(--muted)">Tarih</p><span id="pvTarih" style="font-weight:700;color:var(--indigo)">—</span></div>
+        <div style="flex:1;min-width:80px"><p style="font-size:10px;color:var(--muted)">Öğrenci</p><span id="pvOgrenciSay" style="font-weight:700;color:var(--emerald)">—</span></div>
+      </div>
+      <div id="topluDersTablosu"></div>
+    </div>
+  </div>
+  <div class="mt-6"><h2 style="font-size:16px;margin-bottom:10px">📋 Kayıtlı Denemeler</h2><div id="denemeListesi"></div></div>
+</section>
+
+<!-- HAFTALIK -->
+<section id="haftalik" class="hidden">
+  <div class="tabbar">
+    <div class="tab on" id="hfTabTek" onclick="hfTab('tek')">➕ Tekli Giriş</div>
+    <div class="tab" id="hfTabToplu" onclick="hfTab('toplu')">📋 Toplu Haftalık Veri Girişi</div>
+  </div>
+  <div id="hfTekli">
+  <div class="card" style="border:1px dashed var(--indigo);background:#f0f9ff">
+    <p style="font-size:12px;color:var(--indigo);margin-bottom:8px"><b>ℹ️ Bilgilendirme:</b> Bu kısımda öğrencilerin haftalık veya aylık olarak çözdüğü soru sayılarını, yüzdesini görebilirsiniz. Aynı isimle girilen Konu/Ders adları aynı dilimde gözükür. Branş denemeleri için Ders Adı kısmında belirtin. Örneğin Paragraf Denemesi.</p>
+    <h2>➕ Haftalık Soru Kaydı</h2>
+    <div class="grid-3">
+      <div class="field"><label>Öğrenci *</label><select id="hfOgrenci"></select></div>
+      <div class="field"><label>Ders *</label><input id="hfDers" list="hfDersOneri" placeholder="Ders adı yazın (örn: Paragraf)" autocomplete="off"><datalist id="hfDersOneri"></datalist></div>
+      <div class="field"><label>Hafta Başlangıcı *</label><input type="date" id="hfBas" onchange="hfBitisOtomatik()"></div>
+      <div class="field"><label>Hafta Bitişi</label><input type="date" id="hfBit"></div>
+      <div class="field"><label>Toplam Soru</label><input type="number" id="hfSoru" value="0" min="0"></div>
+      <div class="field"><label>Doğru</label><input type="number" id="hfDogru" value="0" min="0"></div>
+      <div class="field"><label>Yanlış</label><input type="number" id="hfYanlis" value="0" min="0"></div>
+      <div class="field"><label>Boş</label><input type="number" id="hfBos" value="0" min="0"></div>
+      <div class="field"><label>Net</label><div class="stat"><div class="v mono" id="hfNet">0.00</div></div></div>
+    </div>
+    <button class="btn green" onclick="hfKaydet()">💾 Kaydet</button>
+  </div>
+  </div>
+  <div id="hfToplu" class="hidden">
+    <div class="card" style="border:1px dashed var(--indigo);background:#fffbeb">
+      <p style="font-size:12.5px;color:#92400e;margin-bottom:8px"><b>ℹ️ Verilerinizi yapay zeka aracına atın ve şu istemi kullanarak istenilen veri formuna sokun:</b></p>
+      <div class="prompt-box" style="margin:0 0 10px 0">
+        <button class="prompt-copy" onclick="promptKopyala('hfPrompt',this)">📋 Kopyala</button>
+        <pre id="hfPrompt">Sana göndermiş olduğum verileri bu şekilde düzenle
+
+Öğrenci Adı: 
+Tarih:
+Ders:              
+Soru Sayısı:           
+Doğru Sayısı:       
+Yanlış Sayısı:</pre>
+      </div>
+      <textarea id="hfTopluMetin" class="copy-area" style="min-height:140px" placeholder="Öğrenci Adı: Ali Yılmaz
+Tarih: 10.03.2027
+Ders: Paragraf
+Soru Sayısı: 50
+Doğru Sayısı: 40
+Yanlış Sayısı: 5
+
+Öğrenci Adı: Ali Yılmaz
+Tarih: 11.03.2027
+Ders: Matematik
+Soru Sayısı: 40
+Doğru Sayısı: 35
+Yanlış Sayısı: 3"></textarea>
+      <div class="flex mt-3">
+        <button class="btn green" onclick="hfTopluKaydet()">💾 Toplu Kaydet</button>
+        <button class="btn gray" onclick="$('hfTopluMetin').value=''">🧹 Temizle</button>
+      </div>
+      <div id="hfTopluSonuc" class="mt-3"></div>
+    </div>
+  </div>
+  <div class="filter-bar"><h2 style="font-size:16px;margin:0">📋 Kayıtlar</h2><select id="filtreHfOgrenci" style="width:auto;min-width:140px" onchange="renderHaftalik()"><option value="">Tüm Öğrenciler</option></select></div>
+  <div id="hfRaporKart" class="card hidden" style="margin-bottom:12px;background:#f8fafc">
+    <div class="flex" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <h3 style="margin:0;font-size:14px">📄 Öğrenci Branş Raporu</h3>
+      <div class="flex" style="flex-wrap:wrap;gap:6px;align-items:flex-end">
+        <div><label style="margin-bottom:3px">Başlangıç</label><input type="date" id="hfRaporBas" style="width:145px"></div>
+        <div><label style="margin-bottom:3px">Bitiş</label><input type="date" id="hfRaporBit" style="width:145px"></div>
+        <button class="btn sm" onclick="hfRaporAl()">📄 Rapor Al</button>
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <label>Rapora dahil et:</label>
+      <label class="chk-wrap"><input type="checkbox" id="hfRaporTablo" checked> Detay Tablosu</label>
+      <label class="chk-wrap"><input type="checkbox" id="hfRaporOzet" checked> Ders Özeti</label>
+      <label class="chk-wrap"><input type="checkbox" id="hfRaporPasta" checked> Pasta Grafiği (ders dağılımı)</label>
+    </div>
+  </div>
+  <div style="overflow-x:auto" id="haftalikTablosu"></div>
+</section>
+
+<!-- RAPORLAR -->
+<section id="rapor" class="hidden">
+  <div id="printBaslik" style="text-align:center;margin-bottom:14px">
+    <h1 style="font-size:20px">🎓 Öğrenci Takip Sistemi — Rapor</h1>
+    <p id="printTarih" style="font-size:12px;color:#555"></p>
+  </div>
+  <div class="card" id="raporFiltreKart">
+    <h2>🔍 Rapor Filtresi</h2>
+    <div style="margin-bottom:14px;padding:12px;background:#eff6ff;border-radius:10px;border:1px solid var(--border)">
+      <label style="font-size:13px;font-weight:700;color:var(--indigo);margin-bottom:8px">📌 Sınav Türü (tüm rapor bu türe göre filtrelenecektir)</label>
+      <select id="raporTur" style="margin-top:6px"><option value="">Tümü</option><option value="TYT">TYT</option><option value="AYT">AYT</option><option value="LGS">LGS</option></select>
+    </div>
+    <div class="grid-3" style="grid-template-columns:1fr 1fr">
+      <div class="field" style="grid-column:1/-1"><label>📚 Ders Seçimi (Ctrl ile çoklu — boş = tümü)</label><select id="raporDersSelect" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="dersSecTumu()">Tümünü Seç</button><button class="btn gray sm" onclick="dersSecTemizle()">Temizle</button></div></div>
+      <div class="field"><label>📈 Gelişim Analizi — TYT Denemeleri</label><select id="raporGelisimTYT" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="gelisimSec('TYT')">Son 10</button><button class="btn gray sm" onclick="gelisimTemizle('TYT')">Temizle</button></div></div>
+      <div class="field"><label>📈 Gelişim Analizi — AYT Denemeleri</label><select id="raporGelisimAYT" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="gelisimSec('AYT')">Son 10</button><button class="btn gray sm" onclick="gelisimTemizle('AYT')">Temizle</button></div></div>
+      <div class="field" style="grid-column:1/-1"><label>👩‍🎓 Öğrenci (Ctrl ile çoklu — boş = tümü)</label><select id="raporOgrenciSelect" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="ogrSecTumu()">Tümünü Seç</button><button class="btn gray sm" onclick="ogrSecTemizle()">Temizle</button></div></div>
+      <div class="field" style="grid-column:1/-1"><label>&nbsp;</label><div class="flex"><button class="btn" style="flex:1" onclick="renderRapor()">🔍 Rapor Oluştur</button><button class="btn green" onclick="raporPDF()">📄 PDF İndir</button></div></div>
+    </div>
+    <div style="margin-top:12px;padding:10px;background:#f8fafc;border:1px solid var(--border);border-radius:8px">
+      <b style="font-size:12px;color:var(--indigo)">⚙️ Rapor İçeriği (PDF'te Gözükecek):</b>
+      <div style="margin-top:6px">
+        <label class="chk-wrap"><input type="checkbox" id="raporGelisimGoster" checked> 🚀 Gelişim / Düşüş Analizi</label>
+        <label class="chk-wrap"><input type="checkbox" id="raporDersIlerleyis" checked> 📚 Ders Bazlı İlerleyiş</label>
+        <label class="chk-wrap"><input type="checkbox" id="raporAltinda" checked> ⚠️ Sınıf Ortalaması Altında Kalanlar</label>
+        <label class="chk-wrap"><input type="checkbox" id="raporSiralama" checked> 🏆 Tüm Katılımcılar — Sıralama</label>
+        <label class="chk-wrap"><input type="checkbox" id="raporDetayli" checked> 📊 Ders Başarı Analizi</label>
+      </div>
+    </div>
+  </div>
+  <div id="raporGelisimAnaliz" class="mt-4 hidden"></div>
+  <div id="raporSinifSiralama" class="mt-4 hidden"></div>
+  <div id="raporSonuc"></div>
+</section>
+
+<!-- YEDEK -->
+<section id="cikti" class="hidden">
+  <div class="card" style="text-align:center">
+    <div style="font-size:44px">💾</div><h2 style="margin-top:8px">Veri Yedekleme</h2>
+    <p style="color:var(--muted);font-size:13px;max-width:440px;margin:8px auto">Verileriniz tarayıcınızda saklanır.</p>
+    <div style="border:2px dashed var(--indigo);border-radius:12px;padding:24px;margin:16px 0;background:#f8fafc">
+      <p style="font-size:14px;font-weight:600;color:var(--indigo);margin-bottom:8px">📂 Kayıt dosyasını buraya sürükleyip bırakın</p>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">veya</p>
+      <button class="btn gray" onclick="$('icerikDosya').click()">📂 Dosya Seç</button>
+      <input type="file" id="icerikDosya" accept=".json" class="hidden" onchange="iceriAktar(event)">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+      <button class="btn" onclick="disaAktar()">📥 Kayıt Dosyası İndir</button>
+      <button class="btn red" onclick="tumunuSil()">🗑️ Tümünü Sil</button>
+    </div>
+  </div>
+  <div class="card mt-6"><h2>📋 Veri Özeti</h2><div class="stat-grid" id="ciktiOzet"></div></div>
+</section>
+
+</main>
+
+<!-- KULLANMA KILAVUZU MODAL -->
+<div id="kullanimModal" class="modal hidden">
+  <div class="modal-inner" style="max-width:900px">
+    <button class="modal-close" onclick="$('kullanimModal').classList.add('hidden')">×</button>
+    <h2 style="font-size:20px;margin-bottom:12px">📖 Kullanım Kılavuzu</h2>
+    <div style="max-height:70vh;overflow-y:auto;padding-right:8px">
+      <div style="margin-bottom:16px">
+        <h3 style="font-size:15px;margin-bottom:6px">🏠 Ana Sayfa</h3>
+        <p style="font-size:13px;color:var(--muted)">Sisteme hızlı başlangıç rehberi, istatistikler ve net hesaplama kuralları yer alır.</p>
+      </div>
+      <div style="margin-bottom:16px">
+        <h3 style="font-size:15px;margin-bottom:6px">🏫 Sınıflar</h3>
+        <p style="font-size:13px;color:var(--muted)">Sınıf ekleyebilir, düzenleyebilir veya silebilirsiniz. Sınıfa tıklayarak öğrenci listesini ve ders takip bilgilerini görebilirsiniz.</p>
+      </div>
+      <div style="margin-bottom:16px">
+        <h3 style="font-size:15px;margin-bottom:6px">👩‍🎓 Öğrenciler</h3>
+        <p style="font-size:13px;color:var(--muted)">Öğrenci ekleyebilir, düzenleyebilir veya silebilirsiniz. Öğrenciye tıklayarak detaylı analiz raporunu görebilirsiniz.</p>
+      </div>
+      <div style="margin-bottom:16px">
+        <h3 style="font-size:15px;margin-bottom:6px">📝 Deneme Gir</h3>
+        <p style="font-size:13px;color:var(--muted)">TYT, AYT veya LGS deneme sonuçlarını öğrenci bazında girebilirsiniz. Toplu giriş için yapay zeka destekli metin yapıştırma özelliğini kullanabilirsiniz.</p>
+      </div>
+      <div style="margin-bottom:16px">
+        <h3 style="font-size:15px;margin-bottom:6px">📊 Haftalık Soru Kayıtları</h3>
+        <p style="font-size:13px;color:var(--muted)">Öğrencilerin haftalık çözdüğü soru sayılarını kaydedebilir, tarih aralığı seçerek rapor alabilir ve ders bazlı pasta grafiği görebilirsiniz.</p>
+      </div>
+      <div style="margin-bottom:16px">
+        <h3 style="font-size:15px;margin-bottom:6px">📈 Raporlar</h3>
+        <p style="font-size:13px;color:var(--muted)">Sınav türü, ders, öğrenci ve sınıf filtreleriyle detaylı analiz raporları oluşturabilir, PDF olarak indirebilirsiniz.</p>
+      </div>
+      <div style="margin-bottom:16px">
+        <h3 style="font-size:15px;margin-bottom:6px">💾 Veri Yedekleme</h3>
+        <p style="font-size:13px;color:var(--muted)">Tüm verilerinizi JSON dosyası olarak indirebilir veya dosya sürükleyip bırakarak geri yükleyebilirsiniz.</p>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px">
+        <h3 style="font-size:15px;margin-bottom:8px">📞 İletişim</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.8">
+          <b>Egemen Bilim</b><br>
+          📧 Egemenbilim@gmail.com<br>
+          📱 0553 789 1938<br>
+          🌐 <a href="https://www.instagram.com/egemenbilim/" target="_blank" rel="noopener" style="color:var(--indigo)">@egemenbilim</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="surecPrintAlan"></div>
+<div id="hfPrintAlan"></div>
+<div class="toast" id="toast"></div>
+
+<!-- Ana ES Modülü -->
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Eğitim Teknolojileri — Öğretmenler ve eğitimciler için pedagojik yapay zekâ prompt deposu.">
+  <title>Eğitim Promptları — Prompt Deposu | Egemen's EdTech</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Stiller -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- İnteraktif HTML5 Parçacık Canvas'ı (Constellation Grid) -->
+  <canvas id="neural-canvas"></canvas>
+
+  <!-- Kutlama Konfeti Canvas'ı -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Fareyi Takip Eden Dinamik Işık Halkası (Spotlight) -->
+  <div class="mouse-spotlight" id="mouse-spotlight" aria-hidden="true"></div>
+
+  <div class="app-container">
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         TOPBAR (Marka, Canlı Durum & Ses Kontrolü)
+         ═══════════════════════════════════════════════════════════════ -->
+    <header class="cyber-topbar">
+      <div class="brand-section">
+        <div class="brand-hex-logo" title="Egemen's EdTech">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1"/>
+          </svg>
+        </div>
+        <div class="brand-title-wrap">
+          <h1>
+            Eğitim Promptları
+            <span class="cyber-badge">Prompt Deposu</span>
+          </h1>
+          <div class="brand-subtitle">
+            <span><a href="https://www.instagram.com/egemenbilim/" target="_blank" rel="noopener">Egemen</a>'s EdTech</span>
+            <span>•</span>
+            <span>Pedagojik Prompt Deposu</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="topbar-controls">
+        <!-- Ses Efektleri Aç / Kapa Butonu -->
+        <button type="button" id="btn-sound-toggle" class="btn-sound-toggle is-active" onclick="window.toggleSound()" title="Arayüz Ses Efektlerini Aç/Kapat">
+          <span id="sound-icon">🔊</span>
+          <span id="sound-text">Ses: Açık</span>
+        </button>
+
+        <a href="../index.html" class="btn-portal-back">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+          EdTech Portalı
+        </a>
+      </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         TOOLBAR: CANLI ARAMA & SENARYO KARTLARI (Quick Presets)
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="cyber-toolbar" aria-label="Arama ve Hızlı Senaryolar">
+      <div class="search-box-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="text" id="search-materials" class="search-input" placeholder="Şablonlarda ara... (örn: maarif, video, veli, gagne)">
+      </div>
+
+      <div class="presets-container">
+        <span class="presets-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Hızlı Örnekler:
+        </span>
+        <button type="button" class="preset-chip" onclick="window.loadPreset('maarif_divan')">
+          <span>📚 10. Sınıf Edebiyat Planı</span>
+        </button>
+        <button type="button" class="preset-chip" onclick="window.loadPreset('fen_dna')">
+          <span>🔬 8. Sınıf Fen Özeti</span>
+        </button>
+        <button type="button" class="preset-chip" onclick="window.loadPreset('yks_program')">
+          <span>🎯 YKS Çalışma Programı</span>
+        </button>
+        <button type="button" class="preset-chip" onclick="window.loadPreset('veli_bulten')">
+          <span>🌱 Haftalık Veli Bülteni</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         CYBER WORKSPACE (Sol Form & 3D Tilt Kartlar / Sağ Terminal)
+         ═══════════════════════════════════════════════════════════════ -->
+    <main class="cyber-workspace">
+
+      <!-- SOL SÜTUN -->
+      <div class="cyber-left-col">
+
+        <!-- ADIM 1: 3D TILT MATERYAL SEÇİCİ -->
+        <section class="cyber-card" aria-label="Materyal Türü Seçimi">
+          <div class="cyber-card-head">
+            <div class="card-title-group">
+              <span class="step-num-badge">01</span>
+              <h2 class="cyber-card-title">Materyal Türü Seçimi</h2>
+            </div>
+            <span class="cyber-card-sub">İhtiyacınıza uygun şablonu belirleyin</span>
+          </div>
+
+          <!-- GRUP A: Genel Yapay Zekâ -->
+          <div class="section-banner cyan first">
+            <span>Genel Yapay Zekâ Modelleri (ChatGPT, Claude, Gemini)</span>
+            <span class="badge-counter">5 Şablon</span>
+          </div>
+          <div class="tilt-grid" role="radiogroup" aria-label="Genel yapay zekâ promptları">
+            <!-- Maarif -->
+            <label class="tilt-tile" data-name="maarif günlük ders planı meb müfredat">
+              <input type="radio" name="materyal" value="maarif">
+              <div class="tile-head-row">
+                <span class="tile-badge-code">G1 · MEB</span>
+                <div class="tile-icon-wrap">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M9 15.5l2 2 4-4"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="tile-text-title">Maarif Günlük Ders Planı</div>
+              <div class="tile-text-desc">Türkiye Yüzyılı Maarif Modeli 16 bileşeniyle tam uyumlu resmi ders planı.</div>
+            </label>
+
+            <!-- Kavram Yanılgısı -->
+            <label class="tilt-tile" data-name="kavram yanılgısı analizi teşhis pedagoji">
+              <input type="radio" name="materyal" value="kavram_yanilgisi">
+              <div class="tile-head-row">
+                <span class="tile-badge-code">G2 · Analiz</span>
+                <div class="tile-icon-wrap">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.8.6 1.5 1.3 1.5 2.1h4c0-.8.7-1.5 1.5-2.1A6 6 0 0 0 12 3z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="tile-text-title">Kavram Yanılgısı Analizi</div>
+              <div class="tile-text-desc">Öğrencilerin en sık düştüğü kavramsal hataları ve pedagojik çözümleri listeler.</div>
+            </label>
+
+            <!-- Çalışma Programı -->
+            <label class="tilt-tile" data-name="çalışma programı ders planlama yks lgs koçluk rehberlik">
+              <input type="radio" name="materyal" value="calisma_programi">
+              <div class="tile-head-row">
+                <span class="tile-badge-code">G3 · Koçluk</span>
+                <div class="tile-icon-wrap">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="tile-text-title">Çalışma Programı</div>
+              <div class="tile-text-desc">Öğrenciye özel, haftalık dengeli ve hedefli çalışma çizelgesi oluşturur.</div>
+            </label>
+
+            <!-- Veli Bülteni -->
+            <label class="tilt-tile" data-name="veli bilgilendirme bülteni whatsapp veli grubu okul iletişim">
+              <input type="radio" name="materyal" value="veli_bulteni">
+              <div class="tile-head-row">
+                <span class="tile-badge-code">G4 · İletişim</span>
+                <div class="tile-icon-wrap">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7.5l9 6 9-6"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="tile-text-title">Veli Bilgilendirme Bülteni</div>
+              <div class="tile-text-desc">WhatsApp ve veli grupları için sıcak, pedagojik ve motive edici özet metin.</div>
+            </label>
+
+            <!-- Gagné 9 Adım -->
+            <label class="tilt-tile" data-name="gagné dokuz adım planı öğretim tasarımı model pedagoji">
+              <input type="radio" name="materyal" value="gagne">
+              <div class="tile-head-row">
+                <span class="tile-badge-code">G5 · Pedagoji</span>
+                <div class="tile-icon-wrap">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 20h5v-4h4v-4h4V8h5"/><path d="M17 4h4v4"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="tile-text-title">Gagné Dokuz Adım Planı</div>
+              <div class="tile-text-desc">Robert Gagné'nin öğretim tasarımı basamaklarına göre tam yapılandırılmış ders akışı.</div>
+            </label>
+          </div>
+
+          <!-- GRUP B: NotebookLM Özel -->
+          <div class="section-banner mint">
+            <span>Google NotebookLM Kaynak Tabanlı Şablonlar</span>
+            <span class="badge-counter">4 Şablon</span>
+          </div>
+          <div class="tilt-grid" role="radiogroup" aria-label="NotebookLM promptları">
+            <!-- Not -->
+            <label class="tilt-tile is-mint" data-name="detaylı ders özeti çalışma kağıdı notebooklm">
+              <input type="radio" name="materyal" value="not">
+              <div class="tile-head-row">
+                <span class="tile-badge-code">N1 · Özet</span>
+                <div class="tile-icon-wrap">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 3h9l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M8 12h7M8 16h5"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="tile-text-title">Detaylı Ders Özeti</div>
+              <div class="tile-text-desc">Kaynakları satır satır tarar; sınav odaklı, kayıpsız derinlemesine özet çıkarır.</div>
+            </label>
+
+            <!-- Sunum -->
+            <label class="tilt-tile is-mint" data-name="sunum oluşturma slayt yansı ppt notebooklm">
+              <input type="radio" name="materyal" value="nlm">
+              <div class="tile-head-row">
+                <span class="tile-badge-code">N2 · Slayt</span>
+                <div class="tile-icon-wrap">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M12 16v4M8 20h8"/><path d="M7 12l3-3 2 2 4-4"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="tile-text-title">Sunum Oluşturma (Yansı)</div>
+              <div class="tile-text-desc">Slayt slayt hazır, konuşmacı notlu ve görsel yönlendirmeli profesyonel sunum planı.</div>
+            </label>
+
+            <!-- Boşluk Doldurma -->
+            <label class="tilt-tile is-mint" data-name="boşluk doldurma kağıdı test ayt öabt alıştırma">
+              <input type="radio" name="materyal" value="bosluk">
+              <div class="tile-head-row">
+                <span class="tile-badge-code">N3 · Etkinlik</span>
+                <div class="tile-icon-wrap">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                    <path d="M3 6h6M13 6h8M3 12h9M3 18h5M12 18h9"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="tile-text-title">Boşluk Doldurma Kağıdı</div>
+              <div class="tile-text-desc">Fiziksel yazılabilir geniş boşluklu, kaynaklardaki kilit bilgileri yoklayan çalışma kağıdı.</div>
+            </label>
+
+            <!-- Video -->
+            <label class="tilt-tile is-mint" data-name="video oluşturma senaryo derse giriş mikro video">
+              <input type="radio" name="materyal" value="video">
+              <div class="tile-head-row">
+                <span class="tile-badge-code">N4 · Medya</span>
+                <div class="tile-icon-wrap">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2.5" y="5.5" width="14" height="13" rx="2"/><path d="M16.5 10.5l5-3v9l-5-3z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="tile-text-title">Video Oluşturma (Derse Giriş)</div>
+              <div class="tile-text-desc">3-4 dakikalık ilgi çekici, merak uyandıran derse giriş mikro-video senaryosu.</div>
+            </label>
+          </div>
+        </section>
+
+        <!-- ADIM 2: DİNAMİK FORM ALANI -->
+        <section class="cyber-card" aria-label="Prompt Parametreleri">
+          <div class="cyber-card-head">
+            <div class="card-title-group">
+              <span class="step-num-badge">02</span>
+              <h2 class="cyber-card-title">Parametreler &amp; Girdiler</h2>
+            </div>
+            <span class="cyber-card-sub"><span class="req">*</span> Yıldızlı alanlar zorunludur</span>
+          </div>
+
+          <div class="form-grid">
+            <!-- 02 · Sınıf Seviyesi -->
+            <div class="field" id="sinif-group" style="display:none;">
+              <label class="field-label" for="sinif">
+                <span>Sınıf Seviyesi <span class="req">*</span></span>
+                <span class="opt">≤ 7. Sınıf Somutlaştırılır</span>
+              </label>
+              <select id="sinif" class="control">
+                <option value="">Seviye seçiniz...</option>
+                <option value="5. Sınıf">5. Sınıf (Ortaokul)</option>
+                <option value="6. Sınıf">6. Sınıf (Ortaokul)</option>
+                <option value="7. Sınıf">7. Sınıf (Ortaokul)</option>
+                <option value="8. Sınıf">8. Sınıf (LGS)</option>
+                <option value="9. Sınıf">9. Sınıf (Lise)</option>
+                <option value="10. Sınıf">10. Sınıf (Lise)</option>
+                <option value="11. Sınıf">11. Sınıf (Lise)</option>
+                <option value="12. Sınıf (YKS)">12. Sınıf (YKS)</option>
+                <option value="Mezun (YKS)">Mezun (YKS)</option>
+              </select>
+            </div>
+
+            <!-- 03 · Ders Adı -->
+            <div class="field" id="main-ders-group">
+              <label class="field-label" for="ders">
+                <span>Ders / Alan Adı <span class="req">*</span></span>
+              </label>
+              <select id="ders" class="control">
+                <option value="">Bir ders seçiniz...</option>
+                <option value="Türkçe">Türkçe</option>
+                <option value="Türk Dili ve Edebiyatı">Türk Dili ve Edebiyatı</option>
+                <option value="Tarih">Tarih</option>
+                <option value="Coğrafya">Coğrafya</option>
+                <option value="Felsefe">Felsefe</option>
+                <option value="Din Kültürü ve Ahlak Bilgisi">Din Kültürü ve Ahlak Bilgisi</option>
+                <option value="Matematik">Matematik</option>
+                <option value="Fizik">Fizik</option>
+                <option value="Kimya">Kimya</option>
+                <option value="Biyoloji">Biyoloji</option>
+                <option value="Fen Bilgisi">Fen Bilgisi</option>
+                <option value="İngilizce">İngilizce</option>
+              </select>
+            </div>
+
+            <!-- 04 · Konu / Ünite -->
+            <div class="field span-full" id="konu-group">
+              <label class="field-label" for="konu">
+                <span>Konu / Ünite / Alt Başlıklar <span class="req">*</span></span>
+                <span class="opt">Ayrıntılı yazmak sonucu güçlendirir</span>
+              </label>
+              <textarea id="konu" class="control" placeholder="Örn: Divan Edebiyatı, Gazel nazım şekli ve özellikleri, kafiye-redif incelemesi..."></textarea>
+            </div>
+          </div>
+
+          <!-- DİNAMİK ÖZEL PANELLER -->
+
+          <!-- Video Panel (NotebookLM) -->
+          <div id="video-options" class="panel-dyn" style="display:none;">
+            <div class="panel-head">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
+              </svg>
+              <span>Video Oluşturma (Derse Giriş) Modülü</span>
+            </div>
+            <p class="panel-note">Seçtiğiniz Ders ve Konu bilgileri kullanılarak NotebookLM kaynaklarınız üzerinden 3–4 dakikalık ilgi çekici derse giriş video senaryosu üretilecektir. 7. sınıf ve altı için somutlaştırma kuralı otomatik entegre edilir.</p>
+          </div>
+
+          <!-- Gagné Panel -->
+          <div id="gagne-options" class="panel-dyn" style="display:none;">
+            <div class="panel-head">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/>
+              </svg>
+              <span>Gagné Modeli Ek Parametreleri</span>
+            </div>
+            <div class="field">
+              <label class="mini-label" for="g-sure">Eğitim / Ders Süresi <span class="req">*</span></label>
+              <input type="text" id="g-sure" class="control" placeholder="Örn: 40 dakika / 2 ders saati / 1 gün">
+            </div>
+          </div>
+
+          <!-- Çalışma Programı Paneli -->
+          <div id="program-options" class="panel-dyn" style="display:none;">
+            <div class="panel-head">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>I. Program İçeriği &amp; Ders Listesi</span>
+            </div>
+            <div id="dynamic-courses"></div>
+            <button type="button" id="btn-add-course" class="btn-add-row">+ Yeni Ders Ekle (Max 10)</button>
+
+            <div class="field" style="margin-bottom: 1.25rem;">
+              <label class="mini-label" for="p-sure">Program Süresi <span class="req">*</span></label>
+              <input type="text" id="p-sure" class="control" placeholder="Örn: 2 Haftalık, 1 Aylık Sınav Kampı">
+            </div>
+
+            <div class="panel-head">
+              <span>II. Hedefler &amp; Özel Detaylar</span>
+              <span class="opt" style="margin-left:auto;">Boş kalanları yapay zekâ optimize eder</span>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label class="mini-label">Öğrenci İsmi</label><input type="text" id="p-ogrenci" class="control" placeholder="Örn: Ahmet"></div>
+              <div class="field"><label class="mini-label">Önerilen Ders Kaynağı</label><input type="text" id="p-kaynak" class="control" placeholder="Örn: 3D Yayınları, OGM Materyal"></div>
+              <div class="field"><label class="mini-label">Günlük Çalışma Süresi</label><input type="text" id="p-gunluk-sure" class="control" placeholder="Örn: 4 Saat"></div>
+              <div class="field"><label class="mini-label">Toplam Soru Sayısı</label><input type="text" id="p-toplam-soru" class="control" placeholder="Örn: 1500 Soru"></div>
+              <div class="field"><label class="mini-label">Günlük Soru Sayısı</label><input type="text" id="p-gunluk-soru" class="control" placeholder="Örn: 150 Soru"></div>
+              <div class="field"><label class="mini-label">Deneme Sıklığı</label><input type="text" id="p-deneme" class="control" placeholder="Örn: Haftada 2 TYT Denemesi"></div>
+              <div class="field span-full"><label class="mini-label">Ek Beklenti &amp; Notlar</label><textarea id="p-ek" class="control" placeholder="Örn: Pazartesi sadece Matematik olsun, Pazar dinlenme günü verilsin."></textarea></div>
+            </div>
+          </div>
+
+          <!-- Veli Bülteni Paneli -->
+          <div id="veli-options" class="panel-dyn" style="display:none;">
+            <div class="panel-head">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>İşlenen Dersler ve Konular</span>
+            </div>
+            <div id="dynamic-veli-courses"></div>
+            <button type="button" id="btn-add-veli-course" class="btn-add-row">+ Yeni Ders Ekle (Max 15)</button>
+
+            <div class="field">
+              <label class="mini-label" for="v-etkinlikler">Yapılan Ekstra Etkinlikler <span class="opt">(Opsiyonel)</span></label>
+              <textarea id="v-etkinlikler" class="control" placeholder="Örn: Sınıf içi münazara etkinliği yapıldı, kitap okuma çemberi kuruldu..."></textarea>
+            </div>
+          </div>
+
+          <!-- Sunum Kimliği (NotebookLM) -->
+          <div id="nlm-options" class="panel-dyn" style="display:none;">
+            <div class="panel-head">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>Sunum Kimliği Bilgileri</span>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label class="mini-label" for="ogretmen">Öğretmen Adı</label><input type="text" id="ogretmen" class="control" placeholder="Örn: Egemen Bilim"></div>
+              <div class="field"><label class="mini-label" for="kurum">Kurum Adı</label><input type="text" id="kurum" class="control" placeholder="Örn: Atatürk Anadolu Lisesi"></div>
+            </div>
+          </div>
+
+          <!-- Maarif Modeli Paneli -->
+          <div id="maarif-options" class="panel-dyn" style="display:none;">
+            <div class="panel-head">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
+              </svg>
+              <span>I. Bölüm: Maarif Ders Bilgisi &amp; Zorunlu Alanlar</span>
+            </div>
+            <div class="form-grid">
+              <div class="field span-full"><label class="mini-label" for="m-okul">Okul Adı <span class="req">*</span></label><input type="text" id="m-okul" class="control" placeholder="Örn: Atatürk Anadolu Lisesi"></div>
+              <div class="field"><label class="mini-label" for="m-tarih">Ders Tarihi <span class="req">*</span></label><input type="text" id="m-tarih" class="control" placeholder="Örn: 14/10/2026"></div>
+              <div class="field"><label class="mini-label" for="m-hafta">Hafta <span class="req">*</span></label><input type="text" id="m-hafta" class="control" placeholder="Örn: 5. Hafta"></div>
+              <div class="field"><label class="mini-label" for="m-sure">Ders Süresi <span class="req">*</span></label><input type="text" id="m-sure" class="control" placeholder="Örn: 80 dk (2 Saat)"></div>
+              <div class="field"><label class="mini-label" for="m-unite">Ünite Adı <span class="req">*</span></label><input type="text" id="m-unite" class="control" placeholder="Örn: 2. Ünite: Şiir Bilgisi"></div>
+              <div class="field span-full"><label class="mini-label" for="m-konular">Konular <span class="req">*</span> <span class="opt">(En az 4 kavram başlığı)</span></label><textarea id="m-konular" class="control" placeholder="Örn: 1. Tanzimat Şiiri, 2. Şinasi ve Tercüman-ı Ahval Mukaddimesi, 3. Namık Kemal Hürriyet Kasidesi, 4. Ziya Paşa Terkib-i Bend..."></textarea></div>
+              <div class="field span-full"><label class="mini-label" for="m-ogrenme_ciktilari">Öğrenme Çıktısı <span class="opt">(Opsiyonel — boşsa YZ otomatik belirler)</span> <a href="https://tymm.meb.gov.tr/ogretim-programlari" target="_blank" rel="noopener" style="color:var(--neon-cyan); text-decoration:none; margin-left:6px; font-weight:600;">MEB Tablosu →</a></label><input type="text" id="m-ogrenme_ciktilari" class="control" placeholder="Örn: TDE1.2."></div>
+            </div>
+
+            <!-- Akordeon: II. Maarif Modeli 16 Bileşeni -->
+            <div class="cyber-accordion">
+              <button type="button" class="accordion-trigger" onclick="window.toggleMaarifAccordion(this)">
+                <span>II. Bölüm: Maarif Modeli 16 Bileşeni (Opsiyonel / Akıllı Tamamlama)</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="accordion-content" id="maarif-accordion-body">
+                <p class="panel-note" style="margin-bottom:0.75rem;">Boş bıraktığınız bileşenler, ders ve konu bağlamına göre yapay zekâ tarafından pedagojik olarak tamamlanacaktır.</p>
+                <div class="scrollbox">
+                  <div class="field"><label class="mini-label">Alan Becerileri</label><input type="text" id="m-alan" class="control"></div>
+                  <div class="field"><label class="mini-label">Kavramsal Beceriler</label><input type="text" id="m-kavramsal" class="control"></div>
+                  <div class="field"><label class="mini-label">Eğilimler</label><input type="text" id="m-egilimler" class="control"></div>
+                  <div class="field"><label class="mini-label">Sosyal-Duygusal Öğrenme</label><input type="text" id="m-sosyal" class="control"></div>
+                  <div class="field"><label class="mini-label">Değerler</label><input type="text" id="m-degerler" class="control"></div>
+                  <div class="field"><label class="mini-label">Okuryazarlık Becerileri</label><input type="text" id="m-okuryazarlik" class="control"></div>
+                  <div class="field"><label class="mini-label">Disiplinler Arası İlişkiler</label><input type="text" id="m-disiplinler" class="control"></div>
+                  <div class="field"><label class="mini-label">Beceriler Arası İlişkiler</label><input type="text" id="m-beceriler_arasi" class="control"></div>
+                  <div class="field"><label class="mini-label">İçerik Çerçevesi</label><input type="text" id="m-icerik" class="control"></div>
+                  <div class="field"><label class="mini-label">Ölçme ve Değerlendirme</label><input type="text" id="m-olcme" class="control"></div>
+                  <div class="field"><label class="mini-label">Temel Kabuller</label><input type="text" id="m-kabuller" class="control"></div>
+                  <div class="field"><label class="mini-label">Ön Değerlendirme Süreci</label><input type="text" id="m-on_degerlendirme" class="control"></div>
+                  <div class="field"><label class="mini-label">Köprü Kurma</label><input type="text" id="m-kopru" class="control"></div>
+                  <div class="field"><label class="mini-label">Öğretme-Öğrenme Uygulamaları</label><input type="text" id="m-uygulamalar" class="control"></div>
+                  <div class="field"><label class="mini-label">Zenginleştirme</label><input type="text" id="m-zenginlestirme" class="control"></div>
+                  <div class="field"><label class="mini-label">Destekleme</label><input type="text" id="m-destekleme" class="control"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SİNEMATİK ÜRETİM BUTONU -->
+          <button type="button" class="btn-cyber-cta" id="btn-generate" onclick="generatePrompt()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3.2"/>
+            </svg>
+            <span>⚡ Profesyonel Prompt Üret</span>
+            <span class="kbd-badge">Ctrl + ↵</span>
+          </button>
+        </section>
+
+      </div>
+
+      <!-- SAĞ SÜTUN: ÜRETİLEN PROMPT PANELİ -->
+      <aside class="cyber-terminal-card" id="paper" aria-label="Üretilen Prompt">
+        <div class="terminal-header">
+          <div class="window-dots" aria-hidden="true">
+            <span class="dot-btn red"></span>
+            <span class="dot-btn yellow"></span>
+            <span class="dot-btn green"></span>
+          </div>
+          <div class="terminal-title">
+            <span class="online-indicator"></span>
+            <span>Üretilen Prompt</span>
+          </div>
+          <div class="terminal-status-pill" id="status-chip">
+            <span id="status-text">Bekliyor</span>
+          </div>
+        </div>
+
+        <div class="terminal-body">
+          <div id="result-box" class="prompt-display-area empty">Soldan bir materyal türü seçip girdileri doldurun ve "⚡ Profesyonel Prompt Üret" butonuna basın.
+
+Kopyalayacağınız prompt metni pedagojik standartlara, İngilizce komut ve Türkçe çıktı kuralına uygun olarak burada hazır olacaktır.</div>
+
+          <div class="terminal-meta-row">
+            <div class="meta-stats-wrap">
+              <span><strong id="count-chars">0</strong> karakter</span>
+              <span>•</span>
+              <span><strong id="count-words">0</strong> kelime</span>
+            </div>
+            <button type="button" id="btn-skip-stream" class="btn-skip-stream" onclick="window.skipStream()">Hepsini Göster ⏩</button>
+          </div>
+
+          <!-- Aksiyon Butonları -->
+          <div class="terminal-actions-row">
+            <button type="button" class="btn-cyber-action btn-copy-action" id="btn-copy" onclick="copyPrompt()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+              </svg>
+              <span id="copy-text">Metni Kopyala</span>
+            </button>
+
+            <button type="button" class="btn-cyber-action btn-download-action" onclick="window.downloadPrompt()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>İndir (.md)</span>
+            </button>
+          </div>
+
+          <!-- Derin Bağlantılar (Deep Links) -->
+          <div class="ai-links-deck">
+            <button type="button" class="btn-ai-portal" onclick="window.openInAI('chatgpt')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+              <span>ChatGPT</span>
+            </button>
+            <button type="button" class="btn-ai-portal" onclick="window.openInAI('claude')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span>Claude</span>
+            </button>
+            <button type="button" class="btn-ai-portal" onclick="window.openInAI('notebooklm')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>NotebookLM</span>
+            </button>
+          </div>
+
+        </div>
+      </aside>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         FOOTER
+         ═══════════════════════════════════════════════════════════════ -->
+    <footer class="cyber-footer">
+      <p>Egemen's EdTech — Öğretmenler İçin Pedagojik Yapay Zekâ Prompt Deposu</p>
+      <p style="margin-top:4px;">İletişim: <a href="mailto:egemenbilim@gmail.com">egemenbilim@gmail.com</a></p>
+    </footer>
+
+  </div>
+
+  <!-- Toast Bildirim Konteyneri -->
+  <div class="toast-wrap" id="toast-wrap"></div>
+
+  <!-- Ana ES Modülü -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

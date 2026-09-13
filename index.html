@@ -1,0 +1,3106 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Egemen's EdTech — Öğretmenler İçin Eğitim Yönetim &amp; Materyal Platformu</title>
+  <meta name="description" content="Öğrenci takibi, deneme analizi, MEB logolu sınav hazırlığı ve pedagojik yapay zekâ promptları. Öğretmenler için sade, güvenli ve ücretsiz eğitim platformu.">
+
+  <!-- Tipografi: Fraunces (Prestijli Serif), Inter (Göz Yormayan Net Sans), JetBrains Mono (Hassas Monospace) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap Icons CDN (Net İkonografi) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- KaTeX CDN (Canlı Matematik Formülü Render'ı İçin) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM & LUXURY EDITORIAL TOKENS (ui-ux-pro-max)
+       ========================================================================== */
+    :root {
+      --font-serif: 'Fraunces', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Renk Hiyerarşisi: Yüksek Kontrastlı Derin Gece Laciverti & Sıcak Asil Vurgular */
+      --bg-deep: #050A14;
+      --bg-surface: #091224;
+      --bg-elevated: #0F1D38;
+      --bg-card: rgba(11, 22, 43, 0.88);
+      --bg-card-hover: rgba(16, 32, 60, 0.98);
+      --bg-input: #070E1C;
+
+      /* Kenarlıklar */
+      --border-subtle: rgba(255, 255, 255, 0.09);
+      --border-medium: rgba(255, 255, 255, 0.18);
+      --border-highlight: rgba(212, 175, 55, 0.45);
+
+      /* Metin Renkleri (WCAG AAA Uyumlu) */
+      --text-white: #FFFFFF;
+      --text-main: #F8FAFC;
+      --text-muted: #CBD5E1;       /* Açık, rahat okunan taş grisi */
+      --text-dim: #94A3B8;         /* Yardımcı açıklamalar için */
+      --text-dark: #050A14;
+
+      /* Sistem Vurguları */
+      --gold: #D4AF37;
+      --gold-hover: #E5C158;
+      --gold-bg: rgba(212, 175, 55, 0.12);
+
+      --teal: #10B981;
+      --teal-hover: #34D399;
+      --teal-bg: rgba(16, 185, 129, 0.12);
+
+      --indigo: #6366F1;
+      --indigo-hover: #818CF8;
+      --indigo-bg: rgba(99, 102, 241, 0.12);
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 26px;
+      --radius-full: 9999px;
+
+      --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.35);
+      --shadow-luxury: 0 20px 50px -10px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
+      --shadow-glow-gold: 0 0 45px -8px rgba(212, 175, 55, 0.35);
+      --shadow-glow-teal: 0 0 45px -8px rgba(16, 185, 129, 0.35);
+      --shadow-glow-indigo: 0 0 45px -8px rgba(99, 102, 241, 0.35);
+
+      --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ==========================================================================
+       TEMEL SIFIRLAMA (Pure CSS)
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      line-height: 1.65;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ANTIGRAVITY İNTERAKTİF CANVAS ARKA PLAN */
+    #antigravityCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* İçeriklerin canvas üzerinde kalması için ana sarmalayıcı */
+    .app-root {
+      position: relative;
+      z-index: 1;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button, input, select {
+      font-family: inherit;
+      border: none;
+      outline: none;
+      background: none;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    .serif { font-family: var(--font-serif); }
+    .mono { font-family: var(--font-mono); }
+
+    .container {
+      width: 100%;
+      max-width: 1240px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    /* ==========================================================================
+       ÜST MENÜ (Header)
+       ========================================================================== */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      background: rgba(5, 10, 20, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+
+    .site-header .container {
+      max-width: 1540px;
+      padding-left: 28px;
+      padding-right: 28px;
+    }
+
+    .nav-wrapper {
+      height: 70px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 16px;
+      white-space: nowrap;
+    }
+
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+      justify-self: start;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--gold) 0%, #A68023 100%);
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 19px;
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+      transition: transform 0.35s var(--ease-luxury);
+      flex-shrink: 0;
+    }
+    .brand-link:hover .brand-icon {
+      transform: scale(1.06) rotate(-4deg);
+    }
+
+    .brand-text-block {
+      display: flex;
+      flex-direction: column;
+      white-space: nowrap;
+    }
+    .brand-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-white);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .brand-title span {
+      color: var(--gold);
+    }
+    .brand-tagline {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .main-nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      justify-self: center;
+    }
+    @media (max-width: 1040px) {
+      .nav-wrapper {
+        display: flex;
+        justify-content: space-between;
+      }
+      .main-nav { display: none; }
+    }
+
+    .nav-item {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .nav-item:hover {
+      color: var(--text-white);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      justify-self: end;
+    }
+
+    .btn-quick-jump {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--gold) 0%, #B8860B 100%);
+      color: var(--text-dark);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 7px 15px;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-quick-jump:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    /* ==========================================================================
+       HERO BÖLÜMÜ (Madde 1: zamanınızı en verimli şekilde yönetin)
+       ========================================================================== */
+    .hero {
+      padding: 70px 0 50px;
+      position: relative;
+    }
+
+    .hero-content {
+      max-width: 880px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gold-bg);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      color: var(--gold);
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      margin-bottom: 24px;
+    }
+
+    .hero-heading {
+      font-size: clamp(34px, 4.8vw, 56px);
+      font-weight: 700;
+      line-height: 1.16;
+      letter-spacing: -0.02em;
+      color: var(--text-white);
+      margin-bottom: 20px;
+    }
+    .hero-heading em {
+      font-style: italic;
+      font-weight: 600;
+      color: #C9A24D;
+      background: linear-gradient(135deg, #DFBD6C 0%, #B8933E 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: none;
+    }
+
+    .hero-lead {
+      font-size: clamp(16px, 1.8vw, 19px);
+      color: var(--text-muted);
+      line-height: 1.68;
+      max-width: 700px;
+      margin: 0 auto 36px;
+    }
+
+    /* ==========================================================================
+       CANLI ARAMA KUTUSU
+       ========================================================================== */
+    .search-section {
+      max-width: 740px;
+      margin: 0 auto 48px;
+      position: relative;
+    }
+
+    .search-box-wrap {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: 8px 12px 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow-luxury);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .search-box-wrap:focus-within {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15), var(--shadow-luxury);
+    }
+
+    .search-icon {
+      font-size: 22px;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      font-size: 16.5px;
+      color: var(--text-white);
+      background: transparent;
+      padding: 8px 0;
+    }
+    .search-input::placeholder {
+      color: var(--text-dim);
+      font-size: 15px;
+    }
+
+    .search-badge-hint {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      background: var(--bg-elevated);
+      color: var(--text-dim);
+      border: 1px solid var(--border-subtle);
+      padding: 4px 9px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    @media (max-width: 600px) {
+      .search-badge-hint { display: none; }
+    }
+
+    .search-dropdown-results {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-luxury);
+      max-height: 320px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+      padding: 8px;
+    }
+    .search-dropdown-results.active {
+      display: block;
+    }
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+    .search-result-item:hover {
+      background: var(--bg-elevated);
+    }
+    .search-result-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .search-result-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+    .search-result-title {
+      font-size: 14.5px;
+      font-weight: 600;
+    }
+    .search-result-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       KOMUT PALETİ TETİKLEYİCİ & KISAYOL ROZETİ (Header)
+       ========================================================================== */
+    .btn-cmd-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-cmd-trigger:hover {
+      border-color: var(--gold);
+      color: var(--text-white);
+      background: var(--bg-elevated);
+    }
+    .cmd-shortcut-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-medium);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--gold);
+      line-height: 1;
+    }
+    @media (max-width: 768px) {
+      .cmd-shortcut-badge { display: none; }
+    }
+
+    /* ==========================================================================
+       SON ÇALIŞMALARIM / YEREL HAFIZA ŞERİDİ
+       ========================================================================== */
+    .recent-activity-strip {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      max-width: 740px;
+      margin: -24px auto 44px;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      border-radius: var(--radius-md);
+      padding: 10px 18px;
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+      animation: fadeInRecent 0.4s var(--ease-luxury);
+    }
+    @keyframes fadeInRecent {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .recent-activity-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13.5px;
+    }
+    .recent-pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 10px var(--teal);
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+    }
+    .recent-activity-label {
+      color: var(--text-dim);
+      font-size: 12.5px;
+      font-weight: 500;
+    }
+    .recent-activity-title {
+      font-weight: 600;
+      color: var(--text-white);
+    }
+    .recent-activity-time {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--gold);
+      background: var(--gold-bg);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .recent-activity-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .recent-activity-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--gold);
+      text-decoration: none;
+      transition: gap 0.2s ease, color 0.2s ease;
+    }
+    .recent-activity-link:hover {
+      color: var(--gold-hover);
+      gap: 9px;
+    }
+    .recent-dismiss-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 16px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: color 0.15s ease;
+    }
+    .recent-dismiss-btn:hover {
+      color: var(--text-white);
+    }
+
+    /* ==========================================================================
+       EVRENSEL KOMUT PALETİ (LINEAR / MAC STİLİ DIALOG)
+       ========================================================================== */
+    .command-palette-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.78);
+      backdrop-filter: blur(20px) saturate(160%);
+      z-index: 9999;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 80px 20px 40px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s var(--ease-luxury);
+    }
+    .command-palette-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .command-palette-modal {
+      width: 100%;
+      max-width: 660px;
+      background: #080E1C;
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      border-radius: 20px;
+      box-shadow: 0 30px 90px -15px rgba(0, 0, 0, 0.85), 0 0 50px -10px rgba(212, 175, 55, 0.18);
+      overflow: hidden;
+      transform: translateY(-16px) scale(0.98);
+      transition: transform 0.28s var(--ease-luxury);
+      display: flex;
+      flex-direction: column;
+    }
+    .command-palette-backdrop.active .command-palette-modal {
+      transform: translateY(0) scale(1);
+    }
+    .command-palette-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .cmd-search-icon {
+      font-size: 20px;
+      color: var(--gold);
+    }
+    .cmd-palette-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 17px;
+      color: var(--text-white);
+      font-family: inherit;
+    }
+    .cmd-palette-input::placeholder {
+      color: var(--text-dim);
+      font-size: 15px;
+    }
+    .cmd-esc-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      color: var(--text-dim);
+      padding: 3px 7px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .cmd-esc-badge:hover {
+      color: var(--text-white);
+      border-color: var(--gold);
+    }
+    .cmd-palette-filters {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.01);
+      overflow-x: auto;
+    }
+    .cmd-filter-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 12.5px;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .cmd-filter-chip:hover, .cmd-filter-chip.active {
+      background: var(--gold-bg);
+      border-color: rgba(212, 175, 55, 0.35);
+      color: var(--gold);
+      font-weight: 600;
+    }
+    .cmd-palette-body {
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    .cmd-result-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.15s ease, border-left 0.15s ease;
+      border-left: 3px solid transparent;
+      margin-bottom: 4px;
+    }
+    .cmd-result-item:hover, .cmd-result-item.selected {
+      background: rgba(212, 175, 55, 0.1);
+      border-left-color: var(--gold);
+      transform: translateX(3px);
+    }
+    .cmd-palette-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 22px;
+      border-top: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.02);
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .cmd-hints {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .cmd-key {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: var(--gold);
+    }
+    .cmd-meta {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--text-dim);
+    }
+
+    /* ==========================================================================
+       3 TEMEL SİSTEM (Spotlight + Görsel & Üzerine Gelince Bilgi Açılımı)
+       ========================================================================== */
+    .systems-area {
+      padding: 30px 0 70px;
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .section-eyebrow::before {
+      content: '';
+      width: 16px;
+      height: 2px;
+      background: var(--gold);
+    }
+
+    .section-title {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      color: var(--text-white);
+      letter-spacing: -0.015em;
+      margin-bottom: 12px;
+    }
+    .section-subtitle {
+      font-size: 16.5px;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin-bottom: 44px;
+    }
+
+    /* 3'lü Eşit Kolon Kart Düzeni */
+    .trio-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin-bottom: 40px;
+    }
+    @media (max-width: 1040px) {
+      .trio-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Spotlight Kartı */
+    .spotlight-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      transition: transform 0.35s var(--ease-luxury), box-shadow 0.35s var(--ease-luxury), border-color 0.25s ease;
+      box-shadow: var(--shadow-luxury);
+    }
+    .spotlight-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--border-medium);
+    }
+
+    /* Fare Takip Işık Huzmesi (Spotlight) */
+    .spotlight-card::before {
+      content: '';
+      position: absolute;
+      top: var(--mouse-y, -300px);
+      left: var(--mouse-x, -300px);
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, var(--spotlight-glow, rgba(212, 175, 55, 0.2)) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 1;
+    }
+    .spotlight-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-theme-gold {
+      --spotlight-glow: rgba(212, 175, 55, 0.24);
+    }
+    .card-theme-gold:hover {
+      border-color: rgba(212, 175, 55, 0.45);
+      box-shadow: var(--shadow-glow-gold);
+    }
+
+    .card-theme-teal {
+      --spotlight-glow: rgba(16, 185, 129, 0.24);
+    }
+    .card-theme-teal:hover {
+      border-color: rgba(16, 185, 129, 0.45);
+      box-shadow: var(--shadow-glow-teal);
+    }
+
+    .card-theme-indigo {
+      --spotlight-glow: rgba(99, 102, 241, 0.24);
+    }
+    .card-theme-indigo:hover {
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow: var(--shadow-glow-indigo);
+    }
+
+    .card-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-badge {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-white);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-medium);
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.05em;
+    }
+
+    /* Canlı Nabız / Hareketli Veri İndikatörü (Madde 4) */
+    .live-pulse-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--teal);
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 10px var(--teal);
+      animation: pulseTick 1.8s infinite;
+    }
+    @keyframes pulseTick {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(0.7); opacity: 0.4; }
+    }
+
+    .card-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-white);
+      margin-bottom: 14px;
+      letter-spacing: -0.01em;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ==========================================================================
+       MADDE 4: GÖRSEL ALANI & MOUSE GELİNCE BİLGİ GELEN FLIP/REVEAL KATMANI
+       ========================================================================== */
+    .visual-reveal-stage {
+      position: relative;
+      height: 190px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 22px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-deep);
+      z-index: 2;
+    }
+
+    /* Katman 1: Görsel / Mockup Durumu */
+    .stage-visual-view {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      transition: opacity 0.35s var(--ease-luxury), transform 0.35s var(--ease-luxury);
+      background-size: cover;
+      background-position: center;
+    }
+    .spotlight-card:hover .stage-visual-view {
+      opacity: 0;
+      transform: scale(0.96);
+      pointer-events: none;
+    }
+
+    /* Katman 2: Hover Bilgi Durumu (Mouse Gelince Açılan Detay) */
+    .stage-info-view {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-surface);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.35s var(--ease-luxury), transform 0.35s var(--ease-luxury);
+      z-index: 3;
+    }
+    .spotlight-card:hover .stage-info-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .stage-info-headline {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-theme-teal .stage-info-headline { color: var(--teal); }
+    .card-theme-indigo .stage-info-headline { color: var(--indigo); }
+
+    .stage-info-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Görsel Simülasyon Kartları (Default View) */
+    .mock-visual-box {
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+    }
+    .mock-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mock-stat-badge {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .mock-hint-hover {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+
+    .card-main-text {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Kocaman Giriş Butonu (52px Yükseklik) */
+    .card-cta-row {
+      position: relative;
+      z-index: 2;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 20px;
+    }
+
+    .btn-enter-system {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      height: 52px;
+      border-radius: var(--radius-md);
+      font-size: 15.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .card-theme-gold .btn-enter-system {
+      background: linear-gradient(135deg, var(--gold) 0%, #B8860B 100%);
+      color: var(--text-dark);
+      box-shadow: 0 4px 16px rgba(212, 175, 55, 0.25);
+    }
+    .card-theme-gold .btn-enter-system:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+    }
+
+    .card-theme-teal .btn-enter-system {
+      background: linear-gradient(135deg, var(--teal) 0%, #059669 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+    }
+    .card-theme-teal .btn-enter-system:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .card-theme-indigo .btn-enter-system {
+      background: linear-gradient(135deg, var(--indigo) 0%, #4F46E5 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+    }
+    .card-theme-indigo .btn-enter-system:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    }
+
+    /* ==========================================================================
+       MADDE 2: GİZLİLİK VE GÜVENCE (3 Sistem Altında & Sistem Butonuna Sahip Değil)
+       ========================================================================== */
+    .privacy-standalone-card {
+      background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-xl);
+      padding: 36px 40px;
+      box-shadow: var(--shadow-luxury);
+      position: relative;
+      overflow: hidden;
+    }
+    .privacy-standalone-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--gold), var(--teal));
+    }
+
+    .privacy-grid {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      .privacy-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+    }
+
+    .privacy-shield-icon {
+      width: 76px;
+      height: 76px;
+      border-radius: 20px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      flex-shrink: 0;
+    }
+
+    .privacy-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-white);
+      margin-bottom: 8px;
+    }
+
+    .privacy-lead {
+      font-size: 15.5px;
+      color: var(--text-muted);
+      line-height: 1.68;
+      margin-bottom: 16px;
+    }
+
+    .privacy-badges-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .privacy-tag {
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-white);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ==========================================================================
+       CANLI VİTRİN & OTANTİK ÖNİZLEME (MADDE 4: Sınav Önizlemesi Birebir Sitedeki Gibi)
+       ========================================================================== */
+    .showcase-section {
+      padding: 80px 0;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .showcase-card-wrapper {
+      background: var(--bg-deep);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-xl);
+      padding: 36px;
+      box-shadow: var(--shadow-luxury);
+    }
+
+    .showcase-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .showcase-tab-switcher {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-elevated);
+      padding: 6px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+    .showcase-nav-btn {
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .showcase-nav-btn:hover {
+      color: var(--text-white);
+    }
+    .showcase-nav-btn.active {
+      background: var(--bg-surface);
+      color: var(--text-white);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-medium);
+    }
+
+    .preview-panel {
+      display: none;
+      animation: fadeInPanel 0.3s ease;
+    }
+    .preview-panel.active {
+      display: block;
+    }
+
+    /* Önizleme 1: Öğrenci Takip Karne Mockup */
+    .karne-mockup-wrap {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+    .mockup-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+    }
+    .student-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--gold-bg);
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .mockup-score-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .mockup-score-table th {
+      text-align: left;
+      padding: 10px 12px;
+      color: var(--text-dim);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .mockup-score-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-white);
+    }
+    .score-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-elevated);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--teal));
+      border-radius: 4px;
+    }
+
+    /* ==========================================================================
+       MADDE 4: SİNEMA / STÜDYO DÜZEYİNDE "TESTMAKER MEB YAZILI KAĞIDI" ÖNİZLEMESİ
+       (egemens-testmaker içindeki 2 sütunlu resmî A4 çalışma alanının birebir yansıması)
+       ========================================================================== */
+    .testmaker-stage-preview {
+      background: #F1F5F9;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-luxury);
+    }
+
+    /* A4 Kağıt Simülasyonu */
+    .a4-paper-sheet {
+      background: #FFFFFF;
+      color: #0F172A;
+      border-radius: 6px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      padding: 32px 36px;
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      font-family: 'Noto Sans', system-ui, sans-serif;
+    }
+
+    /* Resmî Sınav Başlık Alanı (Logosuz) */
+    .meb-stage-header {
+      display: grid;
+      grid-template-columns: 1fr 160px;
+      gap: 20px;
+      align-items: center;
+      border-bottom: 2px solid #0F172A;
+      padding-bottom: 16px;
+      margin-bottom: 22px;
+    }
+    .meb-title-center {
+      text-align: left;
+      line-height: 1.35;
+    }
+    .meb-republic {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+    .meb-school {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+    .meb-exam-term {
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-top: 2px;
+    }
+
+    .student-exam-box {
+      border: 1px solid #0F172A;
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-size: 10.5px;
+      line-height: 1.5;
+    }
+    .student-exam-box div {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* İki Sütunlu Sayfa Düzeni (Testmaker gibi) */
+    .stage-two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      gap: 24px;
+      min-height: 280px;
+    }
+    @media (max-width: 768px) {
+      .stage-two-columns {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .stage-column-divider { display: none; }
+    }
+    .stage-column-divider {
+      background: #CBD5E1;
+      width: 1px;
+      height: 100%;
+    }
+
+    .question-block {
+      margin-bottom: 20px;
+    }
+    .question-head {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .question-score-pill {
+      font-size: 10px;
+      background: #E2E8F0;
+      color: #334155;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .question-body {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #1E293B;
+    }
+
+    .stage-katex-container {
+      padding: 10px 0;
+      text-align: center;
+      font-size: 17px;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+      font-size: 12.5px;
+    }
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .opt-letter {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid #94A3B8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+
+    .paper-stage-footer {
+      border-top: 1px solid #CBD5E1;
+      padding-top: 10px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #64748B;
+    }
+
+    /* Önizleme 3: AI Prompt Deposu Mockup */
+    .prompt-box-preview {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+    .prompt-code-display {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      color: #C7D2FE;
+      line-height: 1.7;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 16px;
+      white-space: pre-wrap;
+    }
+
+    /* ==========================================================================
+       NASIL ÇALIŞIR? (3 Büyük Adım)
+       ========================================================================== */
+    .how-it-works-section {
+      padding: 90px 0;
+    }
+    .steps-trio {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin-top: 40px;
+    }
+    @media (max-width: 860px) {
+      .steps-trio { grid-template-columns: 1fr; }
+    }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 32px 28px;
+      position: relative;
+    }
+    .step-giant-number {
+      font-family: var(--font-serif);
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .step-card:nth-child(2) .step-giant-number { color: var(--teal); }
+    .step-card:nth-child(3) .step-giant-number { color: var(--indigo); }
+
+    .step-heading {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-white);
+      margin-bottom: 10px;
+    }
+    .step-text {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* ==========================================================================
+       SIKÇA SORULAN SORULAR (SSS)
+       ========================================================================== */
+    .faq-section {
+      padding: 80px 0;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+    }
+    .faq-accordion {
+      max-width: 840px;
+      margin: 36px auto 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .faq-item {
+      background: var(--bg-deep);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+    .faq-item.open {
+      border-color: var(--border-medium);
+    }
+    .faq-question {
+      width: 100%;
+      padding: 20px 24px;
+      text-align: left;
+      font-size: 16.5px;
+      font-weight: 600;
+      color: var(--text-white);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      cursor: pointer;
+    }
+    .faq-icon {
+      font-size: 18px;
+      color: var(--gold);
+      transition: transform 0.25s ease;
+    }
+    .faq-item.open .faq-icon {
+      transform: rotate(180deg);
+    }
+    .faq-answer {
+      display: none;
+      padding: 0 24px 20px;
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .faq-item.open .faq-answer {
+      display: block;
+    }
+
+    /* ==========================================================================
+       MADDE 5: ALT BİLGİ (Footer - GitHub Reposu Kaldırıldı)
+       ========================================================================== */
+    .footer {
+      background: var(--bg-deep);
+      border-top: 1px solid var(--border-subtle);
+      padding: 60px 0 36px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+    @media (max-width: 768px) {
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+    }
+    .footer-brand-p {
+      max-width: 360px;
+      margin-top: 14px;
+      line-height: 1.65;
+    }
+    .footer-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-white);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+      font-family: var(--font-mono);
+    }
+    .footer-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .footer-links-list a {
+      color: var(--text-muted);
+      transition: color 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .footer-links-list a:hover {
+      color: var(--text-white);
+    }
+    .footer-bottom-bar {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= MADDE 3: ANTIGRAVITY İNTERAKTİF NOKTACIK CANVAS ================= -->
+  <canvas id="antigravityCanvas"></canvas>
+
+  <div class="app-root">
+
+    <!-- ================= ÜST MENÜ ================= -->
+    <header class="site-header">
+      <div class="container nav-wrapper">
+        <a href="#" class="brand-link" aria-label="Egemen's EdTech Ana Sayfa">
+          <div class="brand-icon">E</div>
+          <div class="brand-text-block">
+            <span class="brand-title">Egemen's <span>EdTech</span></span>
+            <span class="brand-tagline">Öğretmen Çalışma Alanı</span>
+          </div>
+        </a>
+
+        <!-- Doğrudan Menü Bağlantıları -->
+        <nav class="main-nav" aria-label="Ana Gezinti">
+          <a href="#sistemler" class="nav-item"><i class="bi bi-grid-fill"></i> 3 Temel Sistem</a>
+          <a href="#canli-onizleme" class="nav-item"><i class="bi bi-eye-fill"></i> Canlı Önizleme</a>
+          <a href="#nasil-calisir" class="nav-item"><i class="bi bi-check2-circle"></i> Nasıl Kullanılır?</a>
+          <a href="#sss" class="nav-item"><i class="bi bi-question-circle"></i> Sıkça Sorulanlar</a>
+        </nav>
+
+        <div class="header-actions">
+          <!-- Hızlı Komut Paleti Açıcı (Ctrl+K) -->
+          <button class="btn-cmd-trigger" id="cmdPaletteTrigger" title="Hızlı Menüyü Aç (Ctrl + K veya ⌘K)" aria-label="Komut Paletini Aç">
+            <i class="bi bi-command"></i>
+            <span>Hızlı Menü</span>
+            <span class="cmd-shortcut-badge">Ctrl K</span>
+          </button>
+
+          <a href="#sistemler" class="btn-quick-jump">
+            <span>Sistemleri Aç</span>
+            <i class="bi bi-arrow-down-short" style="font-size:18px"></i>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ================= HERO ALANI (Madde 1) ================= -->
+      <section class="hero">
+        <div class="container">
+          <div class="hero-content">
+            <div class="hero-pill">
+              <i class="bi bi-shield-check"></i>
+              <span>Öğretmenler İçin Tasarlandı · %100 Ücretsiz &amp; Güvenli</span>
+            </div>
+
+            <!-- Madde 1: zamanınızı en verimli şekilde yönetin (verimli vurgulu) -->
+            <h1 class="hero-heading serif">
+              Öğretmenliği <em>veriyle</em>,<br>
+              zamanınızı <em>verimli</em> yönetin.
+            </h1>
+
+            <p class="hero-lead">
+              Öğrenci takibi, deneme analizi, MEB logolu sınav hazırlığı ve yapay zekâ materyal üretimi tek ekranda. Üyelik veya şifre gerekmez; tüm verileriniz yalnızca kendi bilgisayarınızda güvende.
+            </p>
+
+            <!-- ================= CANLI ARAMA KUTUSU ================= -->
+            <div class="search-section">
+              <div class="search-box-wrap">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" class="search-input" id="quickSearchInput" 
+                       placeholder="Ne yapmak istiyorsunuz? (Örn: Analiz, sınıf ekle, MEB yazılısı, deneme netleri, prompt...)"
+                       aria-label="Sitede arama yapın">
+                <span class="search-badge-hint">Hızlı Bulucu</span>
+              </div>
+
+              <!-- Canlı Filtreleme Açılır Menüsü -->
+              <div class="search-dropdown-results" id="searchResultsDropdown">
+                <!-- JS Dinamik Doldurur -->
+              </div>
+            </div>
+
+            <!-- ================= SON ÇALIŞMALARIM / YEREL HAFIZA ŞERİDİ ================= -->
+            <div class="recent-activity-strip" id="recentActivityStrip" aria-label="Son Çalışma">
+              <div class="recent-activity-left">
+                <span class="recent-pulse-dot"></span>
+                <span class="recent-activity-label">Son Oturumunuz:</span>
+                <span class="recent-activity-title" id="recentActivityTitle">Öğrenci Takip Sistemi</span>
+                <span class="recent-activity-time" id="recentActivityTime">Az önce</span>
+              </div>
+              <div class="recent-activity-right">
+                <a href="ogrenci-takip/index.html" class="recent-activity-link" id="recentActivityLink">
+                  <span>Kaldığınız Yerden Devam Edin</span>
+                  <i class="bi bi-arrow-right"></i>
+                </a>
+                <button class="recent-dismiss-btn" id="recentDismissBtn" title="Bildirimi Gizle" aria-label="Bildirimi Gizle">&times;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3 TEMEL SİSTEM (Madde 4: Görseller & Hover Bilgi Katmanı) ================= -->
+      <section class="systems-area" id="sistemler">
+        <div class="container">
+          <div class="section-eyebrow">Temel Sistemler</div>
+          <h2 class="section-title serif">Kullanmak İstediğiniz Aracı Seçin</h2>
+          <p class="section-subtitle">
+            Her biri öğretmenlerin gerçek ihtiyaçlarına göre geliştirilmiş, kullanımı kolay ve bağımsız çalışan üç araç. Görsellerin üzerine gelerek detayları görebilirsiniz.
+          </p>
+
+          <!-- 3 SİSTEM YAN YANA EŞİT DÜZEN -->
+          <div class="trio-grid">
+
+            <!-- 01: ÖĞRENCİ TAKİP SİSTEMİ -->
+            <div class="spotlight-card card-theme-gold">
+              <div>
+                <div class="card-top-row">
+                  <span class="card-badge">SİSTEM 01</span>
+                  <div class="live-pulse-indicator">
+                    <span class="pulse-dot"></span>
+                    <span>Canlı Takip</span>
+                  </div>
+                </div>
+
+                <h3 class="card-title serif">Öğrenci Takip Sistemi</h3>
+
+                <!-- Madde 4: Görsel Alanı & Hover Olunca Bilgi Gelen Katman -->
+                <div class="visual-reveal-stage">
+                  <!-- Katman 1: Görsel Görünüm -->
+                  <div class="stage-visual-view">
+                    <div class="mock-visual-box">
+                      <div class="mock-row">
+                        <span style="font-size:12px;font-weight:700;color:var(--gold)"><i class="bi bi-people-fill"></i> 9-A Şubesi</span>
+                        <span class="mock-stat-badge" style="color:var(--gold)">86.4 Net</span>
+                      </div>
+                      <div style="background:var(--bg-elevated);padding:6px 10px;border-radius:4px;font-size:11px;color:var(--text-muted)">
+                        128 Aktif Kayıtlı Öğrenci · 16 Deneme
+                      </div>
+                      <div class="mock-hint-hover">
+                        <i class="bi bi-cursor-fill"></i> Bilgi için üzerine gelin
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Katman 2: Hover Bilgi Görünümü (Resim yerine gelen zengin bilgi) -->
+                  <div class="stage-info-view">
+                    <div class="stage-info-headline">
+                      <i class="bi bi-info-circle-fill"></i> NELER YAPABİLİRSİNİZ?
+                    </div>
+                    <div class="stage-info-desc">
+                      Sınıflarınızı oluşturun, öğrenci listelerinizi tek tek veya Excel/toplu metinle aktarın. Denemeleri girin; sistem her öğrenci için branş analizi ve veliye verilecek renkli A4 karne PDF'ini kendisi hesaplayıp oluştursun.
+                    </div>
+                  </div>
+                </div>
+
+                <p class="card-main-text">
+                  Sınıf ve öğrenci yönetimi, AI destekli deneme girişi, haftalık soru çözüm takibi ve veli PDF karneleri.
+                </p>
+              </div>
+
+              <div class="card-cta-row">
+                <a href="ogrenci-takip/index.html" class="btn-enter-system">
+                  <span>Öğrenci Takip Sistemini Aç</span>
+                  <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+
+            <!-- 02: SINAV HAZIRLAMA ARACI (TESTMAKER) -->
+            <div class="spotlight-card card-theme-teal">
+              <div>
+                <div class="card-top-row">
+                  <span class="card-badge">SİSTEM 02</span>
+                  <div class="live-pulse-indicator" style="color:var(--teal)">
+                    <span class="pulse-dot" style="background:var(--teal);box-shadow:0 0 10px var(--teal)"></span>
+                    <span>KaTeX &amp; PDF</span>
+                  </div>
+                </div>
+
+                <h3 class="card-title serif">Sınav Hazırlama (Testmaker)</h3>
+
+                <!-- Madde 4: Görsel Alanı & Hover Olunca Bilgi Gelen Katman -->
+                <div class="visual-reveal-stage">
+                  <!-- Katman 1: Görsel Görünüm -->
+                  <div class="stage-visual-view">
+                    <div class="mock-visual-box" style="border-left: 3px solid var(--teal); padding: 12px 14px;">
+                      <div class="mock-row" style="margin-bottom: 8px;">
+                        <span style="font-size:12px;font-weight:700;color:var(--teal)"><i class="bi bi-file-earmark-text"></i> Vektörel A4 Sınav Dizgisi</span>
+                        <span style="font-size:10px;font-family:var(--font-mono);background:rgba(16,185,129,0.15);color:var(--teal);padding:2px 7px;border-radius:4px;font-weight:700">2 SÜTUN</span>
+                      </div>
+                      <!-- Stilize Vektörel Sınav Kağıdı Görseli (Kod Bloğu Yok) -->
+                      <div style="background: rgba(255,255,255,0.04); border: 1px dashed rgba(16,185,129,0.3); border-radius: 6px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                          <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="width: 14px; height: 14px; border-radius: 50%; background: var(--teal); color: #050A14; font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center;">1</span>
+                            <span style="height: 5px; width: 65%; background: rgba(255,255,255,0.3); border-radius: 3px;"></span>
+                          </div>
+                          <div style="height: 4px; width: 85%; background: rgba(255,255,255,0.15); border-radius: 2px; margin-left: 20px;"></div>
+                          <div style="display: flex; gap: 8px; margin-left: 20px; margin-top: 3px;">
+                            <span style="font-size: 9.5px; color: var(--teal); font-family: var(--font-mono);">A)</span>
+                            <span style="font-size: 9.5px; color: var(--text-dim); font-family: var(--font-mono);">B)</span>
+                            <span style="font-size: 9.5px; color: var(--text-dim); font-family: var(--font-mono);">C)</span>
+                            <span style="font-size: 9.5px; color: var(--text-dim); font-family: var(--font-mono);">D)</span>
+                          </div>
+                        </div>
+                        <div style="width: 44px; height: 44px; border-radius: 8px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--teal); flex-shrink: 0;">
+                          <i class="bi bi-crop" style="font-size: 16px;"></i>
+                          <span style="font-size: 8px; font-weight: 700; margin-top: 2px;">KIRP</span>
+                        </div>
+                      </div>
+                      <div class="mock-hint-hover" style="margin-top: 6px;">
+                        <i class="bi bi-cursor-fill"></i> Bilgi için üzerine gelin
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Katman 2: Hover Bilgi Görünümü -->
+                  <div class="stage-info-view">
+                    <div class="stage-info-headline">
+                      <i class="bi bi-info-circle-fill"></i> NELER YAPABİLİRSİNİZ?
+                    </div>
+                    <div class="stage-info-desc">
+                      PDF kitaplardan veya görsellerden soru kırpın, KaTeX ile formüllü matematik/fizik soruları ekleyin. MEB resmî sınav başlığını seçip 5 dakikada A4 fotokopiye hazır vektörel PDF ve Word çıktısı alın.
+                    </div>
+                  </div>
+                </div>
+
+                <p class="card-main-text">
+                  Görsel soru kırpıcı, KaTeX matematik motoru, resmî MEB anteti ve anında baskıya hazır vektörel A4 PDF.
+                </p>
+              </div>
+
+              <div class="card-cta-row">
+                <a href="egemens-testmaker/index.html" class="btn-enter-system">
+                  <span>Sınav Hazırlamaya Başla</span>
+                  <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+
+            <!-- 03: EĞİTİM PROMPTLARI DEPOSU -->
+            <div class="spotlight-card card-theme-indigo">
+              <div>
+                <div class="card-top-row">
+                  <span class="card-badge">SİSTEM 03</span>
+                  <div class="live-pulse-indicator" style="color:var(--indigo)">
+                    <span class="pulse-dot" style="background:var(--indigo);box-shadow:0 0 10px var(--indigo)"></span>
+                    <span>9 Şablon</span>
+                  </div>
+                </div>
+
+                <h3 class="card-title serif">Eğitim Promptları Deposu</h3>
+
+                <!-- Madde 4: Görsel Alanı & Hover Olunca Bilgi Gelen Katman -->
+                <div class="visual-reveal-stage">
+                  <!-- Katman 1: Görsel Görünüm -->
+                  <div class="stage-visual-view">
+                    <div class="mock-visual-box" style="border-left: 3px solid var(--indigo);">
+                      <div class="mock-row">
+                        <span style="font-size:12px;font-weight:700;color:var(--indigo)"><i class="bi bi-cpu-fill"></i> Pedagojik AI</span>
+                        <span style="font-size:11px;font-family:var(--font-mono);background:rgba(99,102,241,0.15);color:var(--indigo);padding:2px 6px;border-radius:4px">Türkçe</span>
+                      </div>
+                      <div style="font-family:var(--font-mono);font-size:11px;color:#C7D2FE;background:var(--bg-deep);padding:6px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                        "Sen uzman bir öğretmensin..."
+                      </div>
+                      <div class="mock-hint-hover">
+                        <i class="bi bi-cursor-fill"></i> Bilgi için üzerine gelin
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Katman 2: Hover Bilgi Görünümü -->
+                  <div class="stage-info-view">
+                    <div class="stage-info-headline">
+                      <i class="bi bi-info-circle-fill"></i> NELER YAPABİLİRSİNİZ?
+                    </div>
+                    <div class="stage-info-desc">
+                      Yapay zekâya (ChatGPT, Gemini, NotebookLM) soru, ödev, kavram yanılgısı kağıdı veya podcast metni hazırlatmak için pedagojik olarak kalibre edilmiş hazır komutları dersinize göre tek tıkla kopyalayın.
+                    </div>
+                  </div>
+                </div>
+
+                <p class="card-main-text">
+                  Ders ve sınıf bazlı hazır yapay zekâ komutları, NotebookLM podcast formatı ve Bloom taksonomisi uyumu.
+                </p>
+              </div>
+
+              <div class="card-cta-row">
+                <a href="prompt-deposu/index.html" class="btn-enter-system">
+                  <span>Prompt Deposuna Git</span>
+                  <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ================= MADDE 2: GİZLİLİK VE GÜVENCE KARTI ================= -->
+          <!-- Üç sistemin altında yer alır ve sistemlere gidiş butonu BULUNMAZ -->
+          <div class="privacy-standalone-card">
+            <div class="privacy-grid">
+              <div class="privacy-shield-icon">
+                <i class="bi bi-shield-lock-fill"></i>
+              </div>
+
+              <div>
+                <h3 class="privacy-title serif">Gizlilik ve Veri Güvencesi</h3>
+                <p class="privacy-lead">
+                  Sisteme girdiğiniz hiçbir öğrenci adı, deneme notu veya hazırladığınız sınav sorusu harici bir sunucuya ya da buluta aktarılmaz. Platform tamamen bilgisayarınızın yerel tarayıcı belleğinde (`localStorage`) çalışır. İnternetiniz kesilse dahi kesintisiz çalışabilir ve tek tıkla verilerinizi bilgisayarınıza yedekleyebilirsiniz.
+                </p>
+
+                <div class="privacy-badges-row">
+                  <span class="privacy-tag"><i class="bi bi-check2-circle" style="color:var(--teal)"></i> %100 Yerel Veri (Sunucusuz)</span>
+                  <span class="privacy-tag"><i class="bi bi-check2-circle" style="color:var(--teal)"></i> KVKK &amp; Okul Mevzuatına Uyumlu</span>
+                  <span class="privacy-tag"><i class="bi bi-check2-circle" style="color:var(--teal)"></i> Çevrimdışı Çalışma Desteği</span>
+                  <span class="privacy-tag"><i class="bi bi-check2-circle" style="color:var(--teal)"></i> Ücretsiz &amp; Açık Kaynak Felsefe</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= CANLI ÖNİZLEME (Sitedeki Birebir Sınav Kağıdı & Sistem Çıktıları) ================= -->
+      <section class="showcase-section" id="canli-onizleme">
+        <div class="container">
+          <div class="section-eyebrow">Canlı Önizleme</div>
+          <h2 class="section-title serif">Sistem Çıktılarını İnceleyin</h2>
+          <p class="section-subtitle">
+            Örnek MEB sınav kağıdı doğrudan sitedeki Testmaker çalışma alanının gerçek formatını yansıtmaktadır:
+          </p>
+
+          <div class="showcase-card-wrapper">
+            <div class="showcase-top-row">
+              <!-- Sekmeler -->
+              <div class="showcase-tab-switcher" role="tablist">
+                <button class="showcase-nav-btn active" data-preview="sinav">
+                  <i class="bi bi-pencil-square"></i> Örnek MEB Yazılısı (Testmaker)
+                </button>
+                <button class="showcase-nav-btn" data-preview="karne">
+                  <i class="bi bi-mortarboard-fill"></i> Örnek Karne (Öğrenci Takip)
+                </button>
+                <button class="showcase-nav-btn" data-preview="prompt">
+                  <i class="bi bi-cpu-fill"></i> Örnek AI Promptu
+                </button>
+              </div>
+
+              <div style="font-size:13px;color:var(--text-dim);display:flex;align-items:center;gap:6px">
+                <i class="bi bi-info-circle"></i> Canlı sistem çıktısı temsilidir
+              </div>
+            </div>
+
+            <!-- PANEL 1: MADDE 4 — BİREBİR TESTMAKER MEB YAZILI KAĞIDI ÇALIŞMA ALANI -->
+            <div class="preview-panel active" id="preview-sinav">
+              <div class="testmaker-stage-preview">
+                <div class="a4-paper-sheet">
+                  <!-- MEB Resmî Başlık -->
+                  <div class="meb-stage-header">
+                    <div class="meb-title-center">
+                      <div class="meb-republic">T.C. MİLLÎ EĞİTİM BAKANLIĞI</div>
+                      <div class="meb-school">ANADOLU LİSESİ MÜDÜRLÜĞÜ</div>
+                      <div class="meb-exam-term">2025-2026 EĞİTİM ÖĞRETİM YILI 1. DÖNEM 2. ORTAK YAZILI SINAVI</div>
+                    </div>
+
+                    <div class="student-exam-box">
+                      <div><span>Adı:</span> <span>....................</span></div>
+                      <div><span>Sınıf/No:</span> <span>11-A / .......</span></div>
+                      <div><span>Tarih:</span> <span>... / ... / 2026</span></div>
+                      <div><span>Puan:</span> <span>[ &nbsp; &nbsp; &nbsp; / 100 ]</span></div>
+                    </div>
+                  </div>
+
+                  <!-- 2 Sütunlu Sayfa Düzeni (egemens-testmaker gibi) -->
+                  <div class="stage-two-columns">
+                    <!-- Sol Sütun: Soru 1 ve Soru 2 -->
+                    <div>
+                      <div class="question-block">
+                        <div class="question-head">
+                          <span>Soru 1)</span>
+                          <span class="question-score-pill">(15 Puan)</span>
+                        </div>
+                        <div class="question-body">
+                          Doğrusal bir yolda hareket eden bir cismin zamana bağlı hız denklemi verilmiştir. Cismin 0 ile 4 saniyeler arasındaki toplam yer değiştirmesini hesaplayınız:
+                          <div class="stage-katex-container" id="katexQuestion1"></div>
+                        </div>
+                      </div>
+
+                      <div class="question-block">
+                        <div class="question-head">
+                          <span>Soru 2)</span>
+                          <span class="question-score-pill">(10 Puan)</span>
+                        </div>
+                        <div class="question-body">
+                          Aşağıdakilerden hangisi Newton'ın eylemsizlik yasasına örnek olarak <u>gösterilemez</u>?
+                          <div class="options-grid">
+                            <div class="option-item"><span class="opt-letter">A</span> Aniden fren yapan otobüste yolcuların öne savrulması</div>
+                            <div class="option-item"><span class="opt-letter">B</span> Viraja giren aracın dışa doğru savrulma eğilimi</div>
+                            <div class="option-item"><span class="opt-letter">C</span> Sabit hızla giden trende yukarı atılan topun ele düşmesi</div>
+                            <div class="option-item"><span class="opt-letter">D</span> Masadaki örtü hızla çekildiğinde tabakların kalması</div>
+                            <div class="option-item"><span class="opt-letter">E</span> Yere düşen bardağın kırılması</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Dikey Ayrım Çizgisi -->
+                    <div class="stage-column-divider"></div>
+
+                    <!-- Sağ Sütun: Soru 3 ve Soru 4 -->
+                    <div>
+                      <div class="question-block">
+                        <div class="question-head">
+                          <span>Soru 3)</span>
+                          <span class="question-score-pill">(15 Puan)</span>
+                        </div>
+                        <div class="question-body">
+                          Sürtünmesiz yatay düzlemde durmakta olan 3 kg kütleli cisme uygulanan kuvvetin zamana göre ivme fonksiyonunu bulunuz:
+                          <div class="stage-katex-container" id="katexQuestion2"></div>
+                          <div style="border: 1px dashed #CBD5E1; height: 75px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #94A3B8; margin-top: 8px">
+                            [ Öğrenci Çözüm Alanı ]
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="question-block">
+                        <div class="question-head">
+                          <span>Soru 4)</span>
+                          <span class="question-score-pill">(10 Puan)</span>
+                        </div>
+                        <div class="question-body">
+                          Kinetik sürtünme katsayısının \(k = 0.2\) olduğu eğik düzlemde cismin dengede kalma şartını yazınız.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Alt Bilgi Şeridi -->
+                  <div class="paper-stage-footer">
+                    <span>* Her sorunun puan değeri yanında belirtilmiştir. Süre 40 dakikadır.</span>
+                    <span style="font-weight:700">Sayfa 1 / 1 · Başarılar Dileriz</span>
+                  </div>
+                </div>
+
+                <div style="margin-top:16px;text-align:right">
+                  <a href="egemens-testmaker/index.html" class="btn-quick-jump" style="padding:9px 18px;font-size:13.5px">
+                    Testmaker'da Kendi Sınavınızı Dizmeye Başlayın →
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 2: ÖĞRENCİ TAKİP GERÇEKÇİ KARNE -->
+            <div class="preview-panel" id="preview-karne">
+              <div class="karne-mockup-wrap">
+                <div class="mockup-header-row">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <div class="student-avatar">EB</div>
+                    <div>
+                      <div style="font-size:16px;font-weight:700;color:var(--text-white)">Egemen Bilim · 12-A Şubesi</div>
+                      <div style="font-size:12px;color:var(--text-dim)">Haftalık Deneme ve Soru Çözüm Karnesi</div>
+                    </div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-family:var(--font-mono);font-size:22px;font-weight:800;color:var(--gold)">91.50 Net</div>
+                    <div style="font-size:11px;color:var(--teal)">Sınıf Derecesi: 1. Sıra</div>
+                  </div>
+                </div>
+
+                <table class="mockup-score-table">
+                  <thead>
+                    <tr>
+                      <th>DERS ADI</th>
+                      <th>SORU</th>
+                      <th>DOĞRU</th>
+                      <th>YANLIŞ</th>
+                      <th>NET</th>
+                      <th>BAŞARI GRAFİĞİ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Türkçe</strong></td>
+                      <td>40</td>
+                      <td>36</td>
+                      <td>3</td>
+                      <td><strong style="color:var(--gold)">35.25</strong></td>
+                      <td>
+                        <div class="score-bar-bg"><div class="score-bar-fill" style="width: 88%;"></div></div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Temel Matematik</strong></td>
+                      <td>40</td>
+                      <td>35</td>
+                      <td>2</td>
+                      <td><strong style="color:var(--gold)">34.50</strong></td>
+                      <td>
+                        <div class="score-bar-bg"><div class="score-bar-fill" style="width: 86%;"></div></div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Fen Bilimleri</strong></td>
+                      <td>20</td>
+                      <td>18</td>
+                      <td>1</td>
+                      <td><strong style="color:var(--gold)">17.75</strong></td>
+                      <td>
+                        <div class="score-bar-bg"><div class="score-bar-fill" style="width: 89%;"></div></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+                  <span style="font-size:12.5px;color:var(--text-dim)">
+                    A4 formatında yazdırılabilir ve veliye WhatsApp/PDF olarak iletilebilir.
+                  </span>
+                  <a href="ogrenci-takip/index.html" class="btn-quick-jump" style="padding:8px 16px;font-size:13px">
+                    Öğrenci Takip Sistemine Git →
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 3: EĞİTİM PROMPTLARI DEPOSU -->
+            <div class="preview-panel" id="preview-prompt">
+              <div class="prompt-box-preview">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                  <span style="font-size:12.5px;font-weight:700;color:var(--text-white)">
+                    <i class="bi bi-file-earmark-code"></i> ÖRNEK PEDAGOJİK PROMPT ŞABLONU (9. Sınıf Fizik)
+                  </span>
+                  <button id="btnCopyMockupPrompt" class="btn-quick-jump" style="padding:6px 14px;font-size:12.5px">
+                    <i class="bi bi-clipboard"></i> Kopyala
+                  </button>
+                </div>
+
+                <div class="prompt-code-display" id="mockupPromptCode">Sen uzman bir lise Fizik öğretmenisin.
+Hedef Kitle: 9. Sınıf öğrencileri.
+Konu: Kuvvet ve Hareket (Newton'ın Hareket Yasaları).
+İstenen Materyal: Bloom taksonomisine uygun, kavram yanılgılarını önleyen 5 aşamalı soru havuzu.
+Zorunlu Kural: Çıktıyı pedagojik açıklamalara sahip, akıcı ve anlaşılır Türkçe dilinde ver.</div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--text-muted)">
+                  <span>Bu metni kopyalayıp doğrudan ChatGPT, Gemini veya Claude'a yapıştırabilirsiniz.</span>
+                  <a href="prompt-deposu/index.html" style="font-weight:700;color:var(--indigo)">Prompt Deposunu Aç →</a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= NASIL ÇALIŞIR? ================= -->
+      <section class="how-it-works-section" id="nasil-calisir">
+        <div class="container">
+          <div class="section-eyebrow">Kolay Kullanım</div>
+          <h2 class="section-title serif">3 Basit Adımda Döneminizi Yönetin</h2>
+          <p class="section-subtitle">Karışık menüler ve teknik terimler olmadan, adım adım işinizi tamamlayın.</p>
+
+          <div class="steps-trio">
+            <div class="step-card">
+              <div class="step-giant-number">01</div>
+              <h3 class="step-heading">Materyali &amp; Soruları Üretin</h3>
+              <p class="step-text">
+                Prompt Deposu'ndan dersinizi seçip yapay zekâya sorularınızı hazırlatın ya da mevcut PDF kaynaklarınızdan soru kırpın.
+              </p>
+            </div>
+
+            <div class="step-card">
+              <div class="step-giant-number">02</div>
+              <h3 class="step-heading">MEB Formatında Sınavı Basın</h3>
+              <p class="step-text">
+                Testmaker ile sorularınızı dizin, MEB sınav başlığınızı ekleyin ve 5 dakikada A4 fotokopiye hazır PDF kağıdı indirin.
+              </p>
+            </div>
+
+            <div class="step-card">
+              <div class="step-giant-number">03</div>
+              <h3 class="step-heading">Notları Girip Karneleri Alın</h3>
+              <p class="step-text">
+                Sınav sonrası netleri Öğrenci Takip Sistemi'ne girin. Veliye verilecek renkli grafikli gelişim raporunu tek tıkla basın.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SIKÇA SORULANLAR ================= -->
+      <section class="faq-section" id="sss">
+        <div class="container">
+          <div style="text-align:center">
+            <div class="section-eyebrow">Merak Edilenler</div>
+            <h2 class="section-title serif">Sıkça Sorulanlar</h2>
+            <p class="section-subtitle" style="margin:0 auto">Aklınıza takılabilecek temel sorular ve açık cevapları:</p>
+          </div>
+
+          <div class="faq-accordion">
+            <div class="faq-item open">
+              <button class="faq-question">
+                <span>Sisteme kayıt olmam veya şifre almam gerekiyor mu?</span>
+                <i class="bi bi-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                Hayır, kesinlikle gerekmez. Sitedeki üç sistem de doğrudan tarayıcınızda açılır. Kullanıcı adı, e-posta veya parola girmeniz istenmez; hemen kullanmaya başlayabilirsiniz.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Öğrenci bilgilerim veya notları internete yükleniyor mu?</span>
+                <i class="bi bi-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                Hayır. Sistem tamamen yerel (kendi bilgisayarınızda) çalışır. Girdiğiniz öğrenci isimleri, deneme netleri veya sorular hiçbir sunucuya gönderilmez. KVKK ve resmî okul mevzuatına %100 uygundur.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Bilgisayarımı kapatırsam girdiğim veriler silinir mi?</span>
+                <i class="bi bi-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                Silinmez. Tarayıcınız verilerinizi kendi hafızasında (localStorage) saklar. Ancak dilerseniz Öğrenci Takip Sistemi içerisindeki "Yedekle" düğmesine basarak verilerinizi tek tıkla dosya olarak bilgisayarınıza kaydedebilirsiniz.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Bu platform ücretli mi? İleride ücret istenir mi?</span>
+                <i class="bi bi-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                Platform tamamen ücretsizdir ve öğretmenlerin eğitim süreçlerini kolaylaştırmak amacıyla sunulmuştur. Hiçbir reklam veya gizli ücret içermez.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= MADDE 5: ALT BİLGİ (Footer - GitHub Reposu Kaldırıldı) ================= -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <div class="brand-link">
+              <div class="brand-icon" style="width:36px;height:36px;font-size:18px">E</div>
+              <span class="brand-title" style="font-size:16px">Egemen's <span>EdTech</span></span>
+            </div>
+            <p class="footer-brand-p">
+              Öğretmenlerin vaktini evrak işlerine değil, öğrencilerine ayırması için hazırlanmış bağımsız eğitim yönetim platformu.
+            </p>
+          </div>
+
+          <div>
+            <div class="footer-title">Hızlı Sistemler</div>
+            <ul class="footer-links-list">
+              <li><a href="ogrenci-takip/index.html"><i class="bi bi-chevron-right"></i> Öğrenci Takip Sistemi</a></li>
+              <li><a href="egemens-testmaker/index.html"><i class="bi bi-chevron-right"></i> Sınav Hazırlama (Testmaker)</a></li>
+              <li><a href="prompt-deposu/index.html"><i class="bi bi-chevron-right"></i> Eğitim Promptları Deposu</a></li>
+            </ul>
+          </div>
+
+          <!-- Madde 5: GitHub reposu bilgisi kaldırıldı, yalnızca doğrudan iletişim korundu -->
+          <div>
+            <div class="footer-title">Geliştirici &amp; Destek</div>
+            <ul class="footer-links-list">
+              <li><a href="https://www.instagram.com/egemenbilim/" target="_blank" rel="noopener"><i class="bi bi-instagram"></i> @egemenbilim</a></li>
+              <li><a href="mailto:egemenbilim@gmail.com"><i class="bi bi-envelope"></i> egemenbilim@gmail.com</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom-bar">
+          <div>© 2026 Egemen Bilim · Tüm hakları saklıdır. Öğretmenler için sevgiyle geliştirildi.</div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ================= EVRENSEL KOMUT PALETİ MODAL (LINEAR / MAC STİLİ CTRL+K) ================= -->
+    <div class="command-palette-backdrop" id="commandPaletteBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="command-palette-modal">
+        <div class="command-palette-header">
+          <i class="bi bi-search cmd-search-icon"></i>
+          <input type="text" class="cmd-palette-input" id="cmdPaletteInput" placeholder="Bir araç, işlem veya sistem arayın... (Örn: Analiz, Sınav, Not Girişi)" autocomplete="off">
+          <kbd class="cmd-esc-badge" id="cmdCloseBtn" title="Kapat">ESC</kbd>
+        </div>
+
+        <div class="cmd-palette-filters">
+          <button class="cmd-filter-chip active" data-filter="all">Tümü</button>
+          <button class="cmd-filter-chip" data-filter="Öğrenci Takip"><i class="bi bi-people-fill"></i> Öğrenci Takip</button>
+          <button class="cmd-filter-chip" data-filter="Testmaker"><i class="bi bi-pencil-square"></i> Testmaker</button>
+          <button class="cmd-filter-chip" data-filter="Prompt Deposu"><i class="bi bi-cpu-fill"></i> Prompt Deposu</button>
+        </div>
+
+        <div class="cmd-palette-body" id="cmdPaletteResults">
+          <!-- JS Dinamik Doldurur -->
+        </div>
+
+        <div class="cmd-palette-footer">
+          <div class="cmd-hints">
+            <span><kbd class="cmd-key">↑</kbd> <kbd class="cmd-key">↓</kbd> Gezin</span>
+            <span><kbd class="cmd-key">↵</kbd> Seç</span>
+            <span><kbd class="cmd-key">ESC</kbd> Kapat</span>
+          </div>
+          <div class="cmd-meta">Egemen's EdTech Hızlı Menü</div>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- /app-root -->
+
+  <!-- ================= MADDE 3: ANTIGRAVITY GOOGLE STİLİ İNTERAKTİF CANVAS SCRIPT ================= -->
+  <script>
+    (function initAntigravityBackground() {
+      const canvas = document.getElementById('antigravityCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      // Mouse takibi
+      const mouse = {
+        x: -1000,
+        y: -1000,
+        radius: 170
+      };
+
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+
+      window.addEventListener('mouseout', () => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+      });
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initParticles();
+      });
+
+      // Noktacık Sınıfı
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.baseX = this.x;
+          this.baseY = this.y;
+          this.size = Math.random() * 2 + 1; // 1px ile 3px arası
+          this.vx = (Math.random() - 0.5) * 0.45;
+          this.vy = (Math.random() - 0.5) * 0.45;
+          // Altın ve hafif mavimsi parçacıklar
+          this.color = Math.random() > 0.4 ? 'rgba(212, 175, 55, ' + (Math.random() * 0.4 + 0.2) + ')' : 'rgba(148, 163, 184, ' + (Math.random() * 0.35 + 0.15) + ')';
+        }
+
+        update() {
+          // Doğal sürüklenme
+          this.x += this.vx;
+          this.y += this.vy;
+
+          if (this.x < 0 || this.x > width) this.vx *= -1;
+          if (this.y < 0 || this.y > height) this.vy *= -1;
+
+          // Mouse reaksiyonu (antigravity repulsion / physics)
+          const dx = mouse.x - this.x;
+          const dy = mouse.y - this.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < mouse.radius) {
+            const force = (mouse.radius - distance) / mouse.radius;
+            const dirX = dx / distance;
+            const dirY = dy / distance;
+            this.x -= dirX * force * 5;
+            this.y -= dirY * force * 5;
+          }
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        }
+      }
+
+      let particles = [];
+      function initParticles() {
+        particles = [];
+        // Kullanıcı isteği: Noktacık yoğunluğu %10 daha artırıldı (Toplamda tabana göre ~%32 daha yoğun)
+        const baseCount = Math.floor((width * height) / 16000);
+        const count = Math.round(baseCount * 1.32);
+        for (let i = 0; i < count; i++) {
+          particles.push(new Particle());
+        }
+      }
+      initParticles();
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Bağlantı çizgileri (%10 daha belirgin ve net)
+        for (let a = 0; a < particles.length; a++) {
+          particles[a].update();
+          particles[a].draw();
+
+          for (let b = a + 1; b < particles.length; b++) {
+            const dist = Math.hypot(particles[a].x - particles[b].x, particles[a].y - particles[b].y);
+            if (dist < 98) {
+              ctx.beginPath();
+              ctx.moveTo(particles[a].x, particles[a].y);
+              ctx.lineTo(particles[b].x, particles[b].y);
+              ctx.strokeStyle = `rgba(212, 175, 55, ${0.135 * (1 - dist / 98)})`;
+              ctx.lineWidth = 0.9;
+              ctx.stroke();
+            }
+          }
+
+          // Mouse ile parçacıklar arasındaki bağlantı (%10 daha belirgin)
+          const mouseDist = Math.hypot(particles[a].x - mouse.x, particles[a].y - mouse.y);
+          if (mouseDist < 125) {
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = `rgba(212, 175, 55, ${0.28 * (1 - mouseDist / 125)})`;
+            ctx.lineWidth = 1.1;
+            ctx.stroke();
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+
+    // --------------------------------------------------------------------------
+    // SPOTLIGHT ANİMASYON MOTORU (Mouse Koordinatları)
+    // --------------------------------------------------------------------------
+    document.querySelectorAll('.spotlight-card').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
+
+    // Font ölçekleyici kaldırıldı - standart tipografi sıfırlandı
+    document.documentElement.style.fontSize = '';
+    try { localStorage.removeItem('edtech_font_scale'); } catch (e) {}
+
+    // --------------------------------------------------------------------------
+    // CANLI ARAMA KUTUSU
+    // --------------------------------------------------------------------------
+    const searchInput = document.getElementById('quickSearchInput');
+    const searchDropdown = document.getElementById('searchResultsDropdown');
+
+    const searchDirectory = [
+      // ÖĞRENCİ TAKİP SİSTEMİ
+      {
+        title: "Kazanım & Başarı Analizi",
+        desc: "Sınıf ve öğrenci bazlı net grafikleri, branş kazanım analizi ve başarı istatistikleri",
+        system: "Öğrenci Takip",
+        url: "ogrenci-takip/index.html",
+        icon: "bi-graph-up-arrow",
+        color: "var(--gold)",
+        tags: ["analiz", "grafik", "istatistik", "kazanım", "başarı", "net analizi", "rapor", "karne", "performans", "gelişim", "öğrenci takip"]
+      },
+      {
+        title: "Sınıflar & Öğrenci Listesi",
+        desc: "Yeni sınıf ve şube tanımlayın; Excel veya e-Okul'dan toplu öğrenci aktarın",
+        system: "Öğrenci Takip",
+        url: "ogrenci-takip/index.html",
+        icon: "bi-people-fill",
+        color: "var(--gold)",
+        tags: ["sınıf", "şube", "öğrenci", "liste", "aktar", "excel", "e-okul", "kayıt", "öğrenci ekle"]
+      },
+      {
+        title: "Deneme Sınavı & Not Girişi",
+        desc: "Deneme netlerini tek tek, toplu veya yapay zekâ metin taramasıyla anında girin",
+        system: "Öğrenci Takip",
+        url: "ogrenci-takip/index.html",
+        icon: "bi-journal-check",
+        color: "var(--gold)",
+        tags: ["deneme", "not", "not girişi", "sonuç", "net", "puan", "optik", "sınav sonucu", "deneme netleri"]
+      },
+      {
+        title: "Öğrenci Gelişim Karnesi (A4 PDF)",
+        desc: "Veliye verilebilir renkli başarı grafikli bireysel karne ve gelişim çıktısı",
+        system: "Öğrenci Takip",
+        url: "ogrenci-takip/index.html",
+        icon: "bi-mortarboard-fill",
+        color: "var(--gold)",
+        tags: ["karne", "veli", "rapor", "a4", "çıktı", "pdf", "gelişim", "öğrenci karnesi", "veli karnesi"]
+      },
+      {
+        title: "Haftalık Soru Takip Çizelgesi",
+        desc: "Öğrencilerin haftalık çözdüğü soru hedefleri ve branş ders takip tablosu",
+        system: "Öğrenci Takip",
+        url: "ogrenci-takip/index.html",
+        icon: "bi-pie-chart-fill",
+        color: "var(--gold)",
+        tags: ["çizelge", "soru takip", "ödev", "hedef", "haftalık", "çözülen soru", "çizelgesi"]
+      },
+      {
+        title: "Veri Yedekleme & Geri Yükleme",
+        desc: "Tüm sınıf ve öğrenci verilerinizi güvenle tek tıkla bilgisayarınıza dosya olarak indirin",
+        system: "Öğrenci Takip",
+        url: "ogrenci-takip/index.html",
+        icon: "bi-cloud-arrow-down-fill",
+        color: "#EC4899",
+        tags: ["yedek", "yedekle", "geri yükle", "indir", "kaydet", "json", "excel", "güvenlik", "aktarma"]
+      },
+
+      // EGEMEN'S TESTMAKER (SINAV HAZIRLAMA)
+      {
+        title: "Yeni MEB Sınavı & Test Hazırla",
+        desc: "Testmaker ile A4 fotokopiye hazır 2 sütunlu resmî MEB yazılı kağıdı dizin",
+        system: "Testmaker",
+        url: "egemens-testmaker/index.html",
+        icon: "bi-pencil-square",
+        color: "var(--teal)",
+        tags: ["sınav", "yazılı", "test", "meb", "a4", "kağıt", "soru", "ortak sınav", "dizgi", "klasik"]
+      },
+      {
+        title: "MEB Resmî Okul Anteti & Başlığı",
+        desc: "Okul adı, dönem, tarih ve puan kutulu mevzuata tam uyumlu sınav başlığı",
+        system: "Testmaker",
+        url: "egemens-testmaker/index.html",
+        icon: "bi-building",
+        color: "var(--teal)",
+        tags: ["antet", "başlık", "okul", "meb başlığı", "puan", "ad soyad", "resmi", "şablon"]
+      },
+      {
+        title: "Soru Kırpıcı & Resimden Soru Aktarma",
+        desc: "Test kitapları ve PDF kaynaklarından soru kırpıp doğrudan sınav kağıdına ekleyin",
+        system: "Testmaker",
+        url: "egemens-testmaker/index.html",
+        icon: "bi-crop",
+        color: "var(--teal)",
+        tags: ["kırp", "kırpıcı", "ocr", "ekran görüntüsü", "resim", "pdf", "soru ekle", "kitap"]
+      },
+      {
+        title: "Matematik & Fen Formül Editörü",
+        desc: "Köklü sayılar, kesirler, integraller ve fizik formüllerini KaTeX ile dizin",
+        system: "Testmaker",
+        url: "egemens-testmaker/index.html",
+        icon: "bi-calculator",
+        color: "var(--teal)",
+        tags: ["formül", "matematik", "fizik", "fen", "katex", "denklem", "sembol", "kesir", "kimya"]
+      },
+      {
+        title: "Cevap Anahtarı Oluşturucu",
+        desc: "Hazırladığınız sınav için otomatik A/B grubu optik cevap anahtarı çıkartın",
+        system: "Testmaker",
+        url: "egemens-testmaker/index.html",
+        icon: "bi-check2-square",
+        color: "var(--teal)",
+        tags: ["cevap anahtarı", "cevap", "anahtar", "optik", "a grubu", "b grubu", "çözüm"]
+      },
+
+      // PROMPT DEPOSU
+      {
+        title: "Pedagojik Öğretmen Promptları",
+        desc: "Ders planı, yazılı sorusu ve kavram yanılgısı için 9 özel yapay zekâ şablonu",
+        system: "Prompt Deposu",
+        url: "prompt-deposu/index.html",
+        icon: "bi-cpu-fill",
+        color: "var(--indigo)",
+        tags: ["prompt", "yapay zeka", "ai", "chatgpt", "gemini", "claude", "öğretmen promptu", "şablon"]
+      },
+      {
+        title: "MEB Ders Planı & Kazanım Promptu",
+        desc: "Müfredat kazanımlarına uygun haftalık ve günlük ders planı ürettirin",
+        system: "Prompt Deposu",
+        url: "prompt-deposu/index.html",
+        icon: "bi-calendar2-week",
+        color: "var(--indigo)",
+        tags: ["ders planı", "plan", "müfredat", "kazanım", "haftalık plan", "günlük plan", "ders"]
+      },
+      {
+        title: "Soru & Yazılı Üretici Promptu",
+        desc: "Bloom taksonomisine uygun zorluk dereceli çoktan seçmeli veya açık uçlu sorular",
+        system: "Prompt Deposu",
+        url: "prompt-deposu/index.html",
+        icon: "bi-patch-question",
+        color: "var(--indigo)",
+        tags: ["soru üret", "soru hazırlama", "bloom", "açık uçlu", "klasik soru", "yazılı sorusu", "üretici"]
+      },
+      {
+        title: "NotebookLM Sesli Podcast Promptu",
+        desc: "Ders notlarınızı iki öğretmenin konuştuğu sürükleyici sesli derse dönüştürün",
+        system: "Prompt Deposu",
+        url: "prompt-deposu/index.html",
+        icon: "bi-mic-fill",
+        color: "var(--indigo)",
+        tags: ["notebooklm", "podcast", "sesli", "seslendirme", "özet", "dinle", "sesli özet", "diyalog"]
+      },
+      {
+        title: "Rubrik & Puanlama Ölçeği Promptu",
+        desc: "Öğrenci proje ve performans ödevleri için şeffaf kriterli MEB dereceli ölçek",
+        system: "Prompt Deposu",
+        url: "prompt-deposu/index.html",
+        icon: "bi-card-checklist",
+        color: "var(--indigo)",
+        tags: ["rubrik", "ölçek", "puanlama", "değerlendirme", "proje", "ödev", "performans ölçeği"]
+      }
+    ];
+
+    if (searchInput && searchDropdown) {
+      function cleanText(str) {
+        return (str || '')
+          .toLocaleLowerCase('tr-TR')
+          .replace(/i̇/g, 'i')
+          .replace(/ı/g, 'i')
+          .replace(/ğ/g, 'g')
+          .replace(/ü/g, 'u')
+          .replace(/ş/g, 's')
+          .replace(/ö/g, 'o')
+          .replace(/ç/g, 'c')
+          .trim();
+      }
+
+      searchInput.addEventListener('input', (e) => {
+        const raw = e.target.value;
+        const qTr = raw.toLocaleLowerCase('tr-TR').trim();
+        const qClean = cleanText(raw);
+
+        if (qTr.length === 0) {
+          searchDropdown.classList.remove('active');
+          searchDropdown.innerHTML = '';
+          return;
+        }
+
+        const matches = searchDirectory.filter(item => {
+          const combined = `${item.title} ${item.desc} ${item.system} ${(item.tags || []).join(' ')}`;
+          const combinedTr = combined.toLocaleLowerCase('tr-TR');
+          const combinedClean = cleanText(combined);
+          return combinedTr.includes(qTr) || combinedClean.includes(qClean);
+        });
+
+        if (matches.length === 0) {
+          searchDropdown.innerHTML = `<div style="padding:16px;color:var(--text-dim);text-align:center;font-size:14px"><i class="bi bi-search" style="margin-right:6px"></i>Sonuç bulunamadı. "Analiz", "Deneme", "MEB Yazılısı", "Karne" veya "Prompt" yazabilirsiniz.</div>`;
+          searchDropdown.classList.add('active');
+          return;
+        }
+
+        searchDropdown.innerHTML = matches.map((item, idx) => `
+          <a href="${item.url}" class="search-result-item" data-search-idx="${idx}">
+            <div class="search-result-left">
+              <div class="search-result-icon" style="background:var(--bg-elevated);color:${item.color}">
+                <i class="bi ${item.icon}"></i>
+              </div>
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+                  <span class="search-result-title">${item.title}</span>
+                  <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--bg-elevated);color:var(--text-muted);border:1px solid var(--border-subtle);font-family:var(--font-mono)">${item.system}</span>
+                </div>
+                <div class="search-result-desc">${item.desc}</div>
+              </div>
+            </div>
+            <i class="bi bi-arrow-right" style="color:var(--text-dim);font-size:16px"></i>
+          </a>
+        `).join('');
+
+        searchDropdown.querySelectorAll('.search-result-item').forEach(el => {
+          el.addEventListener('click', () => {
+            const idx = parseInt(el.getAttribute('data-search-idx'), 10);
+            const targetItem = matches[idx];
+            if (targetItem) {
+              recordRecentActivity(targetItem.system, targetItem.title, targetItem.url, targetItem.icon, targetItem.color);
+            }
+          });
+        });
+
+        searchDropdown.classList.add('active');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+          searchDropdown.classList.remove('active');
+        }
+      });
+    }
+
+    // --------------------------------------------------------------------------
+    // YEREL HAFIZA (RECENT ACTIVITY) VE İŞLEM KAYIT MOTORU
+    // --------------------------------------------------------------------------
+    function recordRecentActivity(system, title, url, icon, color) {
+      try {
+        const item = {
+          system: system || 'Egemen\'s EdTech',
+          title: title || system,
+          url: url || '#',
+          icon: icon || 'bi-grid-fill',
+          color: color || 'var(--gold)',
+          timestamp: Date.now()
+        };
+        localStorage.setItem('edtech_recent_activity', JSON.stringify(item));
+        initRecentActivityStrip();
+      } catch (e) {}
+    }
+
+    function initRecentActivityStrip() {
+      const strip = document.getElementById('recentActivityStrip');
+      if (!strip) return;
+
+      if (sessionStorage.getItem('edtech_dismiss_recent') === '1') {
+        strip.style.display = 'none';
+        return;
+      }
+
+      let activity = null;
+      try {
+        const raw = localStorage.getItem('edtech_recent_activity');
+        if (raw) activity = JSON.parse(raw);
+      } catch (e) {}
+
+      // Eğer henüz tıklama geçmişi yoksa, alt sistemlerde gerçek kayıtlı veri var mı kontrol et
+      if (!activity) {
+        try {
+          const ogrenciRaw = localStorage.getItem('ogrenciTakip');
+          if (ogrenciRaw) {
+            const db = JSON.parse(ogrenciRaw);
+            if (db && db.siniflar && db.siniflar.length > 0) {
+              activity = {
+                system: 'Öğrenci Takip Sistemi',
+                title: `${db.siniflar.length} Sınıf ve ${db.ogrenciler ? db.ogrenciler.length : 0} Öğrenci Kayıtlı`,
+                url: 'ogrenci-takip/index.html',
+                icon: 'bi-people-fill',
+                color: 'var(--gold)',
+                timestamp: Date.now() - 1000 * 60 * 30
+              };
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (!activity) {
+        strip.style.display = 'none';
+        return;
+      }
+
+      const diffMin = Math.floor((Date.now() - (activity.timestamp || Date.now())) / 60000);
+      let timeStr = 'Bugün';
+      if (diffMin < 2) timeStr = 'Az önce';
+      else if (diffMin < 60) timeStr = `${diffMin} dakika önce`;
+      else if (diffMin < 1440) timeStr = `${Math.floor(diffMin / 60)} saat önce`;
+      else timeStr = `${Math.floor(diffMin / 1440)} gün önce`;
+
+      const titleEl = document.getElementById('recentActivityTitle');
+      const timeEl = document.getElementById('recentActivityTime');
+      const linkEl = document.getElementById('recentActivityLink');
+      const dismissBtn = document.getElementById('recentDismissBtn');
+
+      if (titleEl) titleEl.textContent = activity.system;
+      if (timeEl) timeEl.textContent = timeStr;
+      if (linkEl) {
+        linkEl.href = activity.url;
+        linkEl.onclick = () => {
+          recordRecentActivity(activity.system, activity.title, activity.url, activity.icon, activity.color);
+        };
+      }
+
+      if (dismissBtn) {
+        dismissBtn.onclick = () => {
+          sessionStorage.setItem('edtech_dismiss_recent', '1');
+          strip.style.opacity = '0';
+          strip.style.transform = 'translateY(-6px)';
+          strip.style.transition = 'all 0.25s ease';
+          setTimeout(() => { strip.style.display = 'none'; }, 250);
+        };
+      }
+
+      strip.style.display = 'flex';
+    }
+
+    // Portaldeki sistem bağlantılarını dinle ve tıklandığında son oturum olarak kaydet
+    document.querySelectorAll('a[href*="ogrenci-takip"], a[href*="egemens-testmaker"], a[href*="prompt-deposu"]').forEach(a => {
+      a.addEventListener('click', () => {
+        const href = a.getAttribute('href');
+        let sys = 'Egemen\'s EdTech';
+        let icon = 'bi-grid-fill';
+        let color = 'var(--gold)';
+        if (href.includes('ogrenci-takip')) {
+          sys = 'Öğrenci Takip Sistemi';
+          icon = 'bi-people-fill';
+          color = 'var(--gold)';
+        } else if (href.includes('egemens-testmaker')) {
+          sys = 'Egemen\'s Testmaker';
+          icon = 'bi-pencil-square';
+          color = 'var(--teal)';
+        } else if (href.includes('prompt-deposu')) {
+          sys = 'Prompt Deposu';
+          icon = 'bi-cpu-fill';
+          color = 'var(--indigo)';
+        }
+        recordRecentActivity(sys, sys, href, icon, color);
+      });
+    });
+
+    initRecentActivityStrip();
+
+    // --------------------------------------------------------------------------
+    // EVRENSEL KOMUT PALETİ (LINEAR / MAC STİLİ CTRL + K)
+    // --------------------------------------------------------------------------
+    const cmdBackdrop = document.getElementById('commandPaletteBackdrop');
+    const cmdInput = document.getElementById('cmdPaletteInput');
+    const cmdCloseBtn = document.getElementById('cmdCloseBtn');
+    const cmdResults = document.getElementById('cmdPaletteResults');
+    const cmdTrigger = document.getElementById('cmdPaletteTrigger');
+    const cmdFilterChips = document.querySelectorAll('.cmd-filter-chip');
+
+    let currentCmdFilter = 'all';
+    let cmdMatches = [];
+    let selectedCmdIndex = 0;
+
+    function openCommandPalette() {
+      if (!cmdBackdrop) return;
+      cmdBackdrop.classList.add('active');
+      cmdBackdrop.setAttribute('aria-hidden', 'false');
+      if (cmdInput) {
+        cmdInput.value = '';
+        setTimeout(() => cmdInput.focus(), 60);
+      }
+      currentCmdFilter = 'all';
+      cmdFilterChips.forEach(c => c.classList.toggle('active', c.getAttribute('data-filter') === 'all'));
+      renderCommandResults('');
+    }
+
+    function closeCommandPalette() {
+      if (!cmdBackdrop) return;
+      cmdBackdrop.classList.remove('active');
+      cmdBackdrop.setAttribute('aria-hidden', 'true');
+    }
+
+    function isPaletteActive() {
+      return cmdBackdrop && cmdBackdrop.classList.contains('active');
+    }
+
+    if (cmdTrigger) {
+      cmdTrigger.addEventListener('click', openCommandPalette);
+    }
+    if (cmdCloseBtn) {
+      cmdCloseBtn.addEventListener('click', closeCommandPalette);
+    }
+    if (cmdBackdrop) {
+      cmdBackdrop.addEventListener('click', (e) => {
+        if (e.target === cmdBackdrop) closeCommandPalette();
+      });
+    }
+
+    cmdFilterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        cmdFilterChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentCmdFilter = chip.getAttribute('data-filter');
+        renderCommandResults(cmdInput ? cmdInput.value : '');
+        if (cmdInput) cmdInput.focus();
+      });
+    });
+
+    function renderCommandResults(query) {
+      if (!cmdResults) return;
+      const raw = query || '';
+      const qTr = raw.toLocaleLowerCase('tr-TR').trim();
+      const qClean = cleanText(raw);
+
+      cmdMatches = searchDirectory.filter(item => {
+        if (currentCmdFilter !== 'all' && item.system !== currentCmdFilter) return false;
+        if (!qTr) return true;
+        const combined = `${item.title} ${item.desc} ${item.system} ${(item.tags || []).join(' ')}`;
+        const combinedTr = combined.toLocaleLowerCase('tr-TR');
+        const combinedClean = cleanText(combined);
+        return combinedTr.includes(qTr) || combinedClean.includes(qClean);
+      });
+
+      selectedCmdIndex = 0;
+
+      if (cmdMatches.length === 0) {
+        cmdResults.innerHTML = `
+          <div style="padding:32px 16px;text-align:center;color:var(--text-dim);font-size:14px">
+            <i class="bi bi-search" style="font-size:26px;display:block;margin-bottom:10px;opacity:0.5"></i>
+            Eşleşen araç veya işlem bulunamadı.<br>
+            <span style="font-size:12.5px;color:var(--text-muted)">"Analiz", "MEB Yazılısı", "Sınıf", "Prompt" veya "Deneme" aramayı deneyin.</span>
+          </div>
+        `;
+        return;
+      }
+
+      cmdResults.innerHTML = cmdMatches.map((item, idx) => `
+        <a href="${item.url}" class="cmd-result-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}">
+          <div class="search-result-left">
+            <div class="search-result-icon" style="background:var(--bg-elevated);color:${item.color}">
+              <i class="bi ${item.icon}"></i>
+            </div>
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+                <span class="search-result-title">${item.title}</span>
+                <span style="font-size:11px;padding:2px 7px;border-radius:4px;background:var(--bg-elevated);color:var(--text-muted);border:1px solid var(--border-subtle);font-family:var(--font-mono)">${item.system}</span>
+              </div>
+              <div class="search-result-desc">${item.desc}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="cmd-shortcut-badge" style="font-size:10px;opacity:0.8">Git ↵</span>
+            <i class="bi bi-arrow-right" style="color:var(--text-dim)"></i>
+          </div>
+        </a>
+      `).join('');
+
+      cmdResults.querySelectorAll('.cmd-result-item').forEach(el => {
+        el.addEventListener('click', () => {
+          const idx = parseInt(el.getAttribute('data-index'), 10);
+          const item = cmdMatches[idx];
+          if (item) {
+            recordRecentActivity(item.system, item.title, item.url, item.icon, item.color);
+          }
+          closeCommandPalette();
+        });
+      });
+    }
+
+    if (cmdInput) {
+      cmdInput.addEventListener('input', (e) => {
+        renderCommandResults(e.target.value);
+      });
+    }
+
+    // Klavye Kısayolları (Ctrl+K, Esc, Ok Tuşları, Enter)
+    window.addEventListener('keydown', (e) => {
+      // Ctrl + K veya Cmd + K
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (isPaletteActive()) {
+          closeCommandPalette();
+        } else {
+          openCommandPalette();
+        }
+        return;
+      }
+
+      if (!isPaletteActive()) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeCommandPalette();
+        return;
+      }
+
+      if (cmdMatches.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedCmdIndex = (selectedCmdIndex + 1) % cmdMatches.length;
+        updateSelectedCmdItem();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedCmdIndex = (selectedCmdIndex - 1 + cmdMatches.length) % cmdMatches.length;
+        updateSelectedCmdItem();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const activeItem = cmdMatches[selectedCmdIndex];
+        if (activeItem) {
+          recordRecentActivity(activeItem.system, activeItem.title, activeItem.url, activeItem.icon, activeItem.color);
+          closeCommandPalette();
+          window.location.href = activeItem.url;
+        }
+      }
+    });
+
+    function updateSelectedCmdItem() {
+      const items = cmdResults.querySelectorAll('.cmd-result-item');
+      items.forEach((item, idx) => {
+        const isSel = idx === selectedCmdIndex;
+        item.classList.toggle('selected', isSel);
+        if (isSel) {
+          item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      });
+    }
+
+    // --------------------------------------------------------------------------
+    // CANLI VİTRİN SEKMELERİ & KATEX FORMÜL DERLEYİCİ
+    // --------------------------------------------------------------------------
+    const previewNavBtns = document.querySelectorAll('.showcase-nav-btn');
+    const previewPanels = {
+      sinav: document.getElementById('preview-sinav'),
+      karne: document.getElementById('preview-karne'),
+      prompt: document.getElementById('preview-prompt')
+    };
+
+    previewNavBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        previewNavBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const key = btn.getAttribute('data-preview');
+        Object.keys(previewPanels).forEach(k => {
+          if (previewPanels[k]) {
+            previewPanels[k].classList.toggle('active', k === key);
+          }
+        });
+
+        if (key === 'sinav') {
+          renderTestmakerMockupKaTeX();
+        }
+      });
+    });
+
+    function renderTestmakerMockupKaTeX() {
+      const q1 = document.getElementById('katexQuestion1');
+      const q2 = document.getElementById('katexQuestion2');
+      if (window.katex) {
+        if (q1) {
+          try {
+            window.katex.render('\\Delta x = \\int_{0}^{4} (3t^2 - 4t + 5)\\,dt', q1, {
+              throwOnError: false,
+              displayMode: true
+            });
+          } catch(e) {}
+        }
+        if (q2) {
+          try {
+            window.katex.render('F(t) = 12 - 2t \\implies a(t) = \\frac{F(t)}{m} = \\frac{12 - 2t}{3}', q2, {
+              throwOnError: false,
+              displayMode: true
+            });
+          } catch(e) {}
+        }
+      }
+    }
+    setTimeout(renderTestmakerMockupKaTeX, 250);
+
+    // Prompt Kopyalama
+    const btnCopyMockup = document.getElementById('btnCopyMockupPrompt');
+    if (btnCopyMockup) {
+      btnCopyMockup.addEventListener('click', () => {
+        const text = document.getElementById('mockupPromptCode').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          btnCopyMockup.innerHTML = '<i class="bi bi-check2"></i> Kopyalandı!';
+          btnCopyMockup.style.background = 'var(--teal)';
+          setTimeout(() => {
+            btnCopyMockup.innerHTML = '<i class="bi bi-clipboard"></i> Kopyala';
+            btnCopyMockup.style.background = '';
+          }, 2000);
+        });
+      });
+    }
+
+    // --------------------------------------------------------------------------
+    // SSS AKORDİYON
+    // --------------------------------------------------------------------------
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.parentElement;
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+        if (!isOpen) {
+          item.classList.add('open');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
