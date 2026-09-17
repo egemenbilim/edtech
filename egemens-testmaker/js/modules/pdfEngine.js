@@ -2,7 +2,7 @@ import { questions, S, LETTERS } from '../state.js';
 import { $, parseTags, booklet, jpegBytes, defaultBaseName, todayStr } from '../utils.js';
 import { drawCustomHeader, getActiveCustomTemplate } from './customTemplate.js';
 
-export const SCALE = 6;
+export const SCALE = 8;
 export const FONT = "'Noto Sans', 'DejaVu Sans', Arial, sans-serif";
 export const PX = (mm) => mm * SCALE;
 export const PT = (pt) => (pt * 25.4 / 72) * SCALE;
@@ -606,14 +606,38 @@ export function mebLogoVisible() {
 }
 
 export function getMebLogoBox(M) {
-  const defaultX = M + 2;
-  const defaultY = M + 2;
+  const [PW] = pageSizeMM();
+  let defaultX = M + 2;
+  let defaultY = M + 2;
+  let defaultW = S.logoW || 22;
+  let defaultH = S.logoH || 22;
+
+  if (S.testType === 'yaprak') {
+    const d = S.headerDesign || 'klasik';
+    if (d === 'kusak') {
+      defaultX = M + 1;
+      defaultY = M + 0.5;
+      defaultW = 14;
+      defaultH = 14;
+    } else if (d === 'egim') {
+      defaultX = M + 3;
+      defaultY = M + 2.5;
+      defaultW = 17;
+      defaultH = 17;
+    } else if (d === 'konu_ozeti') {
+      defaultX = PW - M - 18;
+      defaultY = M + 1.5;
+      defaultW = 15;
+      defaultH = 15;
+    }
+  }
+
   return {
     show: mebLogoVisible(),
     x: S.logoX != null ? S.logoX : defaultX,
     y: S.logoY != null ? S.logoY : defaultY,
-    w: S.logoW || 22,
-    h: S.logoH || 22
+    w: S.logoW || defaultW,
+    h: S.logoH || defaultH
   };
 }
 
@@ -622,7 +646,31 @@ export function activeLogoAspect() {
   if (choice === 'custom' && customLogoImg && customLogoImg.naturalWidth && customLogoImg.naturalHeight) {
     return customLogoImg.naturalWidth / customLogoImg.naturalHeight;
   }
+  if (choice === 'meb' && mebLogoImg && mebLogoImg.naturalWidth && mebLogoImg.naturalHeight) {
+    return mebLogoImg.naturalWidth / mebLogoImg.naturalHeight;
+  }
   return 1;
+}
+
+export function roundRect(ctx, x, y, w, h, r) {
+  if (typeof r === 'number') r = [r, r, r, r];
+  const [tl, tr, br, bl] = r.length === 2 ? [r[0], r[1], r[0], r[1]] : (r.length === 4 ? r : [r[0], r[0], r[0], r[0]]);
+  if (ctx.roundRect) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, [tl, tr, br, bl]);
+    return;
+  }
+  ctx.beginPath();
+  ctx.moveTo(x + tl, y);
+  ctx.lineTo(x + w - tr, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + tr);
+  ctx.lineTo(x + w, y + h - br);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+  ctx.lineTo(x + bl, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - bl);
+  ctx.lineTo(x, y + tl);
+  ctx.quadraticCurveTo(x, y, x + tl, y);
+  ctx.closePath();
 }
 
 export function fixLogoAspect(refreshFn) {
@@ -831,6 +879,138 @@ export function getMEBHeaderItems(ctx, PW, PH, M, t, version) {
   };
 }
 
+export function getKonuHeaderItems(ctx, PW, PH, M, t, version) {
+  const design = S.headerDesign || 'klasik';
+  const schoolName = (S.school || '').trim().toLocaleUpperCase('tr-TR');
+  const testName = (t?.clean || S.title || '').trim().toLocaleUpperCase('tr-TR');
+  const ustBilgi = (S.lesson || '').trim();
+  const rawKonuKapsami = (S.konuKapsami || '').trim();
+  const topics = rawKonuKapsami ? rawKonuKapsami.split(',').map((s) => s.trim()).filter(Boolean) : [];
+  const boxW = PW - 2 * M;
+  const p = S.mebPos || {};
+
+  const make = (id, text, size, bold, def, align = 'left') => {
+    const x = p[id]?.x != null ? p[id].x : def.x;
+    const y = p[id]?.y != null ? p[id].y : def.y;
+    return { id, text, size, bold, align, x, y, w: def.w, h: def.h };
+  };
+
+  const items = {};
+  ctx.save();
+
+  if (design === 'egim') {
+    const hasActiveLogo = mebLogoVisible();
+    const logoOffset = hasActiveLogo ? 21 : 0;
+    const gradeText = (S.mebGrade ? S.mebGrade + '. SINIF' : (ustBilgi || '')).toLocaleUpperCase('tr-TR');
+    const badgeTitle = testName || 'KONU DENEMESİ';
+    const badgeW = Math.min(boxW * 0.45, Math.max(36, badgeTitle.length * 2.3 + 10));
+
+    if (gradeText) {
+      setFont(ctx, { size: PT(9.5), bold: true });
+      const w = ctx.measureText(gradeText).width / SCALE;
+      items.kdLesson = make('kdLesson', gradeText, 9.5, true, { x: M + 4 + logoOffset, y: M + 6.5, w: Math.max(w, 20), h: 4.8 });
+    }
+
+    items.kdTitle = make('kdTitle', badgeTitle, 8.5, true, { x: M + 4 + logoOffset, y: M + (gradeText ? 12 : 8), w: badgeW, h: 8 }, 'center');
+
+    if (schoolName) {
+      setFont(ctx, { size: PT(9.5), bold: true });
+      const w = ctx.measureText(schoolName).width / SCALE;
+      items.kdSchool = make('kdSchool', schoolName, 9.5, true, { x: PW - M - 5 - w, y: M + 7, w, h: 4.8 }, 'right');
+    }
+
+    if (topics.length) {
+      const topicStr = topics.map(t => '• ' + t).join('   ');
+      setFont(ctx, { size: PT(7.8), italic: true });
+      const w = Math.min(boxW * 0.40, ctx.measureText(topicStr).width / SCALE);
+      const rY = schoolName ? M + 13.2 : M + 7;
+      items.kdTopics = make('kdTopics', topicStr, 7.8, false, { x: PW - M - 5 - w, y: rY, w, h: 4.4 }, 'right');
+    }
+  } else if (design === 'kusak') {
+    const ribbonH = 16;
+    const medR = 8.5;
+    const cx = M + medR;
+    const cy = M + ribbonH / 2;
+    const tTitle = testName || 'KONU DENEMESİ';
+
+    setFont(ctx, { size: PT(9.5), bold: true });
+    const wTitle = ctx.measureText(tTitle).width / SCALE;
+    items.kdTitle = make('kdTitle', tTitle, 9.5, true, { x: cx + medR + 4, y: cy + (topics.length ? -1.5 : 2) - 3.5, w: wTitle, h: 4.8 });
+
+    if (topics.length) {
+      const topicStr = topics.map(t => '• ' + t).join('   ');
+      setFont(ctx, { size: PT(7.5), italic: true });
+      const wTopics = ctx.measureText(topicStr).width / SCALE;
+      items.kdTopics = make('kdTopics', topicStr, 7.5, false, { x: cx + medR + 4, y: cy + 4.2 - 3, w: wTopics, h: 4.2 });
+    }
+
+    if (schoolName) {
+      setFont(ctx, { size: PT(9), bold: true });
+      const wSchool = ctx.measureText(schoolName).width / SCALE;
+      items.kdSchool = make('kdSchool', schoolName, 9, true, { x: PW - M - 5 - wSchool, y: cy + (S.groups > 1 ? -1.5 : 2) - 3.5, w: wSchool, h: 4.8 }, 'right');
+    }
+  } else if (design === 'konu_ozeti') {
+    const topH = 14;
+    const tabW = Math.max(30, schoolName ? Math.min(65, schoolName.length * 2.2 + 10) : 30);
+    const tTitle = testName || 'KONU DENEMESİ';
+
+    if (schoolName) {
+      items.kdSchool = make('kdSchool', schoolName, 7.5, true, { x: M + 2, y: M + 4, w: tabW - 4, h: 8 }, 'center');
+    }
+
+    // Sayfanın tam yatay ortası (PW / 2)
+    setFont(ctx, { size: PT(12), bold: true });
+    const wTitle = ctx.measureText(tTitle).width / SCALE;
+    items.kdTitle = make('kdTitle', tTitle, 12, true, { x: PW / 2 - wTitle / 2, y: M + 4.5, w: wTitle, h: 6 }, 'center');
+
+    const bandY = M + 2 + topH + 1.5;
+    const topicInlineStr = topics.length ? topics.map(t => '• ' + t).join('    ') : '• Konu Kapsamı Belirtilmedi';
+    setFont(ctx, { size: PT(8), italic: true });
+    const wTopics = ctx.measureText(topicInlineStr).width / SCALE;
+    items.kdTopics = make('kdTopics', topicInlineStr, 8, false, { x: M + 4, y: bandY + 1, w: Math.min(boxW - 30, wTopics), h: 4.8 });
+
+    const summaryText = (S.konuOzetiText || '').trim();
+    if (summaryText) {
+      const lines = summaryText.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length) {
+        const cardH = 6 + 4 + lines.length * 4.2;
+        items.kdSummary = make('kdSummary', '📌 KONU ÖZETİ', 7.5, true, { x: M, y: bandY + 9, w: boxW, h: cardH });
+      }
+    }
+  } else {
+    // klasik
+    const headerTop = M + 2;
+    const tTitle = testName || 'KONU DENEMESİ';
+
+    if (schoolName) {
+      setFont(ctx, { size: PT(12), bold: true });
+      const wSchool = ctx.measureText(schoolName).width / SCALE;
+      items.kdSchool = make('kdSchool', schoolName, 12, true, { x: M, y: headerTop, w: wSchool, h: 5.5 });
+    }
+
+    setFont(ctx, { size: PT(14), bold: true });
+    const wTitle = ctx.measureText(tTitle).width / SCALE;
+    items.kdTitle = make('kdTitle', tTitle, 14, true, { x: PW - M - wTitle, y: headerTop, w: wTitle, h: 6 }, 'right');
+
+    let nextLineY = headerTop + 9.5;
+    if (ustBilgi) {
+      setFont(ctx, { size: PT(8.5), bold: true });
+      const wUst = ctx.measureText(ustBilgi).width / SCALE;
+      items.kdLesson = make('kdLesson', ustBilgi, 8.5, true, { x: M, y: nextLineY - 3.5, w: wUst, h: 4.5 });
+      nextLineY += 5;
+    }
+    if (topics.length) {
+      const topicStr = topics.map(t => '• ' + t).join('   ');
+      setFont(ctx, { size: PT(8), italic: true });
+      const wTop = ctx.measureText(topicStr).width / SCALE;
+      items.kdTopics = make('kdTopics', topicStr, 8, false, { x: M, y: nextLineY - 3.5, w: Math.min(boxW, wTop), h: 4.5 });
+    }
+  }
+
+  ctx.restore();
+  return items;
+}
+
 export function drawMEBHeader(ctx, PW, PH, M, t, version, first) {
   const logoBox = getMebLogoBox(M);
   if (logoBox.show) drawMEBLogo(ctx, logoBox.x, logoBox.y, logoBox.w, logoBox.h);
@@ -947,34 +1127,278 @@ export function drawHeader(ctx, PW, PH, M, t, version, title, first) {
     return y;
   }
   if (S.testType === 'yaprak') {
-    const headerTop = first ? M : M + 3;
-    drawText(ctx, (S.school || 'BİLİM AKADEMİ').toLocaleUpperCase('tr-TR'), M, headerTop + 4, { size: PT(14), bold: true, color: '#2c3e50' });
-    drawText(ctx, title.toLocaleUpperCase('tr-TR'), PW - M, headerTop + 4, { size: PT(16), bold: true, align: 'right', color: '#000' });
-    if (!t.hideVersion && S.groups > 1) {
-      drawText(ctx, version + ' KİTAPÇIĞI', PW - M, headerTop + 10, { size: PT(7), bold: true, align: 'right', color: '#555' });
+    const design = S.headerDesign || 'klasik';
+    const accent = S.themeColor || '#1d4ed8';
+    const schoolName = (S.school || '').trim().toLocaleUpperCase('tr-TR');
+    const testName = (title || S.title || '').trim().toLocaleUpperCase('tr-TR');
+    const ustBilgi = (S.lesson || '').trim();
+    const rawKonuKapsami = (S.konuKapsami || '').trim();
+    const topics = rawKonuKapsami ? rawKonuKapsami.split(',').map((s) => s.trim()).filter(Boolean) : [];
+
+    if (!first) {
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = Math.max(1, 0.3 * SCALE);
+      ctx.beginPath();
+      ctx.moveTo(PX(M), PX(M + 5));
+      ctx.lineTo(PX(PW - M), PX(M + 5));
+      ctx.stroke();
+      if (schoolName) drawText(ctx, schoolName, M, M + 4, { size: PT(7.5), color: '#475569' });
+      drawText(ctx, testName || 'KONU DENEMESİ', PW / 2, M + 4, { size: PT(8), bold: true, align: 'center', color: '#1e293b' });
+      if (!t.hideVersion && S.groups > 1) drawText(ctx, 'Kitapçık: ' + version, PW - M, M + 4, { size: PT(7.5), align: 'right', color: '#64748b' });
+      return M + 8;
     }
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = Math.max(1.5, 0.5 * SCALE);
-    ctx.beginPath();
-    ctx.moveTo(PX(M), PX(headerTop + 13));
-    ctx.lineTo(PX(PW - M), PX(headerTop + 13));
-    ctx.stroke();
-    let currentY = headerTop + 18;
-    if (first && S.konuKapsami) {
-      const topics = S.konuKapsami.split(',').map((s) => s.trim()).filter(Boolean);
-      if (topics.length) {
-        const topicText = '> ' + topics.join(' > ');
-        ctx.fillStyle = '#f1f3f5';
-        ctx.fillRect(PX(M), PX(currentY), PX(PW - 2 * M), PX(8));
-        ctx.strokeStyle = '#e9ecef';
-        ctx.lineWidth = Math.max(1, 0.25 * SCALE);
-        ctx.strokeRect(PX(M), PX(currentY), PX(PW - 2 * M), PX(8));
-        drawText(ctx, topicText, PW / 2, currentY + 5, { size: PT(9), bold: true, align: 'center', color: '#333' });
-        currentY += 12;
+
+    const kd = getKonuHeaderItems(ctx, PW, PH, M, t, version);
+    let currentY = M;
+
+    if (design === 'egim') {
+      // 1. EĞİM BAŞLIK TASARIMI
+      const boxH = 24;
+      const boxW = PW - 2 * M;
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = Math.max(1, 0.35 * SCALE);
+      roundRect(ctx, PX(M), PX(M), PX(boxW), PX(boxH), 7);
+      ctx.fill();
+      ctx.stroke();
+
+      // Köşeli Renk Eğim Poligonu
+      ctx.save();
+      roundRect(ctx, PX(M), PX(M), PX(boxW), PX(boxH), 7);
+      ctx.clip();
+      ctx.fillStyle = accent;
+      ctx.beginPath();
+      ctx.moveTo(PX(M + boxW * 0.50), PX(M));
+      ctx.lineTo(PX(M + boxW), PX(M));
+      ctx.lineTo(PX(M + boxW), PX(M + boxH));
+      ctx.lineTo(PX(M + boxW * 0.64), PX(M + boxH));
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // Sol Logo (Varsa)
+      const hasActiveLogo = mebLogoVisible();
+      if (hasActiveLogo) {
+        const logoImg = S.logoChoice === 'custom' ? customLogoImg : mebLogoImg;
+        if (logoImg) {
+          ctx.drawImage(logoImg, PX(M + 3), PX(M + 3.5), PX(17), PX(17));
+        } else {
+          drawMEBLogo(ctx, M + 3, M + 3.5, 17, 17);
+        }
       }
+
+      // Sol Üst Bilgi (Sınıf & Ders veya Üst Bilgi)
+      if (kd.kdLesson && kd.kdLesson.text) {
+        drawText(ctx, kd.kdLesson.text, kd.kdLesson.x, kd.kdLesson.y + 3.5, { size: PT(kd.kdLesson.size), bold: true, color: '#0f172a' });
+      }
+
+      // Sol Alt: Kesikli Çerçeveli Test Başlığı (Rozet)
+      if (kd.kdTitle && kd.kdTitle.text) {
+        const it = kd.kdTitle;
+        ctx.save();
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = Math.max(1.2, 0.4 * SCALE);
+        ctx.setLineDash([3, 2]);
+        roundRect(ctx, PX(it.x), PX(it.y), PX(it.w), PX(it.h), 3.5);
+        ctx.stroke();
+        ctx.restore();
+        drawText(ctx, it.text, it.x + it.w / 2, it.y + 5.5, { size: PT(it.size), bold: true, align: 'center', color: '#0f172a' });
+      }
+
+      // Sağ Taraf: Okul Adı ve Hemen Altında Konu Kapsamı (Diyagonal Renkli Bölgede)
+      if (kd.kdSchool && kd.kdSchool.text) {
+        drawText(ctx, kd.kdSchool.text, kd.kdSchool.x, kd.kdSchool.y + 3.8, { size: PT(kd.kdSchool.size), bold: true, color: '#ffffff' });
+      }
+      if (kd.kdTopics && kd.kdTopics.text) {
+        drawText(ctx, kd.kdTopics.text, kd.kdTopics.x, kd.kdTopics.y + 3.5, { size: PT(kd.kdTopics.size), italic: true, color: 'rgba(255,255,255,0.95)', maxW: PX(kd.kdTopics.w) });
+      }
+      if (!t.hideVersion && S.groups > 1) {
+        drawText(ctx, version + ' KİTAPÇIĞI', PW - M - 5, M + 21, { size: PT(7), bold: true, align: 'right', color: 'rgba(255,255,255,0.85)' });
+      }
+
+      currentY = M + boxH + 3.5;
+    } else if (design === 'kusak') {
+      // 2. KUŞAK BAŞLIK TASARIMI
+      const ribbonH = 16;
+      const ribbonW = PW - 2 * M;
+      const medR = 8.5;
+
+      ctx.fillStyle = accent;
+      roundRect(ctx, PX(M + medR), PX(M), PX(ribbonW - medR), PX(ribbonH), 5);
+      ctx.fill();
+
+      // Solda Kabarık Logo Madalyonu
+      const cx = M + medR;
+      const cy = M + ribbonH / 2;
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.2)';
+      ctx.shadowBlur = 5;
+      ctx.shadowOffsetY = 1.5;
+      ctx.beginPath();
+      ctx.arc(PX(cx), PX(cy), PX(medR), 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.restore();
+
+      ctx.beginPath();
+      ctx.arc(PX(cx), PX(cy), PX(medR), 0, Math.PI * 2);
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = Math.max(1.6, 0.5 * SCALE);
+      ctx.stroke();
+
+      const activeLogo = (S.logoChoice === 'custom' && customLogoImg) ? customLogoImg : (mebLogoImg && S.logoChoice !== 'none' ? mebLogoImg : null);
+      if (activeLogo) {
+        const logoDia = (medR - 1.8) * 2;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(PX(cx), PX(cy), PX(medR - 1.2), 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(activeLogo, PX(cx - logoDia / 2), PX(cy - logoDia / 2), PX(logoDia), PX(logoDia));
+        ctx.restore();
+      } else if (schoolName) {
+        const initials = ((schoolName).match(/\b\w/g) || ['S']).slice(0, 2).join('');
+        drawText(ctx, initials, cx, cy + 2.2, { size: PT(9.5), bold: true, align: 'center', color: accent });
+      }
+
+      // Kuşak Yazıları (Test Adı & Konu Kapsamı Solda, Okul Sağda)
+      if (kd.kdTitle && kd.kdTitle.text) {
+        drawText(ctx, kd.kdTitle.text, kd.kdTitle.x, kd.kdTitle.y + 3.8, { size: PT(kd.kdTitle.size), bold: true, color: '#ffffff' });
+      }
+      if (kd.kdTopics && kd.kdTopics.text) {
+        drawText(ctx, kd.kdTopics.text, kd.kdTopics.x, kd.kdTopics.y + 3.5, { size: PT(kd.kdTopics.size), italic: true, color: 'rgba(255,255,255,0.92)' });
+      }
+      if (kd.kdSchool && kd.kdSchool.text) {
+        drawText(ctx, kd.kdSchool.text, kd.kdSchool.x, kd.kdSchool.y + 3.8, { size: PT(kd.kdSchool.size), bold: true, color: '#ffffff' });
+      }
+      if (!t.hideVersion && S.groups > 1) {
+        drawText(ctx, version + ' Kitapçığı', PW - M - 5, cy + 4.5, { size: PT(7), bold: true, align: 'right', color: 'rgba(255,255,255,0.9)' });
+      }
+
+      currentY = M + ribbonH + 3.5;
+    } else if (design === 'konu_ozeti') {
+      // 3. KONU ÖZETİ BAŞLIK TASARIMI
+      const topH = 14;
+      const boxW = PW - 2 * M;
+
+      // Üst Renk Çizgisi
+      ctx.fillStyle = accent;
+      ctx.fillRect(PX(M), PX(M), PX(boxW), PX(1.5));
+
+      // Sol Çentikli Rozet ("Konu denemesi yazan yerde Okul / Kurum yer alsın")
+      const tabW = Math.max(30, schoolName ? Math.min(65, schoolName.length * 2.2 + 10) : 30);
+      if (schoolName) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(PX(M), PX(M + 2));
+        ctx.lineTo(PX(M + tabW), PX(M + 2));
+        ctx.lineTo(PX(M + tabW * 0.84), PX(M + 2 + topH));
+        ctx.lineTo(PX(M), PX(M + 2 + topH));
+        ctx.closePath();
+        ctx.fillStyle = accent;
+        ctx.fill();
+        ctx.restore();
+
+        if (kd.kdSchool && kd.kdSchool.text) {
+          drawText(ctx, kd.kdSchool.text, kd.kdSchool.x + kd.kdSchool.w / 2, kd.kdSchool.y + 5, { size: PT(kd.kdSchool.size), bold: true, align: 'center', color: '#ffffff', maxW: PX(tabW - 6) });
+        }
+      }
+
+      // Üst Bilgi Yazan yere ise Test Adı yazsın (Sayfanın tam ortasında!)
+      if (kd.kdTitle && kd.kdTitle.text) {
+        drawText(ctx, kd.kdTitle.text, kd.kdTitle.x + kd.kdTitle.w / 2, kd.kdTitle.y + 4.5, { size: PT(kd.kdTitle.size), bold: true, align: 'center', color: accent });
+      }
+
+      // Sağda Logo (Varsa)
+      const hasActiveLogo = mebLogoVisible();
+      if (hasActiveLogo) {
+        const logoImg = S.logoChoice === 'custom' ? customLogoImg : mebLogoImg;
+        if (logoImg) {
+          ctx.drawImage(logoImg, PX(PW - M - 18), PX(M + 1.5), PX(15), PX(15));
+        } else {
+          drawMEBLogo(ctx, PW - M - 18, M + 1.5, 15, 15);
+        }
+      }
+
+      // Test Adı yazan renkli banta: Konu Kapsamı madde halinde yan yana ve italik (alt alta değil)
+      const bandY = M + 2 + topH + 1.5;
+      ctx.fillStyle = accent;
+      ctx.fillRect(PX(M), PX(bandY), PX(boxW), PX(6.5));
+      if (kd.kdTopics && kd.kdTopics.text) {
+        drawText(ctx, kd.kdTopics.text, kd.kdTopics.x, kd.kdTopics.y + 3.6, { size: PT(kd.kdTopics.size), italic: true, color: '#ffffff', maxW: PX(boxW - 25) });
+      }
+      if (!t.hideVersion && S.groups > 1) {
+        drawText(ctx, 'Kitapçık: ' + version, PW - M - 4, bandY + 4.6, { size: PT(7.5), bold: true, align: 'right', color: '#ffffff' });
+      }
+
+      currentY = bandY + 9;
+
+      // Konu Özeti & Kazanım Maddeleri Kartı
+      const summaryText = (S.konuOzetiText || '').trim();
+      if (summaryText) {
+        const lines = summaryText.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length) {
+          const lineH = 4.2;
+          const padY = 3;
+          const cardH = padY * 2 + 4 + lines.length * lineH;
+          const cY = (kd.kdSummary && kd.kdSummary.y != null) ? kd.kdSummary.y : currentY;
+
+          ctx.fillStyle = '#f8fafc';
+          ctx.strokeStyle = '#e2e8f0';
+          ctx.lineWidth = Math.max(1, 0.35 * SCALE);
+          roundRect(ctx, PX(M), PX(cY), PX(boxW), PX(cardH), 4);
+          ctx.fill();
+          ctx.stroke();
+
+          // Sol Renkli Şerit
+          ctx.fillStyle = accent;
+          ctx.fillRect(PX(M), PX(cY), PX(2.5), PX(cardH));
+
+          // Başlık
+          drawText(ctx, '📌  KONU ÖZETİ & ÖNEMLİ KAZANIMLAR', M + 5, cY + padY + 3, { size: PT(7.5), bold: true, color: accent });
+
+          // Maddeler
+          lines.forEach((line, li) => {
+            const cleanLine = line.replace(/^[•\-\*]\s*/, '');
+            drawText(ctx, '• ' + cleanLine, M + 6.5, cY + padY + 4.5 + (li + 1) * lineH, { size: PT(7.2), color: '#334155', maxW: PX(boxW - 12) });
+          });
+
+          currentY = cY + cardH + 3;
+        }
+      }
+    } else {
+      // 4. KLASİK BAŞLIK TASARIMI
+      if (kd.kdSchool && kd.kdSchool.text) {
+        drawText(ctx, kd.kdSchool.text, kd.kdSchool.x, kd.kdSchool.y + 4, { size: PT(kd.kdSchool.size), bold: true, color: '#2c3e50' });
+      }
+      if (kd.kdTitle && kd.kdTitle.text) {
+        drawText(ctx, kd.kdTitle.text, kd.kdTitle.x, kd.kdTitle.y + 4.5, { size: PT(kd.kdTitle.size), bold: true, color: '#0f172a' });
+      }
+      if (kd.kdLesson && kd.kdLesson.text) {
+        drawText(ctx, kd.kdLesson.text, kd.kdLesson.x, kd.kdLesson.y + 3.5, { size: PT(kd.kdLesson.size), bold: true, color: '#475569' });
+      }
+      if (kd.kdTopics && kd.kdTopics.text) {
+        drawText(ctx, kd.kdTopics.text, kd.kdTopics.x, kd.kdTopics.y + 3.5, { size: PT(kd.kdTopics.size), italic: true, color: '#334155' });
+      }
+      if (!t.hideVersion && S.groups > 1) {
+        drawText(ctx, version + ' KİTAPÇIĞI', PW - M, M + 12, { size: PT(7), bold: true, align: 'right', color: '#555' });
+      }
+      let bottomItemY = M + 12;
+      if (kd.kdTopics) bottomItemY = Math.max(bottomItemY, kd.kdTopics.y + kd.kdTopics.h);
+      else if (kd.kdLesson) bottomItemY = Math.max(bottomItemY, kd.kdLesson.y + kd.kdLesson.h);
+      ctx.strokeStyle = accent || '#333';
+      ctx.lineWidth = Math.max(1.5, 0.4 * SCALE);
+      ctx.beginPath();
+      ctx.moveTo(PX(M), PX(bottomItemY + 1));
+      ctx.lineTo(PX(PW - M), PX(bottomItemY + 1));
+      ctx.stroke();
+      currentY = bottomItemY + 6;
     }
-    if (first && !t.noDescription && S.description) {
-      currentY += drawText(ctx, S.description, M + 1, currentY, { size: PT(8), italic: true, color: '#475569', maxW: PX(PW - 2 * M - 2) }) + 1.5;
+
+    // Yönerge kontrolü: Konu denemelerinde varsayılan yazılı yönergesi ASLA çizilmeyecek.
+    const defaultYaziliDesc = 'Aşağıdaki soruları dikkatlice okuyunuz. Her soru 10 Puan olmakla birlikte sınav süreniz 40 dakikadır.';
+    const customDesc = (S.description || '').trim();
+    if (!t.noDescription && customDesc && customDesc !== defaultYaziliDesc) {
+      currentY += drawText(ctx, customDesc, M + 1, currentY, { size: PT(8), italic: true, color: '#475569', maxW: PX(PW - 2 * M - 2) }) + 1.5;
     }
     return currentY + 2;
   }
@@ -1053,8 +1477,8 @@ export function prepText(it, ctx) {
   it.preambleLines = q.text ? wrapAuto(ctx, q.text, contentW) : [];
   setFont(ctx, { size: PT(9.5), bold: true });
   it.rootLines = q.root ? wrapAuto(ctx, q.root, contentW) : [];
-  if (!it.rootLines.length && it.preambleLines.length) { it.rootLines = it.preambleLines; it.preambleLines = []; }
-  const opts = (q.options || []).filter(Boolean);
+  const rawOpts = Array.isArray(q.options) ? q.options : (q.options && typeof q.options === 'object' ? Object.values(q.options) : []);
+  const opts = rawOpts.filter(Boolean);
   setFont(ctx, { size: PT(9) });
   it.optLines = opts.map((o, k) => ({
     letter: LETTERS[k] + ')',
@@ -1469,7 +1893,7 @@ export async function renderPaperToBlob(idx) {
   }
   finishPage(page, PW, PH, M, pageIndex, firstPage, yStart, subTop, bottomAdj, wantsFooterNote);
   if (S.optic) { const op = createPage(PW, PH); drawOptic(op.ctx, PW, items.length, title, version); pages.push(op); }
-  pages.forEach((p) => { p.bytes = jpegBytes(p.canvas.toDataURL('image/jpeg', 0.93)); });
+  pages.forEach((p) => { p.bytes = jpegBytes(p.canvas.toDataURL('image/jpeg', 0.98)); });
   return { blob: buildPDF(pages), order: items.map((i) => i.q.id) };
 }
 
@@ -1501,7 +1925,7 @@ export async function renderAnswerKeyBlob(orders) {
       drawOptic(opticPage.ctx, PW, order.length, t.clean, LETTERS[bi], answers);
     }
   });
-  pages.forEach((p) => { p.bytes = jpegBytes(p.canvas.toDataURL('image/jpeg', 0.92)); });
+  pages.forEach((p) => { p.bytes = jpegBytes(p.canvas.toDataURL('image/jpeg', 0.98)); });
   return buildPDF(pages);
 }
 
@@ -1529,6 +1953,7 @@ export function showResult(files) {
 
 export async function buildPreviewPages() {
   await ensureFont();
+  if (S.template === 'meb') await ensureMebLogo();
   const t = parseTags(S.title);
   const [PW, PH] = pageSizeMM();
   const M = S.margin || 10;
@@ -1539,12 +1964,21 @@ export async function buildPreviewPages() {
   const pages = [createPage(PW, PH)];
   pages[0].items = [];
 
-  if (S.template === 'meb') {
+  if (S.testType === 'yaprak') {
+    delete pages[0].logoBox;
+    const tempCanvas = createPage(PW, PH).canvas;
+    const tempCtx = tempCanvas.getContext('2d');
+    pages[0].mebHeaderItems = getKonuHeaderItems(tempCtx, PW, PH, M, t, version);
+  } else if (S.template === 'meb' && S.testType === 'yazili') {
     const lb = getMebLogoBox(M);
-    if (lb.show) pages[0].logoBox = lb;
+    if (lb.show && mebLogoVisible()) pages[0].logoBox = lb;
+    else delete pages[0].logoBox;
     const tempCanvas = createPage(PW, PH).canvas;
     const tempCtx = tempCanvas.getContext('2d');
     pages[0].mebHeaderItems = getMEBHeaderItems(tempCtx, PW, PH, M, t, version);
+  } else {
+    delete pages[0].logoBox;
+    delete pages[0].mebHeaderItems;
   }
 
   let page = pages[0];

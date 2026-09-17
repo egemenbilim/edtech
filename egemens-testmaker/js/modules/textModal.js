@@ -112,8 +112,8 @@ export function renderLevelPills() {
 export function openText(q) {
   editingId = q ? q.id : null;
   $('txtTitle').textContent = q ? 'Yazılı soruyu düzenle' : 'Yazılı soru ekle';
-  setTxtImg(q && q.imgSrc ? q.imgSrc : null);
-  $('imgUploadPanel').classList.toggle('hidden', !(q && q.imgSrc));
+  setTxtImg(q ? (q.imgSrc || q.src || null) : null);
+  $('imgUploadPanel').classList.toggle('hidden', !(q && (q.imgSrc || q.src)));
   
   questionLevel = (q && q.level) || 'orta';
   renderLevelPills();
@@ -209,7 +209,7 @@ function _saveText(keepOpen) {
         });
       });
     } else {
-      if (questions.length + validBlanks.length > MAX) return alert('Bir testte en fazla 100 soru bulundurabilirsiniz.');
+      if (questions.length + validBlanks.length > MAX) return alert('Maksimum soru sınırına ulaşıldı.');
       const gid = validBlanks.length > 1 ? uid() : null;
       const validAns = [];
       blankItems.forEach((t, i) => { if (t.trim()) validAns.push((blankAnswers[i] || '').trim()); });
@@ -282,7 +282,7 @@ function _saveText(keepOpen) {
     const q = questions.find((x) => x.id === editingId);
     if (q) Object.assign(q, data);
   } else {
-    if (questions.length >= MAX) return alert('Bir testte en fazla 100 soru bulundurabilirsiniz.');
+    if (questions.length >= MAX) return alert('Maksimum soru sınırına ulaşıldı.');
     questions.push(Object.assign({ id: uid(), groupId: null, stem: '', name: 'metin' }, data));
   }
 
@@ -397,7 +397,7 @@ export function handleInsertGeometryQuestion(dataUrl) {
     }
   } else {
     if (questions.length >= MAX) {
-      alert('Bir testte en fazla 100 soru bulundurabilirsiniz.');
+      alert('Maksimum soru sınırına ulaşıldı.');
       return;
     }
     const newQ = {
@@ -468,7 +468,7 @@ export function handleInsertScienceQuestion(dataUrl, templateName = 'Fen & Coğr
     }
   } else {
     if (questions.length >= MAX) {
-      alert('Bir testte en fazla 100 soru bulundurabilirsiniz.');
+      alert('Maksimum soru sınırına ulaşıldı.');
       return;
     }
     const newQ = {

@@ -1,5 +1,5 @@
 export const LETTERS = ['A', 'B', 'C', 'D', 'E'];
-export const MAX = 100;
+export const MAX = 10000;
 
 export const S = {
   testType: 'yazili',
@@ -40,8 +40,11 @@ export const S = {
   mebPos: null,
   title: '',
   school: '',
-  lesson: '2025-2026 EĞİTİM ÖĞRETİM YILI',
+  lesson: '2026-2027 EĞİTİM ÖĞRETİM YILI',
   description: 'Aşağıdaki soruları dikkatlice okuyunuz. Her soru 10 Puan olmakla birlikte sınav süreniz 40 dakikadır.',
+  // Başlık Tasarımları (Konu Denemesi)
+  headerDesign: 'klasik', // 'klasik' | 'egim' | 'kusak' | 'konu_ozeti'
+  konuOzetiText: '',
   // Yeni özellik durumları
   customTemplateId: null,
   showQuestionAreaGuide: false,

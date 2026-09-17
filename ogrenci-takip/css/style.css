@@ -729,6 +729,55 @@ textarea:focus {
   padding-top: 4px;
 }
 
+/* ==========================================================================
+   TABLET & MOBİL EKRAN OPTİMİZASYONU
+   ========================================================================== */
+@media screen and (max-width: 992px) {
+  .hero-inner {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .wrap {
+    padding: 12px 16px 40px;
+  }
+  nav.top {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    gap: 6px;
+  }
+  nav.top a {
+    flex-shrink: 0;
+    padding: 8px 12px;
+  }
+  .card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table {
+    min-width: 580px;
+  }
+  .grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .stat-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+}
+@media screen and (max-width: 640px) {
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero h1 {
+    font-size: 18px;
+  }
+}
+
 @page {
   size: A4;
   margin: 8mm;

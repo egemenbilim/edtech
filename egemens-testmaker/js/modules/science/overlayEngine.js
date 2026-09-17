@@ -186,8 +186,11 @@ export function renderArrowSvg(item, isSelected = false) {
 }
 
 export function renderPinSvg(item, isSelected = false) {
-  const { id, x, y, label = 'I', text = '', color = '#dc2626' } = item;
+  const { id, x, y, label = 'I', text = '', katex = '', color = '#dc2626' } = item;
   const selGlow = isSelected ? 'filter="url(#sciSelectGlow)"' : '';
+  const katexHtml = (katex && typeof window !== 'undefined' && window.katex)
+    ? window.katex.renderToString(katex, { throwOnError: false })
+    : '';
 
   return `
     <g class="sci-draggable sci-overlay-item" data-overlay-id="${id}" data-overlay-type="pin" transform="translate(${x},${y})" ${selGlow}>
@@ -195,9 +198,13 @@ export function renderPinSvg(item, isSelected = false) {
       <circle cx="0" cy="-28" r="6.5" fill="#ffffff" />
       <text x="0" y="-24.5" text-anchor="middle" font-size="8.5" font-weight="bold" fill="${color}">${escSvg(label)}</text>
       ${isSelected ? `<circle cx="0" cy="-28" r="14" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="3,3" />` : ''}
-      ${text ? `
-        <rect x="14" y="-36" width="${text.length * 7 + 12}" height="20" rx="4" fill="#ffffff" fill-opacity="0.95" stroke="${color}" stroke-width="1.2" />
-        <text x="${20 + (text.length * 3.5)}" y="-22" text-anchor="middle" font-size="11" font-weight="bold" fill="#0f172a">${escSvg(text)}</text>
+      ${(text || katexHtml) ? `
+        <foreignObject x="14" y="-40" width="260" height="48" style="overflow:visible;">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="background:#ffffff; border:1.3px solid ${color}; border-radius:5px; padding:2px 7px; font-size:11px; font-weight:600; color:#0f172a; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 5px rgba(0,0,0,0.15); white-space:nowrap;">
+            ${text ? `<span>${escSvg(text)}</span>` : ''}
+            ${katexHtml ? `<span style="color:#1d4ed8;">${katexHtml}</span>` : ''}
+          </div>
+        </foreignObject>
       ` : ''}
     </g>
   `;
@@ -263,8 +270,29 @@ export function injectOverlaysIntoSvg(svgStr, currentParams) {
 // 3. İNTERAKTİF SÜRÜKLE-BIRAK VE TIKLAMA YÖNETİCİSİ
 // ============================================================================
 
-export function setupStageInteractions(stageEl, currentParams, onUpdate, onSelect) {
+export function setupStageInteractions(stageEl, currentParams, onUpdate, onSelect, onDblClick) {
   if (!stageEl) return;
+
+  stageEl.ondblclick = (e) => {
+    let overlayTarget = e.target.closest('.sci-overlay-item') || e.target.closest('[data-map-pin-id]');
+    if (!overlayTarget && e.clientX && e.clientY) {
+      const hit = document.elementFromPoint(e.clientX, e.clientY);
+      if (hit && hit.closest) {
+        overlayTarget = hit.closest('.sci-overlay-item') || hit.closest('[data-map-pin-id]');
+      }
+    }
+    if (overlayTarget) {
+      const ovId = overlayTarget.getAttribute('data-overlay-id') || overlayTarget.getAttribute('data-map-pin-id');
+      const ovType = overlayTarget.getAttribute('data-overlay-type') || (overlayTarget.hasAttribute('data-map-pin-id') ? 'mapPin' : 'pin');
+      if (typeof onDblClick === 'function') {
+        onDblClick({ type: ovType, id: ovId });
+      }
+      e.stopPropagation();
+    } else if (activeSelectedId && typeof onDblClick === 'function') {
+      onDblClick({ type: 'pin', id: activeSelectedId });
+      e.stopPropagation();
+    }
+  };
 
   stageEl.onpointerdown = (e) => {
     const svgEl = stageEl.querySelector('svg');

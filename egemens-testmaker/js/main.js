@@ -1,3 +1,4 @@
+import { S, questions } from './state.js';
 import { initSidebar, syncUI, collect } from './modules/sidebar.js';
 import { render, initQuestionManager, setOnQuestionChangeCallback } from './modules/questionManager.js';
 import { initTextModal, setOnSaveCallback, openText, autoParseQuestion } from './modules/textModal.js';
@@ -5,12 +6,12 @@ import { initCropTool } from './modules/cropTool.js';
 import { initMathModalIntegration } from './modules/equationEditor.js';
 import { initWordExport } from './modules/wordExport.js';
 import { initMakePdfButton, ensureFont } from './modules/pdfEngine.js';
-import { initPreviewStage, schedulePreview, setCollectFn, closePvBig } from './modules/previewStage.js';
+import { initPreviewStage, schedulePreview, setCollectFn, closePvBig, refreshNow } from './modules/previewStage.js';
 import { scheduleAutosave, offerRestore } from './storage.js';
 import { initQuestionBank } from './modules/questionBank.js';
 import { initGeometryDrawer } from './modules/geometryDrawer.js';
 import { initCustomTemplateManager } from './modules/customTemplate.js';
-import { initScienceTemplates, closeScienceModal } from './modules/scienceTemplates.js';
+import { initScienceTemplates, closeScienceModal, openScienceModal } from './modules/scienceTemplates.js';
 import { $, closeModal } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -77,4 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
   render();
   schedulePreview();
   offerRestore(syncUI, render);
+
+  if (typeof window !== 'undefined') {
+    window.S = S;
+    window.questions = questions;
+    window.refreshNow = refreshNow;
+    window.schedulePreview = schedulePreview;
+    window.openScienceModal = openScienceModal;
+    window.render = render;
+  }
 });

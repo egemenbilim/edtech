@@ -68,12 +68,16 @@ export function render() {
   $('ansCount').textContent = questions.filter(q => q.answer).length;
   const g = $('grid');
   g.innerHTML = '';
-  if (!questions.length) {
-    g.innerHTML = `<div id="emptyState" class="col-span-full flex items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white px-6 py-20 text-center dark:border-slate-700 dark:bg-slate-900">
-      <div>
-        <p class="text-[15px] font-medium text-slate-700 dark:text-slate-300">Henüz soru oluşturmadınız</p>
-        <p class="mt-1.5 text-[13px] leading-relaxed text-slate-400">
-          Dilerseniz yukarıdaki seçenekleri kullanarak<br><b class="text-slate-600 dark:text-slate-300">Yazılı Kağıdı</b> veya <b class="text-slate-600 dark:text-slate-300">Konu Denemesi</b> oluşturabilirsiniz
+    g.innerHTML = `<div id="emptyState" class="col-span-full flex items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-12 text-center dark:border-slate-800 dark:bg-slate-900/80">
+      <div class="max-w-md mx-auto">
+        <div class="mx-auto mb-2.5 flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-xl text-slate-500 dark:bg-slate-800 dark:text-slate-300">📄</div>
+        <p class="text-[14px] font-bold text-slate-800 dark:text-slate-200">Henüz soru eklemediniz</p>
+        <p class="mt-1.5 text-[12.5px] leading-relaxed text-slate-500 dark:text-slate-400">
+          Soruları sürükleyip sınav kâğıdı üzerine bırakabilir veya sağ paneldeki seçenekleri kullanarak soru oluşturabilirsiniz.<br>
+          Dilerseniz hazır şablonları kullanarak <b class="text-slate-700 dark:text-slate-200">Yazılı Kâğıdı</b> veya <b class="text-slate-700 dark:text-slate-200">Konu Denemesi</b> hazırlayabilirsiniz.
+        </p>
+        <p class="mt-2.5 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+          JPG, PNG, GIF · .db soru havuz ve taslak dosyaları
         </p>
       </div></div>`;
     notifyChange();

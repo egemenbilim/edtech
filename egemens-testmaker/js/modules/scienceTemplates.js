@@ -3,6 +3,7 @@ import { GEO_TEMPLATES } from './science/geoTemplates.js';
 import { PHYS_TEMPLATES } from './science/physTemplates.js';
 import { CHEM_TEMPLATES } from './science/chemTemplates.js';
 import { BIO_TEMPLATES } from './science/bioTemplates.js';
+import { COGRAFYA_HARITALAR, COGRAFYA_HARITA_MAP } from './science/geoMapsData.js';
 import {
   injectOverlaysIntoSvg,
   renderCircuitSymbolSvg,
@@ -22,7 +23,7 @@ import {
 let onScienceInsertCallback = null;
 let onScienceCancelCallback = null;
 let activeCategory = 'all'; // 'all' | 'cografya' | 'fizik' | 'kimya' | 'biyoloji'
-let activeTemplateId = 'turkeyMap';
+let activeTemplateId = 'cografyaHaritalari';
 let currentParams = {};
 
 // ============================================================================
@@ -1316,10 +1317,10 @@ function escSvg(str) {
 }
 
 // ============================================================================
-// 2. SVG -> PNG 2X RETINA EXPORTER
+// 2. SVG -> PNG 4X HIGH RESOLUTION EXPORTER
 // ============================================================================
 
-export function svgToDataUrl(svgString, scale = 2) {
+export function svgToDataUrl(svgString, scale = 4) {
   return new Promise((resolve, reject) => {
     try {
       const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
@@ -1331,11 +1332,13 @@ export function svgToDataUrl(svgString, scale = 2) {
         canvas.width = (img.width || 520) * scale;
         canvas.height = (img.height || 360) * scale;
         const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         URL.revokeObjectURL(url);
-        resolve(canvas.toDataURL('image/png', 0.95));
+        resolve(canvas.toDataURL('image/png', 0.98));
       };
       img.onerror = (e) => {
         URL.revokeObjectURL(url);
@@ -1376,6 +1379,7 @@ export function openScienceModal(callback, onCancel) {
 export function closeScienceModal() {
   closeModal('scienceModal');
   closeSideDrawer();
+  hidePinEditor();
   if (typeof onScienceCancelCallback === 'function') {
     const cb = onScienceCancelCallback;
     onScienceCancelCallback = null;
@@ -1546,6 +1550,138 @@ function renderSchemaControls(tpl) {
   });
 }
 
+export function showPinEditor(pin, stageEl) {
+  if (!pin) return hidePinEditor();
+  let editor = $('sciPinEditor');
+  if (!editor) {
+    editor = document.createElement('div');
+    editor.id = 'sciPinEditor';
+    document.body.appendChild(editor);
+  }
+
+  const stageRect = stageEl ? stageEl.getBoundingClientRect() : { top: 100, right: 350 };
+  editor.style.position = 'fixed';
+  editor.style.zIndex = '100050';
+  editor.style.top = Math.max(10, Math.min(window.innerHeight - 280, stageRect.top + 20)) + 'px';
+  editor.style.left = Math.max(10, Math.min(window.innerWidth - 310, stageRect.right - 300)) + 'px';
+  editor.style.display = 'block';
+
+  editor.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
+      <span style="font-size:12px; font-weight:700; color:#1e293b; display:flex; align-items:center; gap:5px;">
+        📍 Pin Düzenleyici
+      </span>
+      <button type="button" id="sciPinCloseBtn" style="background:none; border:none; color:#94a3b8; font-size:14px; cursor:pointer; padding:0 4px;">✕</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; gap:6px;">
+        <div style="flex:1;">
+          <label style="font-size:10px; font-weight:600; color:#64748b; display:block; margin-bottom:2px;">Etiket (No/Harf)</label>
+          <input type="text" id="sciPinLabelInp" value="${pin.label || 'I'}" maxlength="6" style="width:100%; font-size:12px; font-weight:bold; padding:4px 6px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:600; color:#64748b; display:block; margin-bottom:2px;">Renk</label>
+          <div style="display:flex; gap:3px; padding-top:2px;" id="sciPinColorDots">
+            ${['#dc2626', '#2563eb', '#059669', '#d97706', '#9333ea'].map(c => `
+              <span data-c="${c}" style="width:18px; height:18px; border-radius:50%; background:${c}; cursor:pointer; display:inline-block; border:2px solid ${pin.color === c ? '#0f172a' : 'transparent'};"></span>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:10px; font-weight:600; color:#64748b; display:block; margin-bottom:2px;">Açıklama Metni</label>
+        <input type="text" id="sciPinTextInp" value="${pin.text || ''}" placeholder="Örn: Ergene Havzası" style="width:100%; font-size:11.5px; padding:4px 6px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:10px; font-weight:600; color:#64748b; display:block; margin-bottom:2px;">KaTeX Formülü / Sembol</label>
+        <input type="text" id="sciPinKatexInp" value="${pin.katex || ''}" placeholder="Örn: \\Delta T = 5^\\circ\\text{C}" style="width:100%; font-size:11.5px; padding:4px 6px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+        <div id="sciPinKatexPrev" style="min-height:22px; font-size:12px; margin-top:3px; padding:2px 6px; color:#1d4ed8; background:#f1f5f9; border-radius:4px; display:flex; align-items:center;"></div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:4px; padding-top:6px; border-top:1px solid #f1f5f9;">
+        <button type="button" id="sciPinDeleteBtn" style="font-size:11px; padding:3px 8px; border:1px solid #fca5a5; background:#fef2f2; color:#dc2626; border-radius:6px; cursor:pointer;">🗑️ Pini Sil</button>
+      </div>
+    </div>
+  `;
+
+  const labelInp = $('sciPinLabelInp');
+  const textInp = $('sciPinTextInp');
+  const katexInp = $('sciPinKatexInp');
+  const prevEl = $('sciPinKatexPrev');
+
+  const updateKatexPreview = () => {
+    if (prevEl) {
+      const val = (pin.katex || '').trim();
+      if (!val) {
+        prevEl.innerHTML = '<span style="color:#94a3b8; font-size:10px;">Formül önizleme</span>';
+      } else if (typeof window !== 'undefined' && window.katex) {
+        try {
+          prevEl.innerHTML = window.katex.renderToString(val, { throwOnError: false });
+        } catch (e) {
+          prevEl.textContent = val;
+        }
+      } else {
+        prevEl.textContent = val;
+      }
+    }
+  };
+  updateKatexPreview();
+
+  if (labelInp) {
+    labelInp.oninput = () => {
+      pin.label = labelInp.value;
+      updateLivePreview();
+    };
+  }
+  if (textInp) {
+    textInp.oninput = () => {
+      pin.text = textInp.value;
+      updateLivePreview();
+    };
+  }
+  if (katexInp) {
+    katexInp.oninput = () => {
+      pin.katex = katexInp.value;
+      updateKatexPreview();
+      updateLivePreview();
+    };
+  }
+  const colorDots = $('sciPinColorDots');
+  if (colorDots) {
+    colorDots.onclick = (e) => {
+      const dot = e.target.closest('[data-c]');
+      if (dot) {
+        pin.color = dot.dataset.c;
+        showPinEditor(pin, stageEl);
+        updateLivePreview();
+      }
+    };
+  }
+  const closeBtn = $('sciPinCloseBtn');
+  if (closeBtn) {
+    closeBtn.onclick = () => hidePinEditor();
+  }
+  const delBtn = $('sciPinDeleteBtn');
+  if (delBtn) {
+    delBtn.onclick = () => {
+      if (currentParams.pins && Array.isArray(currentParams.pins)) {
+        const idx = currentParams.pins.findIndex(p => String(p.id) === String(pin.id));
+        if (idx !== -1) currentParams.pins.splice(idx, 1);
+      }
+      if (currentParams._overlays && Array.isArray(currentParams._overlays)) {
+        const idx = currentParams._overlays.findIndex(o => String(o.id) === String(pin.id));
+        if (idx !== -1) currentParams._overlays.splice(idx, 1);
+      }
+      hidePinEditor();
+      updateLivePreview();
+    };
+  }
+}
+
+export function hidePinEditor() {
+  const editor = $('sciPinEditor');
+  if (editor) editor.style.display = 'none';
+}
+
 function updateLivePreview() {
   const stage = $('sciPreviewStage');
   if (!stage) return;
@@ -1567,6 +1703,7 @@ function updateLivePreview() {
         if (!sel) {
           infoEl.classList.add('hidden');
           infoEl.textContent = '';
+          hidePinEditor();
         } else {
           infoEl.classList.remove('hidden');
           if (sel.type === 'organelle') {
@@ -1578,13 +1715,20 @@ function updateLivePreview() {
           } else if (sel.type === 'arrow') {
             infoEl.textContent = `Seçili: İşaret Oku`;
           } else if (sel.type === 'pin' || sel.type === 'mapPin') {
-            infoEl.textContent = `Seçili: Harita Pini`;
+            infoEl.textContent = `Seçili: Harita Pini (Düzenlemek için çift tıklayın)`;
           } else if (sel.type === 'text') {
             infoEl.textContent = `Seçili: Metin Notu`;
           } else {
             infoEl.textContent = `Seçili Öğe: ${sel.type}`;
           }
         }
+      }
+    },
+    (sel) => {
+      if (sel && (sel.type === 'pin' || sel.type === 'mapPin')) {
+        const pinObj = (currentParams.pins || []).find(p => String(p.id) === String(sel.id)) ||
+          ((currentParams._overlays || []).find(o => String(o.id) === String(sel.id)));
+        if (pinObj) showPinEditor(pinObj, stage);
       }
     }
   );
@@ -1960,29 +2104,41 @@ export function initScienceTemplates() {
   const addPinBtn = $('sciToolAddPin');
   if (addPinBtn) {
     addPinBtn.onclick = () => {
-      const label = prompt('Pin numarası veya harfi (örn: I, II, III, A, B, 1, 2):', 'I');
-      if (label === null) return;
-      const text = prompt('Pin açıklama metni (İsteğe bağlı, örn: Çukurova Deltası, Rize, Kapıdağ Tombolosu):', '');
-      if (currentParams.pins && Array.isArray(currentParams.pins)) {
-        const id = 'p_' + Date.now();
-        currentParams.pins.push({
-          id,
-          x: 260,
-          y: 150,
-          label: label || 'I',
-          text: text || '',
-          color: '#dc2626'
-        });
-      } else {
-        addOverlayItem(currentParams, 'pin', {
-          label: label || 'I',
-          text: text || '',
-          color: '#dc2626',
-          x: 260,
-          y: 150
-        });
+      const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV'];
+      const existingPins = (currentParams.pins || []).concat(
+        (currentParams._overlays || []).filter(o => o.type === 'pin')
+      );
+      const nextIdx = existingPins.length;
+      const autoLabel = nextIdx < ROMAN.length ? ROMAN[nextIdx] : String(nextIdx + 1);
+
+      let cx = 350, cy = 220;
+      if (currentParams.mapId && COGRAFYA_HARITA_MAP && COGRAFYA_HARITA_MAP[currentParams.mapId]) {
+        const mm = COGRAFYA_HARITA_MAP[currentParams.mapId];
+        cx = Math.round(mm.w * 0.45);
+        cy = Math.round(mm.h * 0.45);
       }
+      cx += (existingPins.length % 6) * 35;
+      cy += (existingPins.length % 6) * 25;
+
+      const newPin = {
+        id: 'p_' + Date.now(),
+        x: cx,
+        y: cy,
+        label: autoLabel,
+        text: '',
+        katex: '',
+        color: '#dc2626'
+      };
+
+      if (currentParams.pins && Array.isArray(currentParams.pins)) {
+        currentParams.pins.push(newPin);
+      } else {
+        addOverlayItem(currentParams, 'pin', newPin);
+      }
+      setSelectedOverlayId(newPin.id);
       updateLivePreview();
+      const st = $('sciPreviewStage');
+      if (st) showPinEditor(newPin, st);
     };
   }
 
@@ -2027,7 +2183,8 @@ export function initScienceTemplates() {
       insertBtn.textContent = 'Ekleniyor...';
 
       try {
-        const dataUrl = await svgToDataUrl(svgStr, 2);
+        const dataUrl = await svgToDataUrl(svgStr, 4);
+        hidePinEditor();
         closeModal('scienceModal');
         closeSideDrawer();
         const cb = onScienceInsertCallback;
@@ -2054,7 +2211,7 @@ export function initScienceTemplates() {
       let svgStr = tpl.renderSvg(currentParams);
       svgStr = injectOverlaysIntoSvg(svgStr, currentParams);
       try {
-        const dataUrl = await svgToDataUrl(svgStr, 2);
+        const dataUrl = await svgToDataUrl(svgStr, 4);
         const a = document.createElement('a');
         a.href = dataUrl;
         a.download = `${tpl.id}_${Date.now()}.png`;

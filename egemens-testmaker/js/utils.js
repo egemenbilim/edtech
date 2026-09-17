@@ -91,6 +91,15 @@ export function openModal(id) {
   if (!el) return;
   el.classList.remove('hidden');
   el.classList.add('flex');
+  if (id === 'textModal') {
+    const sv = $('sidebarSettingsView');
+    if (sv) {
+      sv.classList.remove('flex');
+      sv.classList.add('hidden');
+    }
+    const sp = $('sidebarPanel');
+    if (sp) sp.classList.add('open');
+  }
 }
 
 export function closeModal(id) {
@@ -98,6 +107,13 @@ export function closeModal(id) {
   if (!el) return;
   el.classList.add('hidden');
   el.classList.remove('flex', 'above');
+  if (id === 'textModal') {
+    const sv = $('sidebarSettingsView');
+    if (sv) {
+      sv.classList.remove('hidden');
+      sv.classList.add('flex');
+    }
+  }
 }
 
 export function warnText(msg) {

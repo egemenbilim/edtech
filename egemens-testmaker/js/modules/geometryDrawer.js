@@ -1558,7 +1558,7 @@ async function addKatexFormulaToCanvas(latex, color = '#0f172a', fontSize = 26) 
     const height = Math.max(Math.ceil(rect.height) + 8, 24);
     document.body.removeChild(wrapper);
 
-    const scale = 2;
+    const scale = 4;
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="${width * scale}" height="${height * scale}" viewBox="0 0 ${width} ${height}">
         <foreignObject width="100%" height="100%">
@@ -1577,6 +1577,8 @@ async function addKatexFormulaToCanvas(latex, color = '#0f172a', fontSize = 26) 
       c.width = width * scale;
       c.height = height * scale;
       const ctx = c.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(imgEl, 0, 0);
       const pngUrl = c.toDataURL('image/png');
 
@@ -1592,8 +1594,8 @@ async function addKatexFormulaToCanvas(latex, color = '#0f172a', fontSize = 26) 
           transparentCorners: false,
           cornerColor: '#2563eb',
           cornerSize: 8,
-          scaleX: 0.5,
-          scaleY: 0.5
+          scaleX: 1 / scale,
+          scaleY: 1 / scale
         });
         fabricCanvas.add(fImg);
         fabricCanvas.setActiveObject(fImg);
@@ -1686,7 +1688,7 @@ export function exportGeometryAsPNG() {
 
   const dataUrl = fabricCanvas.toDataURL({
     format: 'png',
-    multiplier: 2
+    multiplier: 4
   });
 
   // Izgarayı geri yükle

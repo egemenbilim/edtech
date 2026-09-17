@@ -125,14 +125,36 @@ export function renderTabs() {
     b.className = b.dataset.t === S.testType ? 'active' : '';
   });
   $('konuRow').classList.toggle('hidden', S.testType !== 'yaprak');
+  
+  const yaziliTplSec = $('yaziliTplSection');
+  if (yaziliTplSec) {
+    yaziliTplSec.classList.toggle('hidden', S.testType === 'yaprak');
+  }
+  const konuHdrSec = $('konuHeaderDesignSection');
+  if (konuHdrSec) {
+    konuHdrSec.classList.toggle('hidden', S.testType !== 'yaprak');
+  }
+  renderHeaderDesignButtons();
+  renderTplCards();
+}
+
+export function renderHeaderDesignButtons() {
+  const cur = S.headerDesign || 'klasik';
+  document.querySelectorAll('#konuHeaderDesignGrid .header-design-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.design === cur);
+  });
+  const ozFields = $('konuOzetiFields');
+  if (ozFields) {
+    ozFields.classList.toggle('hidden', cur !== 'konu_ozeti' || S.testType !== 'yaprak');
+  }
 }
 
 export function renderTplCards() {
   const isMeb = S.template === 'meb';
   const isCustom = S.template === 'custom';
   document.querySelectorAll('.tpl-card').forEach(b => b.classList.toggle('active', b.dataset.tpl === S.template));
-  document.querySelectorAll('.tpl-hide-meb').forEach(el => el.classList.toggle('hidden', isMeb || isCustom));
-  document.querySelectorAll('.tpl-show-meb').forEach(el => el.classList.toggle('hidden', !isMeb));
+  document.querySelectorAll('.tpl-hide-meb').forEach(el => el.classList.toggle('hidden', (isMeb || isCustom) && S.testType === 'yazili'));
+  document.querySelectorAll('.tpl-show-meb').forEach(el => el.classList.toggle('hidden', !isMeb || S.testType !== 'yazili'));
   updateQuestionAreaMetrics();
 }
 
@@ -179,6 +201,7 @@ export function collect() {
   S.lesson = $('lesson').value;
   S.description = $('description').value;
   S.konuKapsami = $('konuKapsami').value;
+  if ($('konuOzetiText')) S.konuOzetiText = $('konuOzetiText').value;
   S.mebYear = $('mebYear').value;
   S.mebSchool = $('mebSchool').value;
   S.mebDate = $('mebDate').value;
@@ -191,12 +214,21 @@ export function collect() {
   S.mebScoreLbl = $('mebScoreLbl').value;
 }
 
+export function renderColumnButtons() {
+  const cur = String(S.columns || 2);
+  document.querySelectorAll('[data-col]').forEach(btn => {
+    const isAct = btn.dataset.col === cur;
+    btn.classList.toggle('active', isAct);
+  });
+}
+
 export function syncUI() {
   if (S.title !== undefined) $('title').value = S.title;
   if (S.school !== undefined) $('school').value = S.school;
   if (S.lesson !== undefined) $('lesson').value = S.lesson;
   if (S.description !== undefined) $('description').value = S.description;
   if (S.konuKapsami !== undefined) $('konuKapsami').value = S.konuKapsami;
+  if (S.konuOzetiText !== undefined && $('konuOzetiText')) $('konuOzetiText').value = S.konuOzetiText;
   if (S.groups !== undefined) $('groups').value = String(S.groups);
   if (S.optic !== undefined) $('optic').checked = !!S.optic;
   if (S.showAnswerKey !== undefined) $('showAnswerKey').checked = !!S.showAnswerKey;
@@ -213,7 +245,10 @@ export function syncUI() {
   }
   if (S.pageSize !== undefined) $('pageSize').value = S.pageSize;
   if (S.orientation !== undefined) $('orientation').value = S.orientation;
-  if (S.columns !== undefined) $('columns').value = String(S.columns);
+  if (S.columns !== undefined) {
+    $('columns').value = String(S.columns);
+    renderColumnButtons();
+  }
   if (S.margin !== undefined) { $('margin').value = String(S.margin); $('mgVal').textContent = String(S.margin); }
   if (S.template !== undefined) renderTplCards();
   if (S.mebYear !== undefined) $('mebYear').value = S.mebYear;
@@ -241,6 +276,7 @@ export function initSidebar() {
   [...$('typeTabs').children].forEach(b => b.onclick = () => {
     S.testType = b.dataset.t;
     renderTabs();
+    schedulePreview();
   });
   renderTabs();
 
@@ -333,14 +369,33 @@ export function initSidebar() {
   };
 
   $('logoFixAspect').onclick = () => fixLogoAspect(refreshNow);
-  $('logoSizeReset').onclick = () => { S.logoW = 22; S.logoH = 22; schedulePreview(); };
+  $('logoSizeReset').onclick = () => { S.logoW = 22; S.logoH = 22; refreshNow(); };
   $('logoPosReset').onclick = () => {
     S.logoX = null;
     S.logoY = null;
-    S.mebPos = null;
-    schedulePreview();
+    if (S.mebPos) delete S.mebPos['logo'];
+    refreshNow();
   };
   renderLogoChoice();
+
+  const hdrGrid = $('konuHeaderDesignGrid');
+  if (hdrGrid) {
+    hdrGrid.onclick = (e) => {
+      const btn = e.target.closest('.header-design-btn');
+      if (btn && btn.dataset.design) {
+        S.headerDesign = btn.dataset.design;
+        renderHeaderDesignButtons();
+        refreshNow();
+      }
+    };
+  }
+  const ozText = $('konuOzetiText');
+  if (ozText) {
+    ozText.oninput = (e) => {
+      S.konuOzetiText = e.target.value;
+      schedulePreview();
+    };
+  }
 
   $('smartLayout').onchange = e => S.smartLayout = e.target.checked;
   $('watermark').oninput = e => S.watermark = e.target.value;
@@ -405,7 +460,17 @@ export function initSidebar() {
 
   $('pageSize').onchange = e => { S.pageSize = e.target.value; updateQuestionAreaMetrics(); };
   $('orientation').onchange = e => { S.orientation = e.target.value; updateQuestionAreaMetrics(); };
-  $('columns').onchange = e => { S.columns = +e.target.value; updateQuestionAreaMetrics(); };
+  $('columns').onchange = e => { S.columns = +e.target.value; renderColumnButtons(); updateQuestionAreaMetrics(); };
+  document.querySelectorAll('[data-col]').forEach(btn => {
+    btn.onclick = () => {
+      const col = btn.dataset.col;
+      S.columns = +col;
+      if ($('columns')) $('columns').value = col;
+      renderColumnButtons();
+      updateQuestionAreaMetrics();
+      schedulePreview();
+    };
+  });
   $('margin').oninput = e => {
     S.margin = +e.target.value;
     $('mgVal').textContent = e.target.value;

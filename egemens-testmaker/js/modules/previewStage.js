@@ -1,6 +1,6 @@
 import { questions, S } from '../state.js';
 import { $, openModal, closeModal } from '../utils.js';
-import { buildPreviewPages, pageSizeMM, getMebLogoBox, imgCache, fixLogoAspect, calculateQuestionBounds } from './pdfEngine.js';
+import { buildPreviewPages, pageSizeMM, getMebLogoBox, mebLogoVisible, imgCache, fixLogoAspect, calculateQuestionBounds } from './pdfEngine.js';
 import { openText } from './textModal.js';
 import { render } from './questionManager.js';
 
@@ -56,6 +56,66 @@ export async function runPreview() {
   }
 }
 
+function renderMainPaperOverlay(c, pg, container) {
+  const overlay = document.createElement('div');
+  overlay.id = 'pvMainOverlay';
+  overlay.className = 'pv-main-overlay absolute inset-0 pointer-events-none';
+  container.appendChild(overlay);
+
+  function updateMainChips() {
+    overlay.innerHTML = '';
+    const dispW = c.clientWidth;
+    if (!dispW || !pg || !pg.w) return;
+    const k = dispW / pg.w;
+    overlay.style.width = dispW + 'px';
+    overlay.style.height = (pg.h * k) + 'px';
+
+    if (S.template === 'meb' && S.testType === 'yazili' && pg.logoBox && pg.logoBox.show && mebLogoVisible()) {
+      const box = pg.logoBox;
+      const chip = document.createElement('div');
+      chip.className = 'pvChip pvLogoChip pointer-events-auto' + (selectedHeaderItems.has('logo') ? ' selected' : '');
+      chip.dataset.hid = 'logo';
+      chip.style.left = (box.x * k) + 'px';
+      chip.style.top = (box.y * k) + 'px';
+      chip.style.width = (box.w * k) + 'px';
+      chip.style.height = (box.h * k) + 'px';
+      chip.innerHTML = '<span class="pvNum">LOGO</span>' +
+        '<span class="pvActs"><button type="button" data-act="logofix" title="Logoyu doğal oranına getir">↺</button></span>' +
+        '<span class="pvRz" data-act="rz" title="Boyutlandır"></span>';
+      overlay.appendChild(chip);
+      wireLogoChipCombined(chip, k);
+    }
+
+    (pg.items || []).forEach((it, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'pvChip pvMainChip pointer-events-auto';
+      chip.style.left = (it.x * k) + 'px';
+      chip.style.top = (it.y * k) + 'px';
+      chip.style.width = (it.w * k) + 'px';
+      chip.style.height = (it.h * k) + 'px';
+      const isImg = it.q.type !== 'text';
+      chip.innerHTML =
+        '<span class="pvNum">#' + (i + 1) + '</span>' +
+        '<span class="pvActs">' +
+          '<button type="button" data-act="edit" title="Soruyu Düzenle" class="pv-act-btn pv-edit-btn">✎</button>' +
+          (isImg
+            ? '<button type="button" data-act="crop" title="Görseli kırp">✂</button>' +
+              '<button type="button" data-act="fit" title="Sütun genişliğine sığdır">⤢</button>'
+            : '') +
+        '</span>' +
+        (isImg ? '<span class="pvRz" data-act="rz" title="Boyutlandır"></span>' : '');
+      overlay.appendChild(chip);
+      wireChip(chip, it, k);
+    });
+  }
+
+  requestAnimationFrame(updateMainChips);
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(() => updateMainChips());
+    ro.observe(c);
+  }
+}
+
 export function showPvPage() {
   const stack = $('pvStack');
   stack.innerHTML = '';
@@ -64,7 +124,11 @@ export function showPvPage() {
   if (has) {
     const c = pvPages[pvIndex].canvas;
     c.className = 'pv-canvas';
-    stack.appendChild(c);
+    const container = document.createElement('div');
+    container.className = 'relative inline-block mx-auto max-w-[820px] w-full';
+    container.appendChild(c);
+    renderMainPaperOverlay(c, pvPages[pvIndex], container);
+    stack.appendChild(container);
   }
   $('pvPageInfo').textContent = has ? (pvIndex + 1) + ' / ' + pvPages.length : '0 / 0';
   $('pvPrev').disabled = !has || pvIndex === 0;
@@ -155,7 +219,7 @@ export function layoutOverlay() {
   
   (pg.items || []).forEach((it, i) => {
     const chip = document.createElement('div');
-    chip.className = 'pvChip';
+    chip.className = 'pvChip pvMainChip';
     chip.style.left = (it.x * k) + 'px';
     chip.style.top = (it.y * k) + 'px';
     chip.style.width = (it.w * k) + 'px';
@@ -176,8 +240,9 @@ export function layoutOverlay() {
   
   if (pg.mebHeaderItems) {
     const headerLabels = {
-      mebYear:'YIL', mebSchool:'OKUL', mebLesson:'DERS', mebExam:'SINIF+SINAV', mebDate:'TARIH',
-      mebNameLbl:'AD', mebClassLbl:'SINIF ET', mebNoLbl:'NO', mebScoreLbl:'PUAN'
+      mebYear: 'YIL', mebSchool: 'OKUL', mebLesson: 'DERS', mebExam: 'SINIF+SINAV', mebDate: 'TARIH',
+      mebNameLbl: 'AD', mebClassLbl: 'SINIF ET', mebNoLbl: 'NO', mebScoreLbl: 'PUAN',
+      kdTitle: 'TEST ADI', kdTopics: 'KONU KAPSAMI', kdSchool: 'OKUL / KURUM', kdLesson: 'ÜST BİLGİ', kdSummary: 'KONU ÖZETİ'
     };
     Object.values(pg.mebHeaderItems).forEach((it) => {
       if (!it.text) return;
@@ -188,13 +253,14 @@ export function layoutOverlay() {
       chip.style.top = (it.y * k) + 'px';
       chip.style.width = (it.w * k) + 'px';
       chip.style.height = (it.h * k) + 'px';
-      chip.innerHTML = '<span class="pvNum" style="background:#475569;font-size:7px">' + (headerLabels[it.id] || it.id) + '</span>';
+      chip.innerHTML = '<span class="pvNum" style="background:#475569;font-size:7px">' + (headerLabels[it.id] || it.id) + '</span>' +
+        '<span class="pvActs"><button type="button" data-act="edit-header" title="Metni Düzenle" class="pv-act-btn pv-edit-btn" style="padding:1px 4px;font-size:9px">✎</button></span>';
       ov.appendChild(chip);
       wireHeaderChip(chip, it, k);
     });
   }
   
-  if (pg.logoBox) {
+  if (S.template === 'meb' && S.testType === 'yazili' && pg.logoBox && pg.logoBox.show && mebLogoVisible()) {
     const box = pg.logoBox;
     const chip = document.createElement('div');
     chip.className = 'pvChip pvLogoChip' + (selectedHeaderItems.has('logo') ? ' selected' : '');
@@ -257,10 +323,9 @@ function wireChip(chip, it, k) {
   chip.addEventListener('click', (e) => {
     if (suppressClick) { suppressClick = false; return; }
     const act = e.target.dataset.act;
-    if (act === 'edit') return editFromPaper(it.q);
     if (act === 'crop') return openImgCrop(it.q);
     if (act === 'fit') { it.q.scale = 1; it.q.aspect = undefined; return refreshNow(); }
-    if (it.q.type === 'text') editFromPaper(it.q);
+    editFromPaper(it.q);
   });
 }
 
@@ -395,8 +460,103 @@ function endHeaderDrag(e) {
   refreshNow();
 }
 
+export function openHeaderEditModal(id) {
+  const map = {
+    kdTitle: { title: 'Test Adı / Başlığı', key: 'title', inputId: 'title', multi: false },
+    kdTopics: { title: 'Konu Kapsamı (Virgülle ayırarak yazabilirsiniz)', key: 'konuKapsami', inputId: 'konuKapsami', multi: false },
+    kdSchool: { title: 'Okul / Kurum Adı', key: 'school', inputId: 'school', multi: false },
+    kdLesson: { title: 'Üst Bilgi / Sınıf / Ders', key: 'lesson', inputId: 'lesson', multi: false },
+    kdSummary: { title: 'Konu Özeti & Kazanım Maddeleri', key: 'konuOzetiText', inputId: 'konuOzetiText', multi: true },
+    mebYear: { title: 'Öğretim Yılı', key: 'mebYear', inputId: 'mebYear', multi: false },
+    mebSchool: { title: 'Okul Adı', key: 'mebSchool', inputId: 'mebSchool', multi: false },
+    mebLesson: { title: 'Ders Adı', key: 'mebLesson', inputId: 'mebLesson', multi: false },
+    mebExam: { title: 'Sınav Başlığı', key: 'mebExam', inputId: 'mebExam', multi: false },
+    mebDate: { title: 'Tarih', key: 'mebDate', inputId: 'mebDate', multi: false },
+    mebNameLbl: { title: 'Ad-Soyad Etiketi', key: 'mebNameLbl', inputId: 'mebNameLbl', multi: false },
+    mebClassLbl: { title: 'Sınıf Etiketi', key: 'mebClassLbl', inputId: 'mebClassLbl', multi: false },
+    mebNoLbl: { title: 'Numara Etiketi', key: 'mebNoLbl', inputId: 'mebNoLbl', multi: false },
+    mebScoreLbl: { title: 'Puan Etiketi', key: 'mebScoreLbl', inputId: 'mebScoreLbl', multi: false },
+  };
+  const meta = map[id];
+  if (!meta) return;
+
+  let modal = document.getElementById('pvHeaderEditModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'pvHeaderEditModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(3px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;';
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div style="background:#ffffff;border-radius:12px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.25);width:100%;max-width:440px;overflow:hidden;border:1px solid #e2e8f0;display:flex;flex-direction:column;font-family:inherit;">
+      <div style="padding:14px 18px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-weight:700;font-size:14px;color:#1e293b;">✏️ Başlık Öğesini Düzenle</span>
+        <button type="button" id="pvHdrClose" style="border:none;background:transparent;font-size:18px;cursor:pointer;color:#64748b;line-height:1;">&times;</button>
+      </div>
+      <div style="padding:16px 18px;display:flex;flex-direction:column;gap:8px;">
+        <label style="font-size:12px;font-weight:600;color:#475569;">${meta.title}</label>
+        ${meta.multi 
+          ? `<textarea id="pvHdrInput" rows="5" style="width:100%;border:1.5px solid #cbd5e1;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;resize:vertical;font-family:inherit;line-height:1.4;">${(S[meta.key] || '').replace(/</g, '&lt;')}</textarea>`
+          : `<input id="pvHdrInput" type="text" value="${(S[meta.key] || '').replace(/"/g, '&quot;')}" style="width:100%;border:1.5px solid #cbd5e1;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;">`
+        }
+        <span style="font-size:11px;color:#94a3b8;">Değişiklik anında kağıt önizlemesine ve sol panele yansıtılır.</span>
+      </div>
+      <div style="padding:12px 18px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px;">
+        <button type="button" id="pvHdrCancel" style="padding:7px 14px;border:1px solid #cbd5e1;background:#ffffff;border-radius:6px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;">İptal</button>
+        <button type="button" id="pvHdrSave" style="padding:7px 16px;border:none;background:#2563eb;color:#ffffff;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 1px 3px rgba(37,99,235,0.3);">Kaydet</button>
+      </div>
+    </div>
+  `;
+  modal.style.display = 'flex';
+
+  const inp = document.getElementById('pvHdrInput');
+  if (inp) {
+    inp.focus();
+    if (!meta.multi) inp.select();
+  }
+
+  const close = () => { modal.style.display = 'none'; };
+  document.getElementById('pvHdrClose').onclick = close;
+  document.getElementById('pvHdrCancel').onclick = close;
+  modal.onclick = (e) => { if (e.target === modal) close(); };
+
+  const save = () => {
+    const val = inp ? inp.value : '';
+    S[meta.key] = val;
+    const sideEl = $(meta.inputId);
+    if (sideEl) sideEl.value = val;
+    close();
+    refreshNow();
+  };
+
+  document.getElementById('pvHdrSave').onclick = save;
+  if (!meta.multi && inp) {
+    inp.onkeydown = (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); save(); }
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+    };
+  } else if (inp) {
+    inp.onkeydown = (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+    };
+  }
+}
+
 function wireHeaderChip(chip, it, k) {
+  chip.addEventListener('click', (e) => {
+    if (suppressClick) return;
+    if (e.target.dataset.act === 'edit-header') {
+      e.stopPropagation();
+      openHeaderEditModal(it.id);
+    }
+  });
+  chip.addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    openHeaderEditModal(it.id);
+  });
   chip.addEventListener('pointerdown', (e) => {
+    if (e.target.dataset.act === 'edit-header') return;
     chip.setPointerCapture(e.pointerId);
     startHeaderDrag(e, it.id, k, false, false);
     e.stopPropagation();
@@ -442,9 +602,13 @@ function wireLogoChipCombined(chip, k) {
 }
 
 function pvPageCoords(clientX, clientY) {
-  const pg = pvPages[pvIndex], cv = $('pvBigCanvas'), r = cv.getBoundingClientRect();
+  const pg = pvPages[pvIndex];
+  if (!pg) return { mx: 0, my: 0, k: 1, isBig: false };
+  const isBig = $('pvBig') && $('pvBig').classList.contains('open');
+  const cv = isBig ? $('pvBigCanvas') : (document.querySelector('#pvStack .pv-canvas') || $('pvBigCanvas'));
+  const r = cv.getBoundingClientRect();
   const k = r.width / pg.w;
-  return { mx: (clientX - r.left) / k, my: (clientY - r.top) / k, k };
+  return { mx: (clientX - r.left) / k, my: (clientY - r.top) / k, k, isBig };
 }
 
 function dropTarget(cx, cy, selfId) {
@@ -464,8 +628,25 @@ function showDropLine(cx, cy, selfId) {
   const target = dropTarget(cx, cy, selfId);
   if (!target) return hideDropLine();
   const it = (pg.items || []).find((i) => i.q.id === target.id); if (!it) return;
-  const { k } = pvPageCoords(cx, cy);
-  const line = $('pvDropLine');
+  const { k, isBig } = pvPageCoords(cx, cy);
+
+  let line = isBig ? $('pvDropLine') : $('pvMainDropLine');
+  if (!isBig) {
+    if (!line) {
+      line = document.createElement('div');
+      line.id = 'pvMainDropLine';
+      line.style.position = 'absolute';
+      line.style.height = '3px';
+      line.style.backgroundColor = '#2563eb';
+      line.style.borderRadius = '2px';
+      line.style.zIndex = '50';
+      line.style.pointerEvents = 'none';
+      line.style.boxShadow = '0 0 8px rgba(37, 99, 235, 0.7)';
+    }
+    const ov = $('pvMainOverlay');
+    if (ov && line.parentElement !== ov) ov.appendChild(line);
+  }
+  if (!line) return;
   line.style.display = 'block';
   line.style.left = (it.x * k) + 'px';
   line.style.width = (it.w * k) + 'px';
@@ -473,7 +654,8 @@ function showDropLine(cx, cy, selfId) {
 }
 
 function hideDropLine() {
-  $('pvDropLine').style.display = 'none';
+  const l1 = $('pvDropLine'); if (l1) l1.style.display = 'none';
+  const l2 = $('pvMainDropLine'); if (l2) l2.style.display = 'none';
 }
 
 function moveQuestion(dragId, target) {

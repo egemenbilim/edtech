@@ -1,13 +1,84 @@
 import { escSvg } from './overlayEngine.js';
 import { TURKEY_VECTOR_PATH, WORLD_VECTOR_PATH, TURKEY_LAKES, TURKEY_RIVERS, STRAITS_CANALS } from './mapData.js';
+import { COGRAFYA_HARITALAR, COGRAFYA_HARITA_MAP } from './geoMapsData.js';
 
 /**
  * Egemen's Testmaker — Coğrafya Şablon Envanteri (TYT, AYT & KPSS)
- * Gerçek GIS ve Wikimedia dilsiz harita vektörleri, MEB uyumlu İzohips ve İklim grafiği,
- * Doğru $23^\circ 27'$ eksen eğikliği ve yörünge/küre modelleri.
+ * Otantik GIS / Fiziki Dilsiz Harita Veri Havuzu (12 Harita), İzohips, İklim grafiği,
+ * Doğru eksen eğikliği ve yörünge modelleri.
  */
 
 export const GEO_TEMPLATES = {
+  // --------------------------------------------------------------------------
+  // 0. COĞRAFYA HARİTALARI (12 OTANTİK DİLSİZ & BÖLGESEL HARİTA)
+  // --------------------------------------------------------------------------
+  cografyaHaritalari: {
+    id: 'cografyaHaritalari',
+    category: 'cografya',
+    name: 'Coğrafya Dilsiz Haritaları (12 Harita & Bölgeler)',
+    tags: ['TYT', 'AYT', 'KPSS', 'Harita', 'Dilsiz Harita', 'Coğrafya', 'Bölgeler', 'Fiziki', 'İklim'],
+    desc: 'Coğrafya Haritaları arşivinden 12 otantik dilsiz ve fiziki harita: Genel Türkiye, İklim, Kıvrım Dağları, Volkanik Dağlar ve 7 Coğrafi Bölge. Tıklanabilir pinler, metin ve KaTeX formülleri.',
+    defaultParams: {
+      title: 'Türkiye Dilsiz Haritası',
+      mapId: 'turkey_dilsiz',
+      pins: []
+    },
+    presets: COGRAFYA_HARITALAR.map(m => ({
+      name: m.title,
+      params: {
+        title: m.title,
+        mapId: m.id,
+        pins: []
+      }
+    })),
+    schema: [
+      { key: 'title', label: 'Harita Başlığı', type: 'text' },
+      {
+        key: 'mapId',
+        label: 'Harita Seçimi (12 Otantik Harita)',
+        type: 'select',
+        options: COGRAFYA_HARITALAR.map(m => ({ v: m.id, l: m.title }))
+      }
+    ],
+    renderSvg(p) {
+      const mapMeta = COGRAFYA_HARITA_MAP[p.mapId || 'turkey_dilsiz'] || COGRAFYA_HARITALAR[0];
+      const w = mapMeta.w, h = mapMeta.h;
+      return `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="100%" height="100%" style="font-family:'Noto Sans',sans-serif; background-color:#ffffff;">
+          <rect width="${w}" height="${h}" fill="#ffffff" />
+          <image href="${mapMeta.dataUrl}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet" />
+          ${p.title ? `
+            <g transform="translate(${w / 2}, 38)">
+              <rect x="-${p.title.length * 7.5 + 24}" y="-22" width="${p.title.length * 15 + 48}" height="36" rx="8" fill="#ffffff" fill-opacity="0.95" stroke="#94a3b8" stroke-width="1.4" />
+              <text x="0" y="3" text-anchor="middle" font-size="16" font-weight="bold" fill="#0f172a">${escSvg(p.title)}</text>
+            </g>
+          ` : ''}
+          <g id="trPins">
+            ${(p.pins || []).map(pin => {
+              const katexHtml = (pin.katex && typeof window !== 'undefined' && window.katex)
+                ? window.katex.renderToString(pin.katex, { throwOnError: false })
+                : '';
+              const hasLabel = pin.text || katexHtml;
+              return `
+              <g class="sci-draggable" data-map-pin-id="${pin.id}" transform="translate(${pin.x},${pin.y})" style="cursor:move;">
+                <path d="M 0 0 C -12 -16 -15 -25 -15 -32 A 15 15 0 1 1 15 -32 C 15 -25 12 -16 0 0 Z" fill="${pin.color || '#dc2626'}" stroke="#ffffff" stroke-width="2.4" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))" />
+                <circle cx="0" cy="-32" r="8" fill="#ffffff" />
+                <text x="0" y="-27" text-anchor="middle" font-size="10.5" font-weight="bold" fill="${pin.color || '#dc2626'}">${escSvg(pin.label)}</text>
+                ${hasLabel ? `
+                  <foreignObject x="18" y="-46" width="260" height="52" style="overflow:visible;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="background:#ffffff; border:1.4px solid ${pin.color || '#dc2626'}; border-radius:6px; padding:3px 8px; font-size:12px; font-weight:600; color:#0f172a; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(0,0,0,0.18); white-space:nowrap;">
+                      ${pin.text ? `<span>${escSvg(pin.text)}</span>` : ''}
+                      ${katexHtml ? `<span style="color:#1d4ed8;">${katexHtml}</span>` : ''}
+                    </div>
+                  </foreignObject>
+                ` : ''}
+              </g>`;
+            }).join('')}
+          </g>
+        </svg>
+      `;
+    }
+  },
   // --------------------------------------------------------------------------
   // 1. TÜRKİYE DİLSİZ VEKTÖREL HARİTASI (GENEL & BÖLGESEL YAKINLAŞTIRMALAR)
   // --------------------------------------------------------------------------
@@ -23,13 +94,7 @@ export const GEO_TEMPLATES = {
       showGraticule: true,
       showLakes: true,
       showRivers: true,
-      pins: [
-        { id: 'p1', x: 135, y: 55, label: 'I', text: 'Ergene Havzası', color: '#dc2626' },
-        { id: 'p2', x: 105, y: 225, label: 'II', text: 'Menteşe Yöresi', color: '#dc2626' },
-        { id: 'p3', x: 385, y: 250, label: 'III', text: 'Çukurova Deltası', color: '#dc2626' },
-        { id: 'p4', x: 520, y: 75, label: 'IV', text: 'Doğu Karadeniz (Rize)', color: '#dc2626' },
-        { id: 'p5', x: 685, y: 220, label: 'V', text: 'Hakkari Yöresi', color: '#dc2626' }
-      ]
+      pins: []
     },
     presets: [
       {

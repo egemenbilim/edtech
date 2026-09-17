@@ -138,87 +138,128 @@ html.dark .lbl {
   z-index: 40;
   backdrop-filter: blur(2px);
 }
+#sidebarOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 45;
+  transition: opacity 0.2s ease;
+}
 #sidebarOverlay.open {
   display: block;
 }
 #sidebarPanel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  z-index: 41;
-  width: 260px;
   background: #fff;
-  border-right: 1px solid #e2e8f0;
-  transform: translateX(-100%);
-  transition: transform .22s cubic-bezier(.4, 0, .2, 1);
+  border-left: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-#sidebarPanel.open {
-  transform: translateX(0);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, .03);
 }
 html.dark #sidebarPanel {
   background: #0f172a;
   border-color: #1e293b;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, .25);
+}
+@media (min-width: 1024px) {
+  #sidebarPanel {
+    position: sticky;
+    top: 3.5rem;
+    height: calc(100vh - 3.5rem);
+    transform: none !important;
+  }
+  #sidebarClose {
+    display: none !important;
+  }
+  #sidebarToggle {
+    display: none !important;
+  }
+  #sidebarOverlay {
+    display: none !important;
+  }
+}
+@media (max-width: 1023px) {
+  #sidebarPanel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    z-index: 50;
+    width: 340px;
+    max-width: 92vw;
+    transform: translateX(100%);
+    transition: transform .25s cubic-bezier(.4, 0, .2, 1);
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.2);
+  }
+  #sidebarPanel.open {
+    transform: translateX(0);
+  }
 }
 #sidebarScrollArea {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: .75rem .85rem 1rem;
+  padding: .85rem 1rem 1.25rem;
 }
 #sidebarScrollArea::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
 }
 #sidebarScrollArea::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 99px;
 }
+html.dark #sidebarScrollArea::-webkit-scrollbar-thumb {
+  background: #334155;
+}
 
 /* Sidebar compact styles */
 .sb-lbl {
   display: block;
-  font-size: .625rem;
+  font-size: .6875rem;
   font-weight: 600;
-  color: #94a3b8;
-  letter-spacing: .04em;
+  color: #64748b;
+  letter-spacing: .03em;
   text-transform: uppercase;
-  margin-bottom: .2rem;
+  margin-bottom: .25rem;
 }
 .sb-inp {
   width: 100%;
   border: 1px solid #e2e8f0;
-  border-radius: .35rem;
-  padding: .28rem .5rem;
-  font-size: .75rem;
+  border-radius: .5rem;
+  padding: .4rem .65rem;
+  font-size: .8125rem;
   outline: none;
-  background: #fff;
-  transition: border-color .15s, box-shadow .15s;
+  background: #f8fafc;
+  transition: all .15s ease;
   color: #0f172a;
 }
 .sb-inp:focus {
-  border-color: #0f172a;
-  box-shadow: 0 0 0 2px rgba(15, 23, 42, .07);
+  background: #fff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, .12);
 }
 .sb-inp::placeholder {
-  color: #cbd5e1;
-  font-size: .72rem;
+  color: #94a3b8;
+  font-size: .75rem;
 }
 html.dark .sb-inp {
   background: #1e293b;
   border-color: #334155;
-  color: #e2e8f0;
+  color: #f1f5f9;
 }
 html.dark .sb-inp:focus {
-  border-color: #94a3b8;
+  background: #0f172a;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, .15);
 }
 html.dark .sb-inp::placeholder {
-  color: #475569;
+  color: #64748b;
 }
 html.dark .sb-lbl {
-  color: #64748b;
+  color: #94a3b8;
 }
 .sb-section {
   border-top: 1px solid #f1f5f9;
@@ -298,55 +339,137 @@ html.dark .tpl-desc {
 .sb-type-tab {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2px;
-  background: #f1f5f9;
-  border-radius: .4rem;
-  padding: 2px;
-  margin-bottom: .5rem;
+  gap: 3px;
+  background: #f0f7ff;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 14px -2px rgba(59, 130, 246, 0.22), inset 0 1px 2px rgba(59, 130, 246, 0.06);
+  border-radius: .5rem;
+  padding: 3px;
+  margin-bottom: .6rem;
+  position: relative;
 }
 html.dark .sb-type-tab {
-  background: #1e293b;
+  background: #0f172a;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 16px -2px rgba(59, 130, 246, 0.3), inset 0 1px 2px rgba(59, 130, 246, 0.12);
 }
 .sb-type-tab button {
-  border-radius: .3rem;
-  padding: .28rem .2rem;
-  font-size: .68rem;
-  font-weight: 500;
-  border: none;
+  border-radius: .38rem;
+  padding: .35rem .2rem;
+  font-size: .72rem;
+  font-weight: 600;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: .12s;
+  transition: all .18s ease;
   background: transparent;
-  color: #64748b;
+  color: #475569;
+}
+.sb-type-tab button:hover {
+  color: #1d4ed8;
+  background: rgba(255, 255, 255, 0.7);
 }
 .sb-type-tab button.active {
-  background: #fff;
-  color: #0f172a;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
+  background: #ffffff;
+  color: #1d4ed8;
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.18), 0 0 10px rgba(59, 130, 246, 0.25);
 }
 html.dark .sb-type-tab button.active {
-  background: #334155;
-  color: #fff;
+  background: #1e293b;
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.45);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px rgba(59, 130, 246, 0.35);
+}
+
+/* Konu Denemesi Başlık Tasarımı Butonları */
+.header-design-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s ease;
+  width: 100%;
+}
+.header-design-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+.header-design-btn.active {
+  background: #ffffff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  box-shadow: 0 0 0 1px #3b82f6, 0 1px 3px rgba(59, 130, 246, 0.15);
+}
+html.dark .header-design-btn {
+  border-color: #334155;
+  background: #0f172a;
+  color: #94a3b8;
+}
+html.dark .header-design-btn:hover {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+html.dark .header-design-btn.active {
+  background: #1e293b;
+  border-color: #60a5fa;
+  color: #93c5fd;
+  box-shadow: 0 0 0 1px #60a5fa, 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* FKBC Interaktif Pin Düzenleyici Popover */
+#sciPinEditor {
+  position: absolute;
+  z-index: 50;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  min-width: 220px;
+  max-width: 280px;
+  font-family: inherit;
+}
+html.dark #sciPinEditor {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
 }
 
 /* Hamburger toggle button — turuncu parlak */
 #sidebarToggle {
   display: inline-flex;
   align-items: center;
-  gap: .5rem;
-  position: relative;
-  overflow: hidden;
-  padding: .4rem .65rem;
+  gap: .4rem;
+  padding: .35rem .6rem;
   border-radius: .5rem;
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  border: 1px solid rgba(249, 115, 22, .6);
+  background: #0f172a;
+  border: 1px solid #0f172a;
   cursor: pointer;
   color: #fff;
   font-size: .75rem;
-  font-weight: 700;
-  letter-spacing: .01em;
-  box-shadow: 0 0 0 0 rgba(249, 115, 22, .5);
-  animation: sidebarGlow 2.2s ease-in-out infinite;
-  transition: transform .15s, box-shadow .2s;
+  font-weight: 600;
+  transition: background .15s, transform .12s;
+}
+#sidebarToggle:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+html.dark #sidebarToggle {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #f8fafc;
+}
+html.dark #sidebarToggle:hover {
+  background: #e2e8f0;
 }
 #sidebarToggle:hover {
   transform: translateY(-1px);
@@ -449,39 +572,13 @@ html.dark #tplBtn #tplArrow {
   color: #93c5fd !important;
 }
 
-/* Split layout */
+/* Foy Evi Stili Ana Sahne Yerleşimi */
 #mainScrollArea {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  align-items: flex-start;
-  min-width: 0;
-}
-#mainScrollArea > .space-y-5 {
   min-width: 0;
   width: 100%;
-  order: 1;
 }
 #previewPane {
-  width: 100%;
-  order: 2;
-}
-@media (min-width: 1024px) {
-  #mainScrollArea {
-    flex-direction: row;
-  }
-  #previewPane {
-    order: 1;
-    width: 38%;
-    max-width: 520px;
-    flex: 0 0 auto;
-    position: sticky;
-    top: 4.5rem;
-  }
-  #mainScrollArea > .space-y-5 {
-    order: 2;
-    flex: 1 1 0%;
-  }
+  min-width: 0;
 }
 
 /* Preview card */
@@ -588,14 +685,14 @@ html.dark .pv-nav button:hover:not(:disabled) {
 }
 #pvWrap {
   position: relative;
-  background: #e8edf3;
-  padding: .7rem;
-  max-height: calc(100vh - 12rem);
+  background: #f1f5f9;
+  padding: 2.25rem 1.5rem;
+  max-height: calc(100vh - 10rem);
   overflow: auto;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: 220px;
+  min-height: 520px;
 }
 html.dark #pvWrap {
   background: #020617;
@@ -604,14 +701,39 @@ html.dark #pvWrap {
   width: 100%;
   display: flex;
   justify-content: center;
+  min-width: 0;
 }
 .pv-canvas {
+  max-width: 820px;
   width: 100%;
   height: auto;
   display: block;
   background: #fff;
-  border-radius: 3px;
-  box-shadow: 0 3px 14px rgba(15, 23, 42, .18);
+  border-radius: 4px;
+  box-shadow: 0 16px 40px -10px rgba(15, 23, 42, .2), 0 0 0 1px rgba(15, 23, 42, .06);
+  transition: transform .2s ease;
+}
+html.dark .pv-canvas {
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .1);
+}
+
+/* Foy Evi Süzülen Büyüt ve Düzenle Butonu */
+.pv-float-btn {
+  animation: floatPill 3.5s ease-in-out infinite alternate;
+}
+@keyframes floatPill {
+  0% {
+    transform: translateY(0);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, .12), 0 8px 10px -6px rgba(0, 0, 0, .1);
+  }
+  100% {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 35px -6px rgba(0, 0, 0, .18), 0 10px 14px -6px rgba(0, 0, 0, .12);
+  }
+}
+.pv-float-btn:hover {
+  animation-play-state: paused;
+  transform: translateY(-5px) scale(1.04) !important;
 }
 .pv-empty {
   position: absolute;
@@ -691,49 +813,13 @@ html.dark .pv-big-btn {
   border-radius: .45rem;
 }
 
-/* Docking */
-body.pv-docked #previewPane {
-  position: fixed;
-  top: 4.5rem;
-  bottom: 1rem;
-  left: calc(50% + 8rem);
-  right: auto;
-  width: min(58vw, 680px);
-  max-width: none;
-  z-index: 46;
-  transform: translateX(-50%);
-}
+/* Foy Evi Stili Önizleme & Düzenleme */
 body.pv-docked .pv-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 24px 60px rgba(2, 6, 23, .5), 0 0 0 1px rgba(148, 163, 184, .28);
-}
-body.pv-docked #pvWrap {
-  max-height: none;
-  flex: 1;
+  box-shadow: 0 20px 50px rgba(2, 6, 23, .25), 0 0 0 1px rgba(148, 163, 184, .28);
 }
 @media (max-width: 1023px) {
   #sidebarPanel.open {
-    z-index: 48;
-  }
-  body.pv-docked #previewPane {
-    left: calc(260px + .55rem);
-    right: .55rem;
-    width: auto;
-    max-width: none;
-    top: 3.7rem;
-    bottom: .55rem;
-    transform: none;
-    z-index: 46;
-  }
-  body.pv-docked .pv-card {
-    min-width: 0;
-  }
-}
-@media (max-width: 559px) {
-  body.pv-docked #previewPane {
-    display: none;
+    z-index: 50;
   }
 }
 
@@ -1603,5 +1689,271 @@ html.dark .sci-symbol-card {
 html.dark .sci-symbol-card.selected {
   background: #134e4a;
   border-color: #2dd4bf;
+}
+
+
+/* ==========================================================================
+   FOY EVİ MODERN TASARIM DİLİ & SAĞ PANEL STİLLERİ
+   ========================================================================== */
+.pv-card {
+  box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  transition: box-shadow .25s ease;
+}
+html.dark .pv-card {
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Foy Evi 4'lü Soru Ekleme Aksiyon Butonları */
+#pickBtn, #textBtn, #openCrop, #dropzoneBankBtn {
+  cursor: pointer;
+  user-select: none;
+}
+#pickBtn:hover {
+  border-color: #3b82f6 !important;
+  background-color: #eff6ff !important;
+}
+html.dark #pickBtn:hover {
+  background-color: rgba(30, 58, 138, 0.35) !important;
+  border-color: #60a5fa !important;
+}
+
+#textBtn:hover {
+  border-color: #0f172a !important;
+  background-color: #f8fafc !important;
+}
+html.dark #textBtn:hover {
+  border-color: #94a3b8 !important;
+  background-color: #1e293b !important;
+}
+
+#openCrop:hover {
+  border-color: #6366f1 !important;
+  background-color: #eef2ff !important;
+}
+html.dark #openCrop:hover {
+  background-color: rgba(49, 46, 129, 0.35) !important;
+  border-color: #818cf8 !important;
+}
+
+#dropzoneBankBtn:hover {
+  border-color: #10b981 !important;
+  background-color: #ecfdf5 !important;
+}
+html.dark #dropzoneBankBtn:hover {
+  background-color: rgba(6, 78, 59, 0.35) !important;
+  border-color: #34d399 !important;
+}
+
+/* Dropzone Foy Evi Kompakt Görünümü */
+#dropzone {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#dropzone:hover {
+  border-color: #3b82f6;
+  background-color: rgba(239, 246, 255, 0.5);
+  box-shadow: 0 4px 18px -2px rgba(59, 130, 246, 0.12);
+}
+html.dark #dropzone:hover {
+  background-color: rgba(30, 58, 138, 0.15);
+  box-shadow: 0 4px 18px -2px rgba(59, 130, 246, 0.2);
+}
+
+/* Şablon Kartı Aktif Vurgusu */
+.tpl-card.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+html.dark .tpl-card.active {
+  border-color: #60a5fa;
+  background: #1e293b;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+}
+
+/* Buton ve Kart Geçişleri */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Foy Evi PDF & Görsel Kırpma Stüdyosu */
+#cropTool {
+  backdrop-filter: blur(8px);
+}
+#cropWrap {
+  background-color: #070b12;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+#cropStage img {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+#cropRect {
+  border: 2px solid #f97316 !important;
+  background-color: rgba(249, 115, 22, 0.18) !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+#cropAddBar {
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+#cropAns button {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+#cropAns button:hover {
+  transform: scale(1.08);
+}
+#dropzone.border-sky-400 {
+  border-color: #0284c7 !important;
+  background-color: rgba(2, 132, 199, 0.06) !important;
+  box-shadow: inset 0 0 0 2px #0284c7 !important;
+}
+
+/* ==========================================================================
+   YENİ DÜZEN & İNTERAKTİF KÂĞIT STİLLERİ
+   ========================================================================== */
+
+/* Seamless Floating Paper (Basamaksız, Doğrudan Masada Duran A4 Kâğıdı) */
+#previewPane {
+  background: transparent;
+}
+#dropzone {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#pvWrap {
+  padding: 1.5rem 0.5rem;
+  background: transparent !important;
+}
+#pvStack canvas, .pv-page canvas {
+  box-shadow: 0 4px 25px -4px rgba(0, 0, 0, 0.14), 0 2px 8px -2px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 2px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+html.dark #pvStack canvas, html.dark .pv-page canvas {
+  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Sütun Düzeni Buton Grubu (#colBtnGroup) */
+#colBtnGroup {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+html.dark #colBtnGroup {
+  border-color: rgba(51, 65, 85, 0.8);
+}
+.col-tab-btn {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.col-tab-btn:hover {
+  color: #0f172a;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+html.dark .col-tab-btn:hover {
+  color: #f8fafc;
+  background-color: rgba(51, 65, 85, 0.6);
+}
+.col-tab-btn.active {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+html.dark .col-tab-btn.active {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 4px rgba(59, 130, 246, 0.35);
+}
+
+/* Kâğıt Üzerinde Doğrudan Soru Düzenleme (Main Paper Interactive Chips) */
+.pvMainChip {
+  border-radius: 4px;
+  cursor: grab;
+}
+.pvMainChip:hover {
+  border: 1.5px dashed #2563eb !important;
+  background: rgba(37, 99, 235, 0.06) !important;
+}
+.pvMainChip .pvActs {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.pvMainChip:hover .pvActs {
+  opacity: 1;
+}
+.pvMainChip .pv-edit-btn {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 6px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+}
+.pvMainChip .pv-edit-btn:hover {
+  background: #1d4ed8 !important;
+  transform: scale(1.1);
+}
+
+/* Panel İçi Soru Editörü (#sidebarPanel #textModal) */
+#sidebarSettingsView.hidden {
+  display: none !important;
+}
+#sidebarSettingsView:not(.hidden) {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+}
+
+#sidebarPanel #textModal {
+  position: relative !important;
+  inset: auto !important;
+  z-index: auto !important;
+  background: transparent !important;
+  padding: 0 !important;
+  backdrop-filter: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+#sidebarPanel #textModal.hidden {
+  display: none !important;
+}
+#sidebarPanel #textModal:not(.hidden) {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+}
+
+/* FKBC Pin Düzenleyici Kartı */
+#sciPinEditor {
+  position: fixed !important;
+  z-index: 100050 !important;
+  width: 290px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.22), 0 4px 12px -2px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  box-sizing: border-box;
+}
+html.dark #sciPinEditor {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.6);
 }
 

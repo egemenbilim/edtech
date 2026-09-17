@@ -253,6 +253,7 @@
         justify-content: space-between;
       }
       .main-nav { display: none; }
+      .btn-tablet-menu { display: inline-flex; }
     }
 
     .nav-item {
@@ -298,6 +299,201 @@
     }
     .btn-quick-jump:hover {
       filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    /* Tablet & Mobil Hamburger Menü Butonu */
+    .btn-tablet-menu {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      color: var(--text-white);
+      cursor: pointer;
+      font-size: 22px;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .btn-tablet-menu:hover, .btn-tablet-menu.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: var(--bg-elevated);
+    }
+    @media (max-width: 768px) {
+      .btn-quick-jump span { display: none; }
+      .btn-quick-jump { padding: 7px 10px; }
+      .btn-cmd-trigger span:not(.cmd-shortcut-badge) { display: none; }
+      .btn-cmd-trigger { padding: 7px 10px; }
+    }
+
+    /* ==========================================================================
+       TABLET & MOBİL GEZİNTİ ÇEKMECESİ (DRAWER)
+       ========================================================================== */
+    .tablet-nav-drawer {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      pointer-events: none;
+      visibility: hidden;
+      transition: visibility 0.3s ease;
+    }
+    .tablet-nav-drawer.open {
+      pointer-events: auto;
+      visibility: visible;
+    }
+    .tablet-drawer-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.76);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .tablet-nav-drawer.open .tablet-drawer-backdrop {
+      opacity: 1;
+    }
+    .tablet-drawer-content {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 360px;
+      max-width: 86vw;
+      background: #081021;
+      border-left: 1px solid var(--border-medium);
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.65);
+      padding: 24px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.32s var(--ease-luxury);
+      z-index: 2;
+    }
+    .tablet-nav-drawer.open .tablet-drawer-content {
+      transform: translateX(0);
+    }
+    .tablet-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 20px;
+    }
+    .tablet-drawer-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .tablet-drawer-close:hover {
+      color: var(--text-white);
+      border-color: var(--gold);
+    }
+    .tablet-drawer-section-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .tablet-drawer-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .tablet-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+    .tablet-nav-link:hover, .tablet-nav-link:active {
+      background: var(--bg-elevated);
+      border-color: var(--gold);
+      transform: translateX(4px);
+    }
+    .tablet-nav-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--gold-bg);
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    .tablet-nav-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .tablet-nav-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-white);
+    }
+    .tablet-nav-sub {
+      font-size: 11.5px;
+      color: var(--text-dim);
+    }
+    .tablet-drawer-systems {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .tablet-system-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .tablet-system-chip.chip-gold {
+      background: rgba(212, 175, 55, 0.12);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      color: var(--gold);
+    }
+    .tablet-system-chip.chip-teal {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--teal);
+    }
+    .tablet-system-chip.chip-indigo {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #A5B4FC;
+    }
+    .tablet-system-chip:hover {
+      filter: brightness(1.15);
       transform: translateY(-1px);
     }
 
@@ -802,8 +998,38 @@
       gap: 28px;
       margin-bottom: 40px;
     }
-    @media (max-width: 1040px) {
-      .trio-grid { grid-template-columns: 1fr; }
+    @media (max-width: 1080px) and (min-width: 881px) {
+      .trio-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .spotlight-card {
+        padding: 24px 20px;
+      }
+    }
+    @media (max-width: 880px) and (min-width: 641px) {
+      .trio-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+      .spotlight-card {
+        padding: 26px 22px;
+      }
+      /* Tablet dikeyde (768px-834px) 3. sistem kartı 2 kolona yayılır */
+      .spotlight-card:nth-child(3) {
+        grid-column: span 2;
+      }
+      .spotlight-card:nth-child(3) .card-tablet-wide-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        align-items: center;
+      }
+    }
+    @media (max-width: 640px) {
+      .trio-grid { grid-template-columns: 1fr; gap: 20px; }
+      .spotlight-card { padding: 24px 20px; }
+      .spotlight-card:nth-child(3) { grid-column: span 1; }
     }
 
     /* Spotlight Kartı */
@@ -933,6 +1159,9 @@
       border: 1px solid var(--border-subtle);
       background: var(--bg-deep);
       z-index: 2;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     /* Katman 1: Görsel / Mockup Durumu */
@@ -948,13 +1177,14 @@
       background-size: cover;
       background-position: center;
     }
-    .spotlight-card:hover .stage-visual-view {
+    .spotlight-card:hover .stage-visual-view,
+    .visual-reveal-stage.show-info .stage-visual-view {
       opacity: 0;
       transform: scale(0.96);
       pointer-events: none;
     }
 
-    /* Katman 2: Hover Bilgi Durumu (Mouse Gelince Açılan Detay) */
+    /* Katman 2: Hover & Dokunma Bilgi Durumu (Mouse Gelince veya Dokununca Açılan Detay) */
     .stage-info-view {
       position: absolute;
       inset: 0;
@@ -968,9 +1198,46 @@
       transition: opacity 0.35s var(--ease-luxury), transform 0.35s var(--ease-luxury);
       z-index: 3;
     }
-    .spotlight-card:hover .stage-info-view {
+    .spotlight-card:hover .stage-info-view,
+    .visual-reveal-stage.show-info .stage-info-view {
       opacity: 1;
       transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .btn-stage-touch-toggle {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--gold);
+      background: var(--gold-bg);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+    }
+    .card-theme-teal .btn-stage-touch-toggle {
+      color: var(--teal);
+      background: var(--teal-bg);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    .card-theme-indigo .btn-stage-touch-toggle {
+      color: #A5B4FC;
+      background: var(--indigo-bg);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      .btn-stage-touch-toggle { display: inline-flex; }
+      .hint-desktop-text { display: none !important; }
+      .hint-touch-text { display: inline-flex !important; }
+      .spotlight-card::before { opacity: 0.75 !important; }
+    }
+    @media (hover: hover) {
+      .hint-touch-text { display: none !important; }
     }
 
     .stage-info-headline {
@@ -1114,7 +1381,20 @@
       gap: 28px;
       align-items: center;
     }
-    @media (max-width: 768px) {
+    @media (max-width: 900px) and (min-width: 641px) {
+      .privacy-standalone-card { padding: 28px 24px; }
+      .privacy-grid {
+        grid-template-columns: 64px 1fr;
+        gap: 20px;
+      }
+      .privacy-shield-icon {
+        width: 64px;
+        height: 64px;
+        font-size: 28px;
+      }
+    }
+    @media (max-width: 640px) {
+      .privacy-standalone-card { padding: 24px 20px; }
       .privacy-grid {
         grid-template-columns: 1fr;
         gap: 18px;
@@ -1184,6 +1464,12 @@
       padding: 36px;
       box-shadow: var(--shadow-luxury);
     }
+    @media (max-width: 900px) {
+      .showcase-card-wrapper {
+        padding: 22px 16px;
+        border-radius: var(--radius-lg);
+      }
+    }
 
     .showcase-top-row {
       display: flex;
@@ -1191,7 +1477,7 @@
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 16px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .showcase-tab-switcher {
@@ -1201,6 +1487,13 @@
       padding: 6px;
       border-radius: var(--radius-md);
       border: 1px solid var(--border-subtle);
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .showcase-tab-switcher::-webkit-scrollbar {
+      display: none;
     }
     .showcase-nav-btn {
       padding: 10px 18px;
@@ -1213,6 +1506,8 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .showcase-nav-btn:hover {
       color: var(--text-white);
@@ -1222,6 +1517,12 @@
       color: var(--text-white);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
       border: 1px solid var(--border-medium);
+    }
+    @media (max-width: 768px) {
+      .showcase-nav-btn {
+        padding: 8px 12px;
+        font-size: 12.5px;
+      }
     }
 
     .preview-panel {
@@ -1365,12 +1666,19 @@
       gap: 24px;
       min-height: 280px;
     }
-    @media (max-width: 768px) {
+    @media (max-width: 880px) {
       .stage-two-columns {
         grid-template-columns: 1fr;
-        gap: 16px;
+        gap: 18px;
       }
       .stage-column-divider { display: none; }
+      .meb-stage-header {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .a4-paper-sheet {
+        padding: 22px 18px;
+      }
     }
     .stage-column-divider {
       background: #CBD5E1;
@@ -1406,9 +1714,17 @@
     }
 
     .stage-katex-container {
-      padding: 10px 0;
+      padding: 10px 4px;
       text-align: center;
-      font-size: 17px;
+      font-size: 16px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .table-responsive-tablet {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .options-grid {
@@ -1478,8 +1794,27 @@
       gap: 28px;
       margin-top: 40px;
     }
-    @media (max-width: 860px) {
-      .steps-trio { grid-template-columns: 1fr; }
+    @media (max-width: 1040px) and (min-width: 681px) {
+      .steps-trio {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .step-card {
+        padding: 24px 18px;
+      }
+      .step-giant-number {
+        font-size: 36px;
+      }
+      .step-heading {
+        font-size: 17.5px;
+      }
+      .step-text {
+        font-size: 13.5px;
+      }
+    }
+    @media (max-width: 680px) {
+      .steps-trio { grid-template-columns: 1fr; gap: 18px; }
+      .step-card { padding: 24px 20px; }
     }
 
     .step-card {
@@ -1585,10 +1920,16 @@
       gap: 48px;
       margin-bottom: 48px;
     }
-    @media (max-width: 768px) {
+    @media (max-width: 1040px) and (min-width: 641px) {
+      .footer-grid {
+        grid-template-columns: 1.4fr 1fr 1fr;
+        gap: 24px;
+      }
+    }
+    @media (max-width: 640px) {
       .footer-grid {
         grid-template-columns: 1fr;
-        gap: 32px;
+        gap: 28px;
       }
     }
     .footer-brand-p {
@@ -1672,9 +2013,79 @@
             <span>Sistemleri Aç</span>
             <i class="bi bi-arrow-down-short" style="font-size:18px"></i>
           </a>
+
+          <!-- Tablet & Mobil Hamburger Menü Butonu -->
+          <button class="btn-tablet-menu" id="tabletNavToggle" aria-label="Gezinti Menüsünü Aç / Kapat" aria-expanded="false" aria-controls="tabletNavDrawer">
+            <i class="bi bi-list" id="tabletNavIcon"></i>
+          </button>
         </div>
       </div>
     </header>
+
+    <!-- ================= TABLET & MOBİL GEZİNTİ ÇEKMECESİ ================= -->
+    <div class="tablet-nav-drawer" id="tabletNavDrawer" aria-hidden="true">
+      <div class="tablet-drawer-backdrop" id="tabletDrawerBackdrop"></div>
+      <div class="tablet-drawer-content">
+        <div class="tablet-drawer-header">
+          <div class="brand-link">
+            <div class="brand-icon" style="width:34px;height:34px;font-size:17px">E</div>
+            <div class="brand-text-block">
+              <span class="brand-title" style="font-size:15px">Egemen's <span>EdTech</span></span>
+              <span class="brand-tagline">Öğretmen Çalışma Alanı</span>
+            </div>
+          </div>
+          <button class="tablet-drawer-close" id="tabletDrawerClose" aria-label="Menüyü Kapat">&times;</button>
+        </div>
+
+        <div class="tablet-drawer-section-title">SAYFA İÇİ GEZİNTİ</div>
+        <nav class="tablet-drawer-nav">
+          <a href="#sistemler" class="tablet-nav-link">
+            <div class="tablet-nav-icon"><i class="bi bi-grid-fill"></i></div>
+            <div class="tablet-nav-info">
+              <span class="tablet-nav-title">3 Temel Sistem</span>
+              <span class="tablet-nav-sub">Öğrenci Takip, Testmaker &amp; Promptlar</span>
+            </div>
+          </a>
+          <a href="#canli-onizleme" class="tablet-nav-link">
+            <div class="tablet-nav-icon"><i class="bi bi-eye-fill"></i></div>
+            <div class="tablet-nav-info">
+              <span class="tablet-nav-title">Canlı Önizleme</span>
+              <span class="tablet-nav-sub">Gerçek MEB sınavı &amp; karne çıktısı</span>
+            </div>
+          </a>
+          <a href="#nasil-calisir" class="tablet-nav-link">
+            <div class="tablet-nav-icon"><i class="bi bi-check2-circle"></i></div>
+            <div class="tablet-nav-info">
+              <span class="tablet-nav-title">Nasıl Kullanılır?</span>
+              <span class="tablet-nav-sub">3 adımda eğitim dönemini yönetin</span>
+            </div>
+          </a>
+          <a href="#sss" class="tablet-nav-link">
+            <div class="tablet-nav-icon"><i class="bi bi-question-circle"></i></div>
+            <div class="tablet-nav-info">
+              <span class="tablet-nav-title">Sıkça Sorulanlar</span>
+              <span class="tablet-nav-sub">Gizlilik, yedekleme ve güvenlik</span>
+            </div>
+          </a>
+        </nav>
+
+        <div class="tablet-drawer-section-title" style="margin-top:24px">DOĞRUDAN SİSTEMLERİ AÇ</div>
+        <div class="tablet-drawer-systems">
+          <a href="ogrenci-takip/index.html" class="tablet-system-chip chip-gold">
+            <i class="bi bi-people-fill"></i>
+            <span>Öğrenci Takip Sistemi</span>
+          </a>
+          <a href="egemens-testmaker/index.html" class="tablet-system-chip chip-teal">
+            <i class="bi bi-pencil-square"></i>
+            <span>Sınav Hazırlama (Testmaker)</span>
+          </a>
+          <a href="prompt-deposu/index.html" class="tablet-system-chip chip-indigo">
+            <i class="bi bi-cpu-fill"></i>
+            <span>Eğitim Promptları Deposu</span>
+          </a>
+        </div>
+      </div>
+    </div>
 
     <main>
       <!-- ================= HERO ALANI (Madde 1) ================= -->
@@ -1749,9 +2160,12 @@
               <div>
                 <div class="card-top-row">
                   <span class="card-badge">SİSTEM 01</span>
-                  <div class="live-pulse-indicator">
-                    <span class="pulse-dot"></span>
-                    <span>Canlı Takip</span>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <button class="btn-stage-touch-toggle" aria-label="Detay Bilgiyi Göster"><i class="bi bi-info-circle"></i> <span>Detay</span></button>
+                    <div class="live-pulse-indicator">
+                      <span class="pulse-dot"></span>
+                      <span>Canlı Takip</span>
+                    </div>
                   </div>
                 </div>
 
@@ -1770,7 +2184,8 @@
                         128 Aktif Kayıtlı Öğrenci · 16 Deneme
                       </div>
                       <div class="mock-hint-hover">
-                        <i class="bi bi-cursor-fill"></i> Bilgi için üzerine gelin
+                        <span class="hint-desktop-text"><i class="bi bi-cursor-fill"></i> Bilgi için üzerine gelin</span>
+                        <span class="hint-touch-text"><i class="bi bi-hand-index-thumb"></i> Detay için dokunun</span>
                       </div>
                     </div>
                   </div>
@@ -1804,9 +2219,12 @@
               <div>
                 <div class="card-top-row">
                   <span class="card-badge">SİSTEM 02</span>
-                  <div class="live-pulse-indicator" style="color:var(--teal)">
-                    <span class="pulse-dot" style="background:var(--teal);box-shadow:0 0 10px var(--teal)"></span>
-                    <span>KaTeX &amp; PDF</span>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <button class="btn-stage-touch-toggle" aria-label="Detay Bilgiyi Göster"><i class="bi bi-info-circle"></i> <span>Detay</span></button>
+                    <div class="live-pulse-indicator" style="color:var(--teal)">
+                      <span class="pulse-dot" style="background:var(--teal);box-shadow:0 0 10px var(--teal)"></span>
+                      <span>KaTeX &amp; PDF</span>
+                    </div>
                   </div>
                 </div>
 
@@ -1842,7 +2260,8 @@
                         </div>
                       </div>
                       <div class="mock-hint-hover" style="margin-top: 6px;">
-                        <i class="bi bi-cursor-fill"></i> Bilgi için üzerine gelin
+                        <span class="hint-desktop-text"><i class="bi bi-cursor-fill"></i> Bilgi için üzerine gelin</span>
+                        <span class="hint-touch-text"><i class="bi bi-hand-index-thumb"></i> Detay için dokunun</span>
                       </div>
                     </div>
                   </div>
@@ -1873,56 +2292,64 @@
 
             <!-- 03: EĞİTİM PROMPTLARI DEPOSU -->
             <div class="spotlight-card card-theme-indigo">
-              <div>
-                <div class="card-top-row">
-                  <span class="card-badge">SİSTEM 03</span>
-                  <div class="live-pulse-indicator" style="color:var(--indigo)">
-                    <span class="pulse-dot" style="background:var(--indigo);box-shadow:0 0 10px var(--indigo)"></span>
-                    <span>9 Şablon</span>
+              <div class="card-tablet-wide-row">
+                <div>
+                  <div class="card-top-row">
+                    <span class="card-badge">SİSTEM 03</span>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <button class="btn-stage-touch-toggle" aria-label="Detay Bilgiyi Göster"><i class="bi bi-info-circle"></i> <span>Detay</span></button>
+                      <div class="live-pulse-indicator" style="color:var(--indigo)">
+                        <span class="pulse-dot" style="background:var(--indigo);box-shadow:0 0 10px var(--indigo)"></span>
+                        <span>9 Şablon</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <h3 class="card-title serif">Eğitim Promptları Deposu</h3>
+
+                  <p class="card-main-text">
+                    Ders ve sınıf bazlı hazır yapay zekâ komutları, NotebookLM podcast formatı ve Bloom taksonomisi uyumu.
+                  </p>
+
+                  <div class="card-cta-row">
+                    <a href="prompt-deposu/index.html" class="btn-enter-system">
+                      <span>Prompt Deposuna Git</span>
+                      <i class="bi bi-arrow-right"></i>
+                    </a>
                   </div>
                 </div>
 
-                <h3 class="card-title serif">Eğitim Promptları Deposu</h3>
-
-                <!-- Madde 4: Görsel Alanı & Hover Olunca Bilgi Gelen Katman -->
-                <div class="visual-reveal-stage">
-                  <!-- Katman 1: Görsel Görünüm -->
-                  <div class="stage-visual-view">
-                    <div class="mock-visual-box" style="border-left: 3px solid var(--indigo);">
-                      <div class="mock-row">
-                        <span style="font-size:12px;font-weight:700;color:var(--indigo)"><i class="bi bi-cpu-fill"></i> Pedagojik AI</span>
-                        <span style="font-size:11px;font-family:var(--font-mono);background:rgba(99,102,241,0.15);color:var(--indigo);padding:2px 6px;border-radius:4px">Türkçe</span>
-                      </div>
-                      <div style="font-family:var(--font-mono);font-size:11px;color:#C7D2FE;background:var(--bg-deep);padding:6px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                        "Sen uzman bir öğretmensin..."
-                      </div>
-                      <div class="mock-hint-hover">
-                        <i class="bi bi-cursor-fill"></i> Bilgi için üzerine gelin
+                <div>
+                  <!-- Madde 4: Görsel Alanı & Hover Olunca Bilgi Gelen Katman -->
+                  <div class="visual-reveal-stage" style="margin-bottom:0">
+                    <!-- Katman 1: Görsel Görünüm -->
+                    <div class="stage-visual-view">
+                      <div class="mock-visual-box" style="border-left: 3px solid var(--indigo);">
+                        <div class="mock-row">
+                          <span style="font-size:12px;font-weight:700;color:var(--indigo)"><i class="bi bi-cpu-fill"></i> Pedagojik AI</span>
+                          <span style="font-size:11px;font-family:var(--font-mono);background:rgba(99,102,241,0.15);color:var(--indigo);padding:2px 6px;border-radius:4px">Türkçe</span>
+                        </div>
+                        <div style="font-family:var(--font-mono);font-size:11px;color:#C7D2FE;background:var(--bg-deep);padding:6px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                          "Sen uzman bir öğretmensin..."
+                        </div>
+                        <div class="mock-hint-hover">
+                          <span class="hint-desktop-text"><i class="bi bi-cursor-fill"></i> Bilgi için üzerine gelin</span>
+                          <span class="hint-touch-text"><i class="bi bi-hand-index-thumb"></i> Detay için dokunun</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <!-- Katman 2: Hover Bilgi Görünümü -->
-                  <div class="stage-info-view">
-                    <div class="stage-info-headline">
-                      <i class="bi bi-info-circle-fill"></i> NELER YAPABİLİRSİNİZ?
-                    </div>
-                    <div class="stage-info-desc">
-                      Yapay zekâya (ChatGPT, Gemini, NotebookLM) soru, ödev, kavram yanılgısı kağıdı veya podcast metni hazırlatmak için pedagojik olarak kalibre edilmiş hazır komutları dersinize göre tek tıkla kopyalayın.
+                    <!-- Katman 2: Hover Bilgi Görünümü -->
+                    <div class="stage-info-view">
+                      <div class="stage-info-headline">
+                        <i class="bi bi-info-circle-fill"></i> NELER YAPABİLİRSİNİZ?
+                      </div>
+                      <div class="stage-info-desc">
+                        Yapay zekâya (ChatGPT, Gemini, NotebookLM) soru, ödev, kavram yanılgısı kağıdı veya podcast metni hazırlatmak için pedagojik olarak kalibre edilmiş hazır komutları dersinize göre tek tıkla kopyalayın.
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                <p class="card-main-text">
-                  Ders ve sınıf bazlı hazır yapay zekâ komutları, NotebookLM podcast formatı ve Bloom taksonomisi uyumu.
-                </p>
-              </div>
-
-              <div class="card-cta-row">
-                <a href="prompt-deposu/index.html" class="btn-enter-system">
-                  <span>Prompt Deposuna Git</span>
-                  <i class="bi bi-arrow-right"></i>
-                </a>
               </div>
             </div>
 
@@ -2100,50 +2527,52 @@
                   </div>
                 </div>
 
-                <table class="mockup-score-table">
-                  <thead>
-                    <tr>
-                      <th>DERS ADI</th>
-                      <th>SORU</th>
-                      <th>DOĞRU</th>
-                      <th>YANLIŞ</th>
-                      <th>NET</th>
-                      <th>BAŞARI GRAFİĞİ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><strong>Türkçe</strong></td>
-                      <td>40</td>
-                      <td>36</td>
-                      <td>3</td>
-                      <td><strong style="color:var(--gold)">35.25</strong></td>
-                      <td>
-                        <div class="score-bar-bg"><div class="score-bar-fill" style="width: 88%;"></div></div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><strong>Temel Matematik</strong></td>
-                      <td>40</td>
-                      <td>35</td>
-                      <td>2</td>
-                      <td><strong style="color:var(--gold)">34.50</strong></td>
-                      <td>
-                        <div class="score-bar-bg"><div class="score-bar-fill" style="width: 86%;"></div></div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><strong>Fen Bilimleri</strong></td>
-                      <td>20</td>
-                      <td>18</td>
-                      <td>1</td>
-                      <td><strong style="color:var(--gold)">17.75</strong></td>
-                      <td>
-                        <div class="score-bar-bg"><div class="score-bar-fill" style="width: 89%;"></div></div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div class="table-responsive-tablet">
+                  <table class="mockup-score-table">
+                    <thead>
+                      <tr>
+                        <th>DERS ADI</th>
+                        <th>SORU</th>
+                        <th>DOĞRU</th>
+                        <th>YANLIŞ</th>
+                        <th>NET</th>
+                        <th>BAŞARI GRAFİĞİ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Türkçe</strong></td>
+                        <td>40</td>
+                        <td>36</td>
+                        <td>3</td>
+                        <td><strong style="color:var(--gold)">35.25</strong></td>
+                        <td>
+                          <div class="score-bar-bg"><div class="score-bar-fill" style="width: 88%;"></div></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>Temel Matematik</strong></td>
+                        <td>40</td>
+                        <td>35</td>
+                        <td>2</td>
+                        <td><strong style="color:var(--gold)">34.50</strong></td>
+                        <td>
+                          <div class="score-bar-bg"><div class="score-bar-fill" style="width: 86%;"></div></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>Fen Bilimleri</strong></td>
+                        <td>20</td>
+                        <td>18</td>
+                        <td>1</td>
+                        <td><strong style="color:var(--gold)">17.75</strong></td>
+                        <td>
+                          <div class="score-bar-bg"><div class="score-bar-fill" style="width: 89%;"></div></div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
 
                 <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
                   <span style="font-size:12.5px;color:var(--text-dim)">
@@ -2373,6 +2802,20 @@ Zorunlu Kural: Çıktıyı pedagojik açıklamalara sahip, akıcı ve anlaşıl�
         mouse.y = -1000;
       });
 
+      // Tablet & Dokunmatik Ekran Parçacık Reaksiyonu
+      function handleTouch(e) {
+        if (e.touches && e.touches.length > 0) {
+          mouse.x = e.touches[0].clientX;
+          mouse.y = e.touches[0].clientY;
+        }
+      }
+      window.addEventListener('touchstart', handleTouch, { passive: true });
+      window.addEventListener('touchmove', handleTouch, { passive: true });
+      window.addEventListener('touchend', () => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+      }, { passive: true });
+
       window.addEventListener('resize', () => {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
@@ -2473,16 +2916,126 @@ Zorunlu Kural: Çıktıyı pedagojik açıklamalara sahip, akıcı ve anlaşıl�
     })();
 
     // --------------------------------------------------------------------------
-    // SPOTLIGHT ANİMASYON MOTORU (Mouse Koordinatları)
+    // SPOTLIGHT ANİMASYON MOTORU (Mouse & Dokunmatik Koordinatları)
     // --------------------------------------------------------------------------
     document.querySelectorAll('.spotlight-card').forEach(card => {
-      card.addEventListener('mousemove', e => {
+      const updateSpotlight = (clientX, clientY) => {
         const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
         card.style.setProperty('--mouse-x', `${x}px`);
         card.style.setProperty('--mouse-y', `${y}px`);
+      };
+
+      card.addEventListener('mousemove', e => {
+        updateSpotlight(e.clientX, e.clientY);
       });
+
+      card.addEventListener('touchstart', e => {
+        if (e.touches && e.touches.length > 0) {
+          updateSpotlight(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      card.addEventListener('touchmove', e => {
+        if (e.touches && e.touches.length > 0) {
+          updateSpotlight(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      // Dokunmatik Kart Bilgi Katmanı (Flip/Toggle) Desteği
+      const stage = card.querySelector('.visual-reveal-stage');
+      const toggleBtn = card.querySelector('.btn-stage-touch-toggle');
+      if (stage) {
+        stage.addEventListener('click', () => {
+          stage.classList.toggle('show-info');
+          if (toggleBtn) {
+            toggleBtn.innerHTML = stage.classList.contains('show-info')
+              ? '<i class="bi bi-image"></i> <span>Görsel</span>'
+              : '<i class="bi bi-info-circle"></i> <span>Detay</span>';
+          }
+        });
+      }
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (stage) {
+            stage.classList.toggle('show-info');
+            toggleBtn.innerHTML = stage.classList.contains('show-info')
+              ? '<i class="bi bi-image"></i> <span>Görsel</span>'
+              : '<i class="bi bi-info-circle"></i> <span>Detay</span>';
+          }
+        });
+      }
+    });
+
+    // --------------------------------------------------------------------------
+    // TABLET & MOBİL NAVİGASYON ÇEKMECESİ (DRAWER) KONTROLÜ
+    // --------------------------------------------------------------------------
+    const tabletNavToggle = document.getElementById('tabletNavToggle');
+    const tabletNavDrawer = document.getElementById('tabletNavDrawer');
+    const tabletDrawerClose = document.getElementById('tabletDrawerClose');
+    const tabletDrawerBackdrop = document.getElementById('tabletDrawerBackdrop');
+    const tabletNavIcon = document.getElementById('tabletNavIcon');
+
+    function openTabletNav() {
+      if (!tabletNavDrawer) return;
+      tabletNavDrawer.classList.add('open');
+      tabletNavDrawer.setAttribute('aria-hidden', 'false');
+      if (tabletNavToggle) {
+        tabletNavToggle.setAttribute('aria-expanded', 'true');
+        tabletNavToggle.classList.add('active');
+      }
+      if (tabletNavIcon) {
+        tabletNavIcon.className = 'bi bi-x-lg';
+      }
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeTabletNav() {
+      if (!tabletNavDrawer) return;
+      tabletNavDrawer.classList.remove('open');
+      tabletNavDrawer.setAttribute('aria-hidden', 'true');
+      if (tabletNavToggle) {
+        tabletNavToggle.setAttribute('aria-expanded', 'false');
+        tabletNavToggle.classList.remove('active');
+      }
+      if (tabletNavIcon) {
+        tabletNavIcon.className = 'bi bi-list';
+      }
+      document.body.style.overflow = '';
+    }
+
+    if (tabletNavToggle) {
+      tabletNavToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (tabletNavDrawer && tabletNavDrawer.classList.contains('open')) {
+          closeTabletNav();
+        } else {
+          openTabletNav();
+        }
+      });
+    }
+
+    if (tabletDrawerClose) {
+      tabletDrawerClose.addEventListener('click', closeTabletNav);
+    }
+    if (tabletDrawerBackdrop) {
+      tabletDrawerBackdrop.addEventListener('click', closeTabletNav);
+    }
+
+    // Çekmece içi bağlantılara tıklandığında çekmeceyi yumuşakça kapat
+    document.querySelectorAll('.tablet-nav-link, .tablet-system-chip').forEach(link => {
+      link.addEventListener('click', () => {
+        closeTabletNav();
+      });
+    });
+
+    // ESC tuşuyla çekmeceyi kapat
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && tabletNavDrawer && tabletNavDrawer.classList.contains('open')) {
+        closeTabletNav();
+      }
     });
 
     // Font ölçekleyici kaldırıldı - standart tipografi sıfırlandı
