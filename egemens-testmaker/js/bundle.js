@@ -2981,11 +2981,14 @@ function openGeometryModal(callback, onCancel) {
   // Yazılı soru ekle modalı açıksa tuval etkileşimini engellememesi için kapat
   closeModal('textModal');
   openModal('geoModal');
+  toggleFormulaDrawer(false);
+  $('geoTemplateDrawer')?.classList.add('hidden');
 
   setTimeout(() => {
     initFabricCanvasIfNeeded();
     resetToolState();
     if (fabricCanvas) {
+      fitCanvasToScreen();
       fabricCanvas.calcOffset();
       fabricCanvas.renderAll();
     }
@@ -2998,6 +3001,28 @@ function syncControlsFromState() {}
 // FABRIC.JS TUVAL BAŞLATMA VE YÖNETİMİ
 // ============================================================================
 
+function fitCanvasToScreen() {
+  if (!fabricCanvas) return;
+  const wrapper = $('geoCanvasWrapper');
+  if (!wrapper) return;
+  const availableWidth = wrapper.clientWidth - 28;
+  if (availableWidth > 0 && availableWidth < 760) {
+    const scale = Math.max(0.4, availableWidth / 760);
+    fabricCanvas.setDimensions({
+      width: Math.floor(760 * scale),
+      height: Math.floor(490 * scale)
+    });
+    fabricCanvas.setZoom(scale);
+    fabricCanvas.calcOffset();
+    fabricCanvas.renderAll();
+  } else if (availableWidth >= 760 && fabricCanvas.getWidth() !== 760) {
+    fabricCanvas.setDimensions({ width: 760, height: 490 });
+    fabricCanvas.setZoom(1);
+    fabricCanvas.calcOffset();
+    fabricCanvas.renderAll();
+  }
+}
+
 function initFabricCanvasIfNeeded() {
   const canvasEl = $('geoFabricCanvas');
   if (!canvasEl) return;
@@ -3009,6 +3034,7 @@ function initFabricCanvasIfNeeded() {
   }
 
   if (fabricCanvas) {
+    fitCanvasToScreen();
     fabricCanvas.calcOffset();
     return;
   }
@@ -3024,6 +3050,7 @@ function initFabricCanvasIfNeeded() {
 
   updateGridBackground(gridEnabled);
   saveHistoryState();
+  fitCanvasToScreen();
 
   // Seçim Olayları
   fabricCanvas.on('selection:created', (e) => onObjectSelected(e.selected ? e.selected[0] : null));
@@ -3034,7 +3061,7 @@ function initFabricCanvasIfNeeded() {
     saveHistoryState();
   });
 
-  // Fare Olayları
+  // Fare & Dokunmatik Olayları
   fabricCanvas.on('mouse:down', onCanvasMouseDown);
   fabricCanvas.on('mouse:move', onCanvasMouseMove);
   fabricCanvas.on('mouse:up', onCanvasMouseUp);
@@ -3044,6 +3071,7 @@ function initFabricCanvasIfNeeded() {
     }
   });
 
+  window.addEventListener('resize', fitCanvasToScreen);
   window.addEventListener('keydown', onGlobalKeyDown);
 }
 
@@ -4258,25 +4286,134 @@ function insertTemplate(tplName) {
 }
 
 // ============================================================================
-// KATEX DENKLEM MODÜLÜ ENTEGRASYONU
+// KATEX DENKLEM MODÜLÜ ENTEGRASYONU & FORMATLAMA
 // ============================================================================
+
+const KATEX_SVG_CSS = `
+  .katex-mathml, math { display: none !important; }
+  .katex { font: normal 1.21em KaTeX_Main, "Times New Roman", serif; line-height: 1.2; text-indent: 0; text-rendering: auto; border-color: currentColor; }
+  .katex * { -ms-high-contrast-adjust: none; }
+  .katex .katex-html { display: inline-block; }
+  .katex .katex-html > .newline { display: block; }
+  .katex .base { position: relative; display: inline-block; white-space: nowrap; width: -webkit-min-content; width: -moz-min-content; width: min-content; text-align: left; }
+  .katex .strut { display: inline-block; }
+  .katex .textbf { font-weight: 700; }
+  .katex .textit { font-style: italic; }
+  .katex .mord { white-space: nowrap; }
+  .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct, .katex .minner { white-space: nowrap; }
+  .katex .mbin { margin-left: 0.2222em; margin-right: 0.2222em; }
+  .katex .mrel { margin-left: 0.2778em; margin-right: 0.2778em; }
+  .katex .mfrac { display: inline-block; vertical-align: -0.05em; text-align: center; }
+  .katex .mfrac .frac-line { border-bottom-style: solid !important; border-bottom-color: currentColor !important; display: inline-block !important; width: 100% !important; min-height: 1.5px !important; }
+  .katex .hdashline, .katex .hline, .katex .rule, .katex .underline .underline-line, .katex .overline .overline-line { min-height: 1px; }
+  .katex .vlist-t { border-collapse: collapse !important; display: inline-table !important; table-layout: fixed !important; }
+  .katex .vlist-r { display: table-row !important; }
+  .katex .vlist { display: table-cell !important; vertical-align: bottom !important; position: relative !important; }
+  .katex .vlist > span { display: block !important; height: 0 !important; position: relative !important; }
+  .katex .vlist > span > .pstrut { overflow: hidden; height: 0; }
+  .katex .vlist-t2 { margin-right: -2px; }
+  .katex .vlist-s { display: table-cell; vertical-align: bottom; font-size: 1px; width: 2px; min-width: 2px; }
+  .katex .vlist-t2 .vlist-r:last-child .vlist { position: relative; }
+  .katex .reset-size6.size3 { font-size: 0.7em; }
+  .katex .reset-size6.size4 { font-size: 0.8em; }
+  .katex .reset-size6.size5 { font-size: 0.9em; }
+  .katex .reset-size6.size6 { font-size: 1em; }
+  .katex .reset-size6.size7 { font-size: 1.2em; }
+  .katex .reset-size6.size8 { font-size: 1.4em; }
+  .katex .sqrt { display: inline-block; position: relative; }
+  .katex .sqrt > .root { margin-left: 0.2778em; margin-right: -0.5556em; }
+  .katex .sqrt > .vlist-t { position: relative; }
+  .katex .sqrt .svg-align { display: inline-block; width: 100%; }
+  .katex svg { display: block; position: absolute; width: 100%; height: 100%; fill: currentColor; stroke: currentColor; fill-rule: nonzero; fill-opacity: 1; stroke-width: 1; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-dashoffset: 0; stroke-opacity: 1; }
+  .katex .root { font-size: 0.7em; }
+`;
+
+function formatLatex(latexStr) {
+  if (!latexStr) return '';
+  let s = latexStr.trim();
+  let prev;
+  do {
+    prev = s;
+    s = s.replace(/(^|[^\w\\{])([+-]?\w+)\s*\/\s*(\w+)($|[^\w}])/g, '$1\\frac{$2}{$3}$4');
+  } while (s !== prev);
+  return s;
+}
+
+function toggleFormulaDrawer(open) {
+  const drawer = $('geoFormulaDrawer');
+  const btn = $('geoOpenFormulaBtn');
+  if (!drawer) return;
+
+  const shouldOpen = typeof open === 'boolean' ? open : drawer.classList.contains('hidden');
+  if (shouldOpen) {
+    drawer.classList.remove('hidden');
+    drawer.classList.add('flex');
+    btn?.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30');
+    $('geoTemplateDrawer')?.classList.add('hidden');
+    setTimeout(() => {
+      const input = $('geoFormulaInput');
+      if (input) {
+        input.focus();
+        input.select();
+      }
+      updateFormulaPreview();
+    }, 60);
+  } else {
+    drawer.classList.add('hidden');
+    drawer.classList.remove('flex');
+    btn?.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30');
+  }
+
+  setTimeout(() => {
+    if (fabricCanvas) {
+      fabricCanvas.calcOffset();
+      fabricCanvas.renderAll();
+    }
+  }, 100);
+}
+
+function updateFormulaPreview() {
+  const inputEl = $('geoFormulaInput');
+  const previewEl = $('geoFormulaPreview');
+  if (!inputEl || !previewEl) return;
+
+  const raw = inputEl.value.trim();
+  if (!raw) {
+    previewEl.innerHTML = '<span class="text-xs text-slate-400 italic">Formül yazın veya yukarıdan seçin</span>';
+    return;
+  }
+  const latex = formatLatex(raw);
+  const katex = window.katex;
+  if (katex) {
+    try {
+      katex.render(latex, previewEl, {
+        displayMode: true,
+        throwOnError: false,
+        output: 'html'
+      });
+    } catch (err) {
+      previewEl.innerText = latex;
+    }
+  } else {
+    previewEl.innerText = latex;
+  }
+}
 
 function setupKatexFormulaModule() {
   const tabsContainer = $('geoFormulaTabs');
   const buttonsGrid = $('geoFormulaButtonsGrid');
   const inputEl = $('geoFormulaInput');
-  const previewEl = $('geoFormulaPreview');
   const sizeSelect = $('geoFormulaSize');
 
-  if (!tabsContainer || !buttonsGrid || !inputEl || !previewEl) return;
+  if (!tabsContainer || !buttonsGrid || !inputEl) return;
 
   tabsContainer.querySelectorAll('[data-ftab]').forEach((btn) => {
     btn.onclick = () => {
       activeFormulaTab = btn.dataset.ftab;
       tabsContainer.querySelectorAll('[data-ftab]').forEach((b) => {
-        b.className = 'ftab-btn rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800';
+        b.className = 'ftab-btn rounded-lg px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 shrink-0';
       });
-      btn.className = 'ftab-btn active rounded-lg px-3 py-1.5 text-xs font-semibold bg-blue-600 text-white shadow-sm';
+      btn.className = 'ftab-btn active rounded-lg px-2.5 py-1 text-[11px] font-semibold bg-blue-600 text-white shadow-sm shrink-0';
       renderFormulaButtons();
     };
   });
@@ -4287,10 +4424,10 @@ function setupKatexFormulaModule() {
     items.forEach((item) => {
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50/80 px-2 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50/50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:border-blue-500 dark:hover:bg-slate-800 transition shadow-sm active:scale-95';
+      b.className = 'flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50/80 px-2 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50/50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:border-blue-500 dark:hover:bg-slate-800 transition shadow-sm active:scale-95 cursor-pointer';
       b.textContent = item.display;
       b.onclick = () => {
-        const val = inputEl.value;
+        const val = inputEl.value.trim();
         inputEl.value = val ? `${val} ${item.latex}` : item.latex;
         updateFormulaPreview();
         inputEl.focus();
@@ -4299,37 +4436,7 @@ function setupKatexFormulaModule() {
     });
   }
 
-  function updateFormulaPreview() {
-    const latex = inputEl.value.trim() || ' ';
-    const katex = window.katex;
-    if (katex) {
-      try {
-        katex.render(latex, previewEl, {
-          displayMode: true,
-          throwOnError: false
-        });
-      } catch (err) {
-        previewEl.innerText = latex;
-      }
-    } else {
-      previewEl.innerText = latex;
-    }
-    previewEl.style.color = formulaColor;
-  }
-
   inputEl.oninput = updateFormulaPreview;
-
-  const colorOptions = $('geoFormulaColorOptions');
-  if (colorOptions) {
-    colorOptions.querySelectorAll('[data-color]').forEach((btn) => {
-      btn.onclick = () => {
-        formulaColor = btn.dataset.color;
-        colorOptions.querySelectorAll('[data-color]').forEach((b) => b.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-1'));
-        btn.classList.add('ring-2', 'ring-blue-500', 'ring-offset-1');
-        updateFormulaPreview();
-      };
-    });
-  }
 
   if (sizeSelect) {
     sizeSelect.onchange = (e) => {
@@ -4339,16 +4446,17 @@ function setupKatexFormulaModule() {
 
   const closeBtn = $('geoFormulaClose');
   const cancelBtn = $('geoFormulaCancel');
-  if (closeBtn) closeBtn.onclick = () => closeModal('geoFormulaModal');
-  if (cancelBtn) cancelBtn.onclick = () => closeModal('geoFormulaModal');
+  if (closeBtn) closeBtn.onclick = () => toggleFormulaDrawer(false);
+  if (cancelBtn) cancelBtn.onclick = () => toggleFormulaDrawer(false);
 
   const insertBtn = $('geoFormulaInsertBtn');
   if (insertBtn) {
     insertBtn.onclick = async () => {
-      const latex = inputEl.value.trim();
-      if (!latex) return;
-      await addKatexFormulaToCanvas(latex, formulaColor, formulaSize);
-      closeModal('geoFormulaModal');
+      const raw = inputEl.value.trim();
+      if (!raw) return;
+      const latex = formatLatex(raw);
+      await addKatexFormulaToCanvas(latex, formulaSize);
+      toggleFormulaDrawer(false);
     };
   }
 
@@ -4356,7 +4464,7 @@ function setupKatexFormulaModule() {
   updateFormulaPreview();
 }
 
-async function addKatexFormulaToCanvas(latex, color = '#0f172a', fontSize = 26) {
+async function addKatexFormulaToCanvas(latex, fontSize = 26) {
   const fabric = window.fabric;
   const katex = window.katex;
   if (!fabric || !fabricCanvas || !katex) return;
@@ -4364,14 +4472,15 @@ async function addKatexFormulaToCanvas(latex, color = '#0f172a', fontSize = 26) 
   try {
     const htmlString = katex.renderToString(latex, {
       displayMode: true,
-      throwOnError: false
+      throwOnError: false,
+      output: 'html'
     });
 
     const wrapper = document.createElement('div');
     wrapper.style.display = 'inline-block';
     wrapper.style.fontSize = `${fontSize}px`;
-    wrapper.style.color = color;
-    wrapper.style.fontFamily = 'KaTeX_Main, Times New Roman, serif';
+    wrapper.style.color = '#0f172a';
+    wrapper.style.fontFamily = 'KaTeX_Main, "Times New Roman", serif';
     wrapper.style.padding = '8px 12px';
     wrapper.style.position = 'absolute';
     wrapper.style.left = '-9999px';
@@ -4380,15 +4489,19 @@ async function addKatexFormulaToCanvas(latex, color = '#0f172a', fontSize = 26) 
     document.body.appendChild(wrapper);
 
     const rect = wrapper.getBoundingClientRect();
-    const width = Math.max(Math.ceil(rect.width) + 8, 30);
-    const height = Math.max(Math.ceil(rect.height) + 8, 24);
+    const width = Math.max(Math.ceil(rect.width) + 12, 30);
+    const height = Math.max(Math.ceil(rect.height) + 10, 24);
     document.body.removeChild(wrapper);
 
     const scale = 4;
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="${width * scale}" height="${height * scale}" viewBox="0 0 ${width} ${height}">
+        <style>
+          ${KATEX_SVG_CSS}
+          .katex .mfrac .frac-line { border-bottom-color: #0f172a !important; }
+        </style>
         <foreignObject width="100%" height="100%">
-          <div xmlns="http://www.w3.org/1999/xhtml" style="font-size:${fontSize}px; color:${color}; font-family: KaTeX_Main, Times New Roman, serif; display:flex; align-items:center; justify-content:center; height:100%;">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="font-size:${fontSize}px; color:#0f172a; font-family: KaTeX_Main, 'Times New Roman', serif; display:flex; align-items:center; justify-content:center; width:100%; height:100%;">
             ${htmlString}
           </div>
         </foreignObject>
@@ -4409,9 +4522,10 @@ async function addKatexFormulaToCanvas(latex, color = '#0f172a', fontSize = 26) 
       const pngUrl = c.toDataURL('image/png');
 
       fabric.Image.fromURL(pngUrl, (fImg) => {
+        const center = fabricCanvas.getCenter ? fabricCanvas.getCenter() : { left: 380, top: 240 };
         fImg.set({
-          left: 380,
-          top: 240,
+          left: center.left,
+          top: center.top,
           originX: 'center',
           originY: 'center',
           selectable: true,
@@ -4478,6 +4592,19 @@ function onGlobalKeyDown(e) {
   if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
   if (e.key === 'Escape') {
+    const formulaDrawer = $('geoFormulaDrawer');
+    if (formulaDrawer && !formulaDrawer.classList.contains('hidden')) {
+      toggleFormulaDrawer(false);
+      e.stopPropagation();
+      return;
+    }
+    const tplDrawer = $('geoTemplateDrawer');
+    if (tplDrawer && !tplDrawer.classList.contains('hidden')) {
+      tplDrawer.classList.add('hidden');
+      if (fabricCanvas) fabricCanvas.calcOffset();
+      e.stopPropagation();
+      return;
+    }
     resetToolState();
   } else if (e.key === 'Enter' && activeTool === 'shape') {
     if (shapePoints.length >= 3) {
@@ -4559,7 +4686,7 @@ function setupGeometryEventListeners() {
   // KaTeX Aç Butonu
   const openFormulaBtn = $('geoOpenFormulaBtn');
   if (openFormulaBtn) {
-    openFormulaBtn.onclick = () => openModal('geoFormulaModal');
+    openFormulaBtn.onclick = () => toggleFormulaDrawer();
   }
 
   // Şablon Çekmecesini Aç/Kapat
@@ -4567,10 +4694,19 @@ function setupGeometryEventListeners() {
   const tplDrawer = $('geoTemplateDrawer');
   const closeDrawerBtn = $('geoCloseDrawerBtn');
   if (toggleTplBtn && tplDrawer) {
-    toggleTplBtn.onclick = () => tplDrawer.classList.toggle('hidden');
+    toggleTplBtn.onclick = () => {
+      tplDrawer.classList.toggle('hidden');
+      if (!tplDrawer.classList.contains('hidden')) {
+        toggleFormulaDrawer(false);
+      }
+      setTimeout(() => fabricCanvas?.calcOffset(), 100);
+    };
   }
   if (closeDrawerBtn && tplDrawer) {
-    closeDrawerBtn.onclick = () => tplDrawer.classList.add('hidden');
+    closeDrawerBtn.onclick = () => {
+      tplDrawer.classList.add('hidden');
+      setTimeout(() => fabricCanvas?.calcOffset(), 100);
+    };
   }
 
   if (tplDrawer) {
@@ -11691,6 +11827,9 @@ function renderLevelPills() {
 
 function openText(q) {
   editingId = q ? q.id : null;
+  if ($('txtDelete')) {
+    $('txtDelete').classList.toggle('hidden', !editingId);
+  }
   $('txtTitle').textContent = q ? 'Yazılı soruyu düzenle' : 'Yazılı soru ekle';
   setTxtImg(q ? (q.imgSrc || q.src || null) : null);
   $('imgUploadPanel').classList.toggle('hidden', !(q && (q.imgSrc || q.src)));
@@ -12204,6 +12343,20 @@ function initTextModal() {
 
   $('textBtn').onclick = () => openText(null);
   $('txtCancel').onclick = () => closeModal('textModal');
+  const txtDel = $('txtDelete');
+  if (txtDel) {
+    txtDel.onclick = () => {
+      if (!editingId) return;
+      if (confirm('Bu soruyu sınavdan silmek istediğinize emin misiniz?')) {
+        const idx = questions.findIndex(x => x.id === editingId);
+        if (idx !== -1) {
+          questions.splice(idx, 1);
+          closeModal('textModal');
+          if (typeof onSaveCallback === 'function') onSaveCallback();
+        }
+      }
+    };
+  }
   $('txtSave').onclick = () => saveText(false);
   $('txtSaveNew').onclick = () => saveText(true);
 
@@ -12364,7 +12517,7 @@ function render() {
     notifyChange();
     return;
   }
-  g.className = 'grid grid-cols-2 gap-3 xl:grid-cols-3';
+  g.className = 'flex flex-col gap-2 max-h-[380px] overflow-y-auto pr-1';
   questions.forEach((q, i) => {
     const d = document.createElement('div');
     d.className = 'card group relative cursor-grab rounded-xl border border-slate-200 bg-white p-2.5 transition hover:border-slate-300 hover:shadow-md active:cursor-grabbing dark:border-slate-800 dark:bg-slate-900';
@@ -12452,7 +12605,12 @@ function render() {
     d.querySelectorAll('[data-a]').forEach(b => b.onclick = ev => {
       ev.stopPropagation();
       const a = b.dataset.a;
-      if (a === 'del') questions.splice(i, 1);
+      if (a === 'del') {
+        if (!confirm('Bu soruyu silmek istediğinize emin misiniz?')) return;
+        questions.splice(i, 1);
+        render();
+        return;
+      }
       if (a === 'prev') return showPreview(q);
       if (a === 'edit') return openText(q);
       if (a === 'grp') return openGroup(q);
@@ -12548,12 +12706,31 @@ function initQuestionManager({ syncUIFn, collectFn }) {
     if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files, syncUIFn);
   });
 
-  $('clearAll').onclick = () => {
-    if (confirm('Tüm sorular silinsin mi?')) {
-      questions.length = 0;
-      render();
-    }
-  };
+  const qBtn = $('qDrawerBtn');
+  if (qBtn) {
+    qBtn.onclick = () => {
+      const qd = $('questionsDrawer');
+      if (qd) {
+        qd.classList.toggle('hidden');
+        const arrow = $('qDrawerArrow');
+        if (arrow) arrow.textContent = qd.classList.contains('hidden') ? '＋' : '▼';
+      }
+    };
+  }
+
+  const clearBtn = $('clearAll');
+  if (clearBtn) {
+    clearBtn.onclick = () => {
+      if (!questions.length) {
+        alert('Sınavda silinecek soru bulunmuyor.');
+        return;
+      }
+      if (confirm('Tüm soruları sınavdan silmek istediğinize emin misiniz?')) {
+        questions.length = 0;
+        render();
+      }
+    };
+  }
 
   $('preview').onclick = () => $('preview').classList.replace('flex', 'hidden');
 
@@ -12718,6 +12895,7 @@ function renderMainPaperOverlay(c, pg, container) {
             ? '<button type="button" data-act="crop" title="Görseli kırp">✂</button>' +
               '<button type="button" data-act="fit" title="Sütun genişliğine sığdır">⤢</button>'
             : '') +
+          '<button type="button" data-act="del" title="Soruyu Sınavdan Sil" class="pv-act-btn pv-del-btn">🗑</button>' +
         '</span>' +
         (isImg ? '<span class="pvRz" data-act="rz" title="Boyutlandır"></span>' : '');
       overlay.appendChild(chip);
@@ -12844,10 +13022,12 @@ function layoutOverlay() {
     chip.innerHTML =
       '<span class="pvNum">' + (i + 1) + '</span>' +
       '<span class="pvActs">' +
+        '<button type="button" data-act="edit" title="Soruyu Düzenle" class="pv-act-btn pv-edit-btn">✎</button>' +
         (isImg
           ? '<button type="button" data-act="crop" title="Görseli kırp">✂</button>' +
             '<button type="button" data-act="fit" title="Sütun genişliğine sığdır">⤢</button>'
-          : '<button type="button" data-act="edit" title="Metni düzenle">✎</button>') +
+          : '') +
+        '<button type="button" data-act="del" title="Soruyu Sınavdan Sil" class="pv-act-btn pv-del-btn">🗑</button>' +
       '</span>' +
       (isImg ? '<span class="pvRz" data-act="rz" title="Boyutlandır"></span>' : '');
     ov.appendChild(chip);
@@ -12895,7 +13075,8 @@ function layoutOverlay() {
 
 function wireChip(chip, it, k) {
   chip.addEventListener('pointerdown', (e) => {
-    const act = e.target.dataset.act;
+    const actBtn = e.target.closest('[data-act]');
+    const act = actBtn ? actBtn.dataset.act : null;
     if (act && act !== 'rz') return;
     dragState = {
       chip, it, k, mode: act === 'rz' ? 'rz' : 'drag',
@@ -12938,9 +13119,21 @@ function wireChip(chip, it, k) {
   chip.addEventListener('pointercancel', end);
   chip.addEventListener('click', (e) => {
     if (suppressClick) { suppressClick = false; return; }
-    const act = e.target.dataset.act;
+    const actBtn = e.target.closest('[data-act]');
+    const act = actBtn ? actBtn.dataset.act : null;
     if (act === 'crop') return openImgCrop(it.q);
     if (act === 'fit') { it.q.scale = 1; it.q.aspect = undefined; return refreshNow(); }
+    if (act === 'del') {
+      if (confirm('Bu soruyu sınav kâğıdından silmek istediğinize emin misiniz?')) {
+        const idx = questions.findIndex(q => q.id === it.q.id);
+        if (idx !== -1) {
+          questions.splice(idx, 1);
+          render();
+          refreshNow();
+        }
+      }
+      return;
+    }
     editFromPaper(it.q);
   });
 }
@@ -13782,6 +13975,12 @@ function syncUI() {
 
 function initSidebar() {
   $('sidebarToggle').onclick = openSidebar;
+  if ($('floatingSidebarToggle')) {
+    $('floatingSidebarToggle').onclick = () => {
+      if ($('sidebarPanel').classList.contains('open')) closeSidebar();
+      else openSidebar();
+    };
+  }
   $('sidebarClose').onclick = closeSidebar;
   $('sidebarOverlay').onclick = closeSidebar;
 
@@ -14028,7 +14227,7 @@ let pdfRenderTasks = {};
 let zoom = { s: 1, tx: 0, ty: 0 };
 let pinch = null;
 
-const CROP_ANS_BASE = 'h-6 w-6 rounded-md border text-[11px] font-medium transition ';
+const CROP_ANS_BASE = 'h-8 w-8 sm:h-7 sm:w-7 rounded-lg border text-xs font-semibold flex items-center justify-center transition cursor-pointer touch-manipulation ';
 const CROP_ANS_OFF = 'border-white/25 text-white/80 hover:border-white/60 hover:text-white';
 const CROP_ANS_ON = 'bg-white text-slate-900 border-white font-bold';
 
@@ -14279,8 +14478,8 @@ function renderCuts(onOcrRequested) {
   $('cutList').innerHTML = '<div class="mb-2.5 text-[11px] font-medium uppercase tracking-wide text-white/40">Kesilenler</div>' +
     (cuts.length ? cuts.map((c, i) => `<div class="group relative mb-2 overflow-hidden rounded-lg bg-white p-1"><img src="${c.src}" class="w-full">
       <span class="absolute left-1.5 top-1.5 rounded bg-slate-900/80 px-1.5 text-[10px] font-medium text-white">${i + 1}${c.answer ? ' · ' + c.answer : ''}</span>
-      <button data-ocr="${i}" class="absolute left-1.5 bottom-1.5 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-semibold text-slate-900">Metni oku</button>
-      <button data-i="${i}" class="absolute right-1.5 top-1.5 rounded bg-slate-900/80 px-1.5 text-[10px] text-white opacity-0 transition group-hover:opacity-100 hover:bg-rose-600">✕</button></div>`).join('')
+      <button data-ocr="${i}" class="absolute left-1 bottom-1 h-7 rounded-lg bg-amber-400 px-2 text-[11px] font-semibold text-slate-900 shadow-sm flex items-center justify-center">Metni oku</button>
+      <button data-i="${i}" class="absolute right-1 top-1 h-7 w-7 rounded-lg bg-slate-900/85 text-xs text-white opacity-85 transition hover:opacity-100 hover:bg-rose-600 flex items-center justify-center cursor-pointer shadow-sm">✕</button></div>`).join('')
       : '<div class="mt-4 text-center text-[11px] text-white/30">Henüz soru kesilmedi</div>');
 
   $('cutList').querySelectorAll('[data-i]').forEach(b => b.onclick = () => {
@@ -15725,6 +15924,15 @@ document.addEventListener('DOMContentLoaded', () => {
       closeModal('textModal');
     } else if ($('bankModal') && $('bankModal').classList.contains('flex')) {
       closeModal('bankModal');
+    } else if ($('geoFormulaDrawer') && !$('geoFormulaDrawer').classList.contains('hidden')) {
+      const fDrawer = $('geoFormulaDrawer');
+      fDrawer.classList.add('hidden');
+      fDrawer.classList.remove('flex');
+      $('geoOpenFormulaBtn')?.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30');
+      if (window.fabricCanvas) window.fabricCanvas.calcOffset();
+    } else if ($('geoTemplateDrawer') && !$('geoTemplateDrawer').classList.contains('hidden')) {
+      $('geoTemplateDrawer').classList.add('hidden');
+      if (window.fabricCanvas) window.fabricCanvas.calcOffset();
     } else if ($('geoModal') && $('geoModal').classList.contains('flex')) {
       closeModal('geoModal');
     } else if ($('customTplModal') && $('customTplModal').classList.contains('flex')) {

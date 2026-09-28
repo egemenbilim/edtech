@@ -68,6 +68,7 @@ export function render() {
   $('ansCount').textContent = questions.filter(q => q.answer).length;
   const g = $('grid');
   g.innerHTML = '';
+  if (!questions.length) {
     g.innerHTML = `<div id="emptyState" class="col-span-full flex items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-12 text-center dark:border-slate-800 dark:bg-slate-900/80">
       <div class="max-w-md mx-auto">
         <div class="mx-auto mb-2.5 flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-xl text-slate-500 dark:bg-slate-800 dark:text-slate-300">📄</div>
@@ -83,7 +84,7 @@ export function render() {
     notifyChange();
     return;
   }
-  g.className = 'grid grid-cols-2 gap-3 xl:grid-cols-3';
+  g.className = 'flex flex-col gap-2 max-h-[380px] overflow-y-auto pr-1';
   questions.forEach((q, i) => {
     const d = document.createElement('div');
     d.className = 'card group relative cursor-grab rounded-xl border border-slate-200 bg-white p-2.5 transition hover:border-slate-300 hover:shadow-md active:cursor-grabbing dark:border-slate-800 dark:bg-slate-900';
@@ -171,7 +172,12 @@ export function render() {
     d.querySelectorAll('[data-a]').forEach(b => b.onclick = ev => {
       ev.stopPropagation();
       const a = b.dataset.a;
-      if (a === 'del') questions.splice(i, 1);
+      if (a === 'del') {
+        if (!confirm('Bu soruyu silmek istediğinize emin misiniz?')) return;
+        questions.splice(i, 1);
+        render();
+        return;
+      }
       if (a === 'prev') return showPreview(q);
       if (a === 'edit') return openText(q);
       if (a === 'grp') return openGroup(q);
@@ -267,12 +273,31 @@ export function initQuestionManager({ syncUIFn, collectFn }) {
     if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files, syncUIFn);
   });
 
-  $('clearAll').onclick = () => {
-    if (confirm('Tüm sorular silinsin mi?')) {
-      questions.length = 0;
-      render();
-    }
-  };
+  const qBtn = $('qDrawerBtn');
+  if (qBtn) {
+    qBtn.onclick = () => {
+      const qd = $('questionsDrawer');
+      if (qd) {
+        qd.classList.toggle('hidden');
+        const arrow = $('qDrawerArrow');
+        if (arrow) arrow.textContent = qd.classList.contains('hidden') ? '＋' : '▼';
+      }
+    };
+  }
+
+  const clearBtn = $('clearAll');
+  if (clearBtn) {
+    clearBtn.onclick = () => {
+      if (!questions.length) {
+        alert('Sınavda silinecek soru bulunmuyor.');
+        return;
+      }
+      if (confirm('Tüm soruları sınavdan silmek istediğinize emin misiniz?')) {
+        questions.length = 0;
+        render();
+      }
+    };
+  }
 
   $('preview').onclick = () => $('preview').classList.replace('flex', 'hidden');
 

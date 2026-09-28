@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Egemen's Testmaker</title>
   
   <!-- CDN Kütüphaneleri -->
@@ -28,6 +28,12 @@
 
 <!-- Sidebar Overlay (Mobil/Tablet için karartma) -->
 <div id="sidebarOverlay"></div>
+
+<!-- Floating Tablet Sidebar Toggle Button (Tablette tek dokunuşla ayarlar çekmecesini açma) -->
+<button id="floatingSidebarToggle" type="button" class="floating-sidebar-toggle" title="Test Ayarları Panelini Aç/Kapat">
+  <span class="ham-icon"><span></span><span></span><span></span></span>
+  <span>Ayarlar</span>
+</button>
 
 <!-- Üst Bilgi & Navigasyon Çubuğu -->
 <header class="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/95">
@@ -119,16 +125,6 @@
         </div>
 
       </section>
-
-      <!-- Gizli DOM Elementleri (Script ve ID Bütünlüğü İçin) -->
-      <div id="questionsDrawer" class="hidden">
-        <span id="qCount">0</span>
-        <button id="clearAll" type="button"></button>
-        <div id="grid">
-          <div id="emptyState"></div>
-        </div>
-      </div>
-
     </div>
   </main>
 
@@ -186,6 +182,14 @@
               <span class="text-[9.5px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">Havuzdan Seç</span>
             </button>
           </div>
+        </div>
+
+        <!-- Eklenen Sorular (Gizli Arka Plan Bileşeni) -->
+        <div id="questionsDrawer" class="hidden">
+          <span id="qCount">0</span>
+          <div id="grid"><div id="emptyState"></div></div>
+          <button id="clearAll" type="button" class="hidden"></button>
+          <button id="qDrawerBtn" type="button" class="hidden"></button>
         </div>
 
         <!-- Sınav Şablonları & Tür Tabları -->
@@ -658,6 +662,9 @@
 
       <!-- Sabit Alt Butonlar: Vazgeç & Kaydet -->
       <div class="border-t border-slate-200 dark:border-slate-800 p-3 bg-slate-50/90 dark:bg-slate-850/90 flex items-center gap-2 shrink-0">
+        <button id="txtDelete" type="button" class="hidden rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-400 px-3 py-2 text-xs font-semibold transition cursor-pointer" title="Soruyu Sınavdan Sil">
+          🗑️ Sil
+        </button>
         <button id="txtCancel" type="button" class="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer">
           Vazgeç
         </button>
@@ -1262,6 +1269,76 @@
         </button>
       </div>
 
+      <!-- Sol KaTeX Formül Paneli (Açılır/Kapanır Drawer - Kanvası Sağa Kaydırır) -->
+      <div id="geoFormulaDrawer" class="hidden w-80 sm:w-[340px] flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xl shrink-0 overflow-y-auto z-10 transition-all duration-200">
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-850 shrink-0">
+          <div class="flex items-center gap-2">
+            <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm font-bold text-xs">✨</div>
+            <div>
+              <h3 class="text-xs font-bold text-slate-900 dark:text-white">KaTeX Formül Editörü</h3>
+              <p class="text-[10px] text-slate-400">Tuval üzerine matematik formülü ekleyin</p>
+            </div>
+          </div>
+          <button id="geoFormulaClose" type="button" class="rounded-lg p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition text-xs font-bold cursor-pointer" title="Kapat">✕</button>
+        </div>
+
+        <!-- Body -->
+        <div class="flex-1 overflow-y-auto p-3.5 space-y-3">
+          <!-- Sekmeler -->
+          <div class="flex items-center gap-1 border-b border-slate-100 pb-2 dark:border-slate-800 overflow-x-auto" id="geoFormulaTabs">
+            <button type="button" data-ftab="basic" class="ftab-btn active rounded-lg px-2.5 py-1 text-[11px] font-semibold bg-blue-600 text-white shadow-sm shrink-0">Temel</button>
+            <button type="button" data-ftab="symbols" class="ftab-btn rounded-lg px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 shrink-0">Semboller</button>
+            <button type="button" data-ftab="placeholders" class="ftab-btn rounded-lg px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 shrink-0">Vektör &amp; Açı</button>
+            <button type="button" data-ftab="calculus" class="ftab-btn rounded-lg px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 shrink-0">Calculus</button>
+          </div>
+
+          <!-- Sembol Butonları Izgarası -->
+          <div id="geoFormulaButtonsGrid" class="grid grid-cols-4 gap-1.5"></div>
+
+          <!-- LaTeX Input -->
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-300">LaTeX / Matematik Kodu</label>
+              <span class="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Örn: 3/2 veya 2\sqrt{3}</span>
+            </div>
+            <input type="text" id="geoFormulaInput" value="3/2" placeholder="Örn: 3/2 veya \frac{a}{b}" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-mono text-xs text-slate-800 outline-none ring-offset-1 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+            <p class="text-[9.5px] text-slate-400">💡 3/2 yazarak da otomatik kesir oluşturabilirsiniz.</p>
+          </div>
+
+          <!-- Canlı Önizleme -->
+          <div class="space-y-1">
+            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+              <span class="flex items-center gap-1 font-bold text-blue-600 dark:text-blue-400">👁 Canlı Önizleme</span>
+              <span class="text-[9.5px] text-slate-400 font-normal">300 DPI Netlik</span>
+            </div>
+            <div class="flex min-h-[60px] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50/50 p-3 dark:border-slate-700 dark:bg-slate-950/40">
+              <div id="geoFormulaPreview" class="text-lg"></div>
+            </div>
+          </div>
+
+          <!-- Boyut Ayarı -->
+          <div class="flex items-center justify-between gap-2 border-t border-slate-100 pt-2.5 dark:border-slate-800">
+            <span class="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">Yazı Boyutu:</span>
+            <select id="geoFormulaSize" class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 font-semibold cursor-pointer">
+              <option value="20">20px (Küçük)</option>
+              <option value="26" selected>26px (Standart)</option>
+              <option value="34">34px (Büyük)</option>
+              <option value="42">42px (Ekstra Büyük)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50/60 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-850 shrink-0">
+          <button id="geoFormulaCancel" type="button" class="rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 transition cursor-pointer">İptal</button>
+          <button id="geoFormulaInsertBtn" type="button" class="flex items-center gap-1 rounded-xl bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 transition active:scale-95 cursor-pointer">
+            <span>＋</span>
+            <span>Tuvale Ekle</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Merkezi Tuval Alanı -->
       <div id="geoCanvasWrapper" class="relative flex flex-1 items-center justify-center overflow-auto p-4">
         <div id="geoCanvasContainer" class="relative rounded-2xl border border-slate-300 bg-white shadow-xl dark:border-slate-700 overflow-hidden">
@@ -1494,87 +1571,6 @@
           <span>Şekli Soruya Ekle</span>
         </button>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- KaTeX Formül ve Denklem Editörü Modalı -->
-<div id="geoFormulaModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm select-none">
-  <div class="flex max-h-[90vh] w-full max-w-xl flex-col rounded-2xl bg-white shadow-2xl dark:bg-slate-900 dark:text-slate-100 overflow-hidden border border-slate-200 dark:border-slate-800 animate-in fade-in">
-    <!-- Header -->
-    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-3.5 dark:border-slate-800">
-      <div class="flex items-center gap-2.5">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm font-bold">✨</div>
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Matematiksel Formül (KaTeX) Editörü</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Tuval üzerine bağımsız, serbest sürüklenebilir formül ekleyin.</p>
-        </div>
-      </div>
-      <button id="geoFormulaClose" type="button" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition">✕</button>
-    </div>
-
-    <!-- Body -->
-    <div class="flex-1 overflow-y-auto p-5 space-y-4">
-      <!-- Sekmeler -->
-      <div class="flex items-center gap-1 border-b border-slate-200 pb-2 dark:border-slate-800" id="geoFormulaTabs">
-        <button type="button" data-ftab="basic" class="ftab-btn active rounded-lg px-3 py-1.5 text-xs font-semibold bg-blue-600 text-white shadow-sm">Temel</button>
-        <button type="button" data-ftab="symbols" class="ftab-btn rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">Semboller & Geometri</button>
-        <button type="button" data-ftab="placeholders" class="ftab-btn rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">Vektör & Parantez</button>
-        <button type="button" data-ftab="calculus" class="ftab-btn rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">Calculus</button>
-      </div>
-
-      <!-- Sembol Butonları Izgarası -->
-      <div id="geoFormulaButtonsGrid" class="grid grid-cols-4 sm:grid-cols-6 gap-2"></div>
-
-      <!-- LaTeX Input -->
-      <div class="space-y-1.5">
-        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">LaTeX Kodu</label>
-        <input type="text" id="geoFormulaInput" value="2\sqrt{3}" placeholder="Örn: 2\sqrt{3} veya \frac{a}{b}" class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 font-mono text-sm text-slate-800 outline-none ring-offset-1 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
-      </div>
-
-      <!-- Canlı Önizleme -->
-      <div class="space-y-1.5">
-        <div class="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
-          <span class="flex items-center gap-1 font-bold text-blue-600 dark:text-blue-400">👁 Canlı Önizleme</span>
-          <span class="text-[10px] text-slate-400 font-normal">300 DPI eşdeğeri yüksek netlik</span>
-        </div>
-        <div class="flex min-h-[70px] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50/50 p-4 dark:border-slate-700 dark:bg-slate-950/40">
-          <div id="geoFormulaPreview" class="text-xl"></div>
-        </div>
-      </div>
-
-      <!-- Renk ve Boyut Ayarı -->
-      <div class="flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-3 dark:border-slate-800">
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-600 dark:text-slate-400 font-semibold">Renk:</span>
-          <div class="flex items-center gap-1.5" id="geoFormulaColorOptions">
-            <button type="button" data-color="#0f172a" class="h-5 w-5 rounded-full border border-black/10 bg-slate-900 ring-2 ring-blue-500 ring-offset-1"></button>
-            <button type="button" data-color="#2563eb" class="h-5 w-5 rounded-full border border-black/10 bg-blue-600"></button>
-            <button type="button" data-color="#dc2626" class="h-5 w-5 rounded-full border border-black/10 bg-red-600"></button>
-            <button type="button" data-color="#16a34a" class="h-5 w-5 rounded-full border border-black/10 bg-green-600"></button>
-            <button type="button" data-color="#7c3aed" class="h-5 w-5 rounded-full border border-black/10 bg-purple-600"></button>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-600 dark:text-slate-400 font-semibold">Boyut:</span>
-          <select id="geoFormulaSize" class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 font-semibold">
-            <option value="20">20px (Küçük)</option>
-            <option value="26" selected>26px (Standart)</option>
-            <option value="34">34px (Büyük)</option>
-            <option value="42">42px (Ekstra Büyük)</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50/50 px-5 py-3 dark:border-slate-800 dark:bg-slate-800/30">
-      <button id="geoFormulaCancel" type="button" class="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 transition">İptal</button>
-      <button id="geoFormulaInsertBtn" type="button" class="flex items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2 text-xs font-semibold text-white shadow-md hover:bg-blue-700 transition active:scale-95">
-        <span>＋</span>
-        <span>Tuvale Ekle</span>
-      </button>
     </div>
   </div>
 </div>

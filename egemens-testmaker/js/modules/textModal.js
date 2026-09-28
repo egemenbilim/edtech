@@ -111,6 +111,9 @@ export function renderLevelPills() {
 
 export function openText(q) {
   editingId = q ? q.id : null;
+  if ($('txtDelete')) {
+    $('txtDelete').classList.toggle('hidden', !editingId);
+  }
   $('txtTitle').textContent = q ? 'Yazılı soruyu düzenle' : 'Yazılı soru ekle';
   setTxtImg(q ? (q.imgSrc || q.src || null) : null);
   $('imgUploadPanel').classList.toggle('hidden', !(q && (q.imgSrc || q.src)));
@@ -624,6 +627,20 @@ export function initTextModal() {
 
   $('textBtn').onclick = () => openText(null);
   $('txtCancel').onclick = () => closeModal('textModal');
+  const txtDel = $('txtDelete');
+  if (txtDel) {
+    txtDel.onclick = () => {
+      if (!editingId) return;
+      if (confirm('Bu soruyu sınavdan silmek istediğinize emin misiniz?')) {
+        const idx = questions.findIndex(x => x.id === editingId);
+        if (idx !== -1) {
+          questions.splice(idx, 1);
+          closeModal('textModal');
+          if (typeof onSaveCallback === 'function') onSaveCallback();
+        }
+      }
+    };
+  }
   $('txtSave').onclick = () => saveText(false);
   $('txtSaveNew').onclick = () => saveText(true);
 

@@ -65,6 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
       closeModal('textModal');
     } else if ($('bankModal') && $('bankModal').classList.contains('flex')) {
       closeModal('bankModal');
+    } else if ($('geoFormulaDrawer') && !$('geoFormulaDrawer').classList.contains('hidden')) {
+      const fDrawer = $('geoFormulaDrawer');
+      fDrawer.classList.add('hidden');
+      fDrawer.classList.remove('flex');
+      $('geoOpenFormulaBtn')?.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30');
+      if (window.fabricCanvas) window.fabricCanvas.calcOffset();
+    } else if ($('geoTemplateDrawer') && !$('geoTemplateDrawer').classList.contains('hidden')) {
+      $('geoTemplateDrawer').classList.add('hidden');
+      if (window.fabricCanvas) window.fabricCanvas.calcOffset();
     } else if ($('geoModal') && $('geoModal').classList.contains('flex')) {
       closeModal('geoModal');
     } else if ($('customTplModal') && $('customTplModal').classList.contains('flex')) {

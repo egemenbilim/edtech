@@ -123,6 +123,33 @@ export function renderSiniflar() {
   }).join('');
 
   aktifSurecRender();
+  if (window.uypSelectleriGuncelle) window.uypSelectleriGuncelle();
+}
+
+export function aktifSurecOtomatikDoldur() {
+  const kap = $('surecSinifSecim');
+  const seciliSiniflar = kap ? [...kap.querySelectorAll('input:checked')].map(c => Number(c.value)) : [];
+  const hedefSinifId = seciliSiniflar.length ? seciliSiniflar[0] : (DB.siniflar.length ? DB.siniflar[0].id : null);
+  if (!hedefSinifId) {
+    toast('Lütfen en az bir sınıf seçin', false);
+    return;
+  }
+
+  const d = surecSonDurum(hedefSinifId);
+  const aktif = d.isleniyor.length ? d.isleniyor[0] : (d.onumuzdeki || (d.liste.length ? d.liste[0] : null));
+
+  if (!aktif) {
+    toast('Bu sınıfta henüz konu bulunmuyor', false);
+    return;
+  }
+
+  if (aktif.ders && $('surecDers')) $('surecDers').value = aktif.ders;
+  if ($('surecHafta')) {
+    if (aktif.hafta) $('surecHafta').value = `${aktif.hafta}. Hafta`;
+    else if (aktif.etiket) $('surecHafta').value = aktif.etiket.replace(/[\[\]]/g, '');
+  }
+
+  toast(`⚡ ${aktif.ders} — ${aktif.hafta ? aktif.hafta + '. Hafta' : 'Aktif Konu'} bilgisi forma aktarıldı`);
 }
 
 /* ═════ AKTİF DERS SÜRECİ ═════ */
@@ -439,7 +466,7 @@ b. Fiil Çekim ekleri vb. şeklinde konu ve konu alt başlıklarını düzenle.<
         const dIsleniyor = kList.filter(k => k.durum === 'isleniyor').length;
         const dBaslanacak = kList.length - dIslendi - dIsleniyor;
         h += `
-          <details class="card mt-3" style="border:1px solid var(--indigo)">
+          <details class="card mt-3" style="border:1px solid var(--indigo)" open>
             <summary class="flex" style="justify-content:space-between;cursor:pointer;list-style:none">
               <b style="color:var(--indigo);font-size:14px">📚 ${dAd} <span class="muted" style="font-weight:400;font-size:11px">(${dIslendi}/${kList.length} konu)</span></b>
               <span style="font-size:11px;color:var(--muted)">▼</span>
@@ -458,7 +485,7 @@ b. Fiil Çekim ekleri vb. şeklinde konu ve konu alt başlıklarını düzenle.<
           h += `
             <div class="konu-item${k.alt ? ' alt' : ''}" draggable="true" data-id="${k.id}" data-sinif="${sinifId}" data-alt="${k.alt ? 1 : 0}">
               <span class="konu-tut">⠿</span>
-              <span class="konu-metin">${k.alt ? '<span class="muted">↳</span> ' : '<b>'}${k.etiket ? k.etiket + ' ' : ''}${k.baslik}${k.alt ? '' : '</b>'}</span>
+              <span class="konu-metin">${k.alt ? '<span class="muted">↳</span> ' : '<b>'}${k.etiket ? `<span class="badge" style="background:#e0e7ff;color:#3730a3;font-size:10px;padding:2px 6px;margin-right:6px;border-radius:4px">${k.etiket}</span>` : ''}${k.baslik}${k.alt ? '' : '</b>'}${k.saat ? ` <span class="muted" style="font-size:10px;margin-left:4px">(${k.saat} saat)</span>` : ''}</span>
               <button class="durum-btn ${dCls}" onclick="window.konuDurumDegis(${k.id}, ${sinifId})">${dTxt}</button>
               <button class="btn sm red" onclick="window.konuSil(${k.id}, ${sinifId})">🗑️</button>
             </div>

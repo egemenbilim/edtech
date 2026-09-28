@@ -10,7 +10,8 @@ export let DB = {
   denemeler: [],
   sonuclar: [],
   haftalik: [],
-  konular: []
+  konular: [],
+  yillikPlanlar: []
 };
 
 let nextId = 1;
@@ -24,17 +25,18 @@ export function loadDB() {
     const r = localStorage.getItem(STORE_KEY);
     if (r) {
       DB = JSON.parse(r);
-      if (!DB.siniflar) DB = { siniflar: [], ogrenciler: [], denemeler: [], sonuclar: [], haftalik: [], konular: [] };
+      if (!DB.siniflar) DB = { siniflar: [], ogrenciler: [], denemeler: [], sonuclar: [], haftalik: [], konular: [], yillikPlanlar: [] };
       if (!DB.konular) DB.konular = [];
+      if (!DB.yillikPlanlar) DB.yillikPlanlar = [];
     }
   } catch (e) {
-    DB = { siniflar: [], ogrenciler: [], denemeler: [], sonuclar: [], haftalik: [], konular: [] };
+    DB = { siniflar: [], ogrenciler: [], denemeler: [], sonuclar: [], haftalik: [], konular: [], yillikPlanlar: [] };
   }
 
   nextId = 1;
   ['siniflar', 'ogrenciler', 'denemeler', 'sonuclar', 'haftalik', 'konular'].forEach(k => {
     (DB[k] || []).forEach(x => {
-      if (x.id >= nextId) nextId = x.id + 1;
+      if (typeof x.id === 'number' && x.id >= nextId) nextId = x.id + 1;
     });
   });
 }
@@ -44,7 +46,7 @@ export function saveDB() {
 }
 
 export function resetDB() {
-  DB = { siniflar: [], ogrenciler: [], denemeler: [], sonuclar: [], haftalik: [], konular: [] };
+  DB = { siniflar: [], ogrenciler: [], denemeler: [], sonuclar: [], haftalik: [], konular: [], yillikPlanlar: [] };
   nextId = 1;
   saveDB();
 }
@@ -141,3 +143,13 @@ export function denemeBulVeyaOlustur(ad, tur, tarih) {
   DB.denemeler.push(d);
   return { deneme: d, yeni: true };
 }
+
+export function sinifAdi(id) {
+  const s = DB.siniflar.find(x => x.id === id);
+  return s ? s.ad : '—';
+}
+
+export function netHesapla(tur, d, y) {
+  return Math.round(Math.max(0, d - y / (tur === 'LGS' ? 3 : 4)) * 100) / 100;
+}
+

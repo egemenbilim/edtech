@@ -102,6 +102,7 @@ function renderMainPaperOverlay(c, pg, container) {
             ? '<button type="button" data-act="crop" title="Görseli kırp">✂</button>' +
               '<button type="button" data-act="fit" title="Sütun genişliğine sığdır">⤢</button>'
             : '') +
+          '<button type="button" data-act="del" title="Soruyu Sınavdan Sil" class="pv-act-btn pv-del-btn">🗑</button>' +
         '</span>' +
         (isImg ? '<span class="pvRz" data-act="rz" title="Boyutlandır"></span>' : '');
       overlay.appendChild(chip);
@@ -228,10 +229,12 @@ export function layoutOverlay() {
     chip.innerHTML =
       '<span class="pvNum">' + (i + 1) + '</span>' +
       '<span class="pvActs">' +
+        '<button type="button" data-act="edit" title="Soruyu Düzenle" class="pv-act-btn pv-edit-btn">✎</button>' +
         (isImg
           ? '<button type="button" data-act="crop" title="Görseli kırp">✂</button>' +
             '<button type="button" data-act="fit" title="Sütun genişliğine sığdır">⤢</button>'
-          : '<button type="button" data-act="edit" title="Metni düzenle">✎</button>') +
+          : '') +
+        '<button type="button" data-act="del" title="Soruyu Sınavdan Sil" class="pv-act-btn pv-del-btn">🗑</button>' +
       '</span>' +
       (isImg ? '<span class="pvRz" data-act="rz" title="Boyutlandır"></span>' : '');
     ov.appendChild(chip);
@@ -279,7 +282,8 @@ export function layoutOverlay() {
 
 function wireChip(chip, it, k) {
   chip.addEventListener('pointerdown', (e) => {
-    const act = e.target.dataset.act;
+    const actBtn = e.target.closest('[data-act]');
+    const act = actBtn ? actBtn.dataset.act : null;
     if (act && act !== 'rz') return;
     dragState = {
       chip, it, k, mode: act === 'rz' ? 'rz' : 'drag',
@@ -322,9 +326,21 @@ function wireChip(chip, it, k) {
   chip.addEventListener('pointercancel', end);
   chip.addEventListener('click', (e) => {
     if (suppressClick) { suppressClick = false; return; }
-    const act = e.target.dataset.act;
+    const actBtn = e.target.closest('[data-act]');
+    const act = actBtn ? actBtn.dataset.act : null;
     if (act === 'crop') return openImgCrop(it.q);
     if (act === 'fit') { it.q.scale = 1; it.q.aspect = undefined; return refreshNow(); }
+    if (act === 'del') {
+      if (confirm('Bu soruyu sınav kâğıdından silmek istediğinize emin misiniz?')) {
+        const idx = questions.findIndex(q => q.id === it.q.id);
+        if (idx !== -1) {
+          questions.splice(idx, 1);
+          render();
+          refreshNow();
+        }
+      }
+      return;
+    }
     editFromPaper(it.q);
   });
 }

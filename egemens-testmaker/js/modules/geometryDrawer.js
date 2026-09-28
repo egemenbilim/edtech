@@ -155,11 +155,14 @@ export function openGeometryModal(callback, onCancel) {
   // Yazılı soru ekle modalı açıksa tuval etkileşimini engellememesi için kapat
   closeModal('textModal');
   openModal('geoModal');
+  toggleFormulaDrawer(false);
+  $('geoTemplateDrawer')?.classList.add('hidden');
 
   setTimeout(() => {
     initFabricCanvasIfNeeded();
     resetToolState();
     if (fabricCanvas) {
+      fitCanvasToScreen();
       fabricCanvas.calcOffset();
       fabricCanvas.renderAll();
     }
@@ -172,6 +175,28 @@ export function syncControlsFromState() {}
 // FABRIC.JS TUVAL BAŞLATMA VE YÖNETİMİ
 // ============================================================================
 
+export function fitCanvasToScreen() {
+  if (!fabricCanvas) return;
+  const wrapper = $('geoCanvasWrapper');
+  if (!wrapper) return;
+  const availableWidth = wrapper.clientWidth - 28;
+  if (availableWidth > 0 && availableWidth < 760) {
+    const scale = Math.max(0.4, availableWidth / 760);
+    fabricCanvas.setDimensions({
+      width: Math.floor(760 * scale),
+      height: Math.floor(490 * scale)
+    });
+    fabricCanvas.setZoom(scale);
+    fabricCanvas.calcOffset();
+    fabricCanvas.renderAll();
+  } else if (availableWidth >= 760 && fabricCanvas.getWidth() !== 760) {
+    fabricCanvas.setDimensions({ width: 760, height: 490 });
+    fabricCanvas.setZoom(1);
+    fabricCanvas.calcOffset();
+    fabricCanvas.renderAll();
+  }
+}
+
 function initFabricCanvasIfNeeded() {
   const canvasEl = $('geoFabricCanvas');
   if (!canvasEl) return;
@@ -183,6 +208,7 @@ function initFabricCanvasIfNeeded() {
   }
 
   if (fabricCanvas) {
+    fitCanvasToScreen();
     fabricCanvas.calcOffset();
     return;
   }
@@ -198,6 +224,7 @@ function initFabricCanvasIfNeeded() {
 
   updateGridBackground(gridEnabled);
   saveHistoryState();
+  fitCanvasToScreen();
 
   // Seçim Olayları
   fabricCanvas.on('selection:created', (e) => onObjectSelected(e.selected ? e.selected[0] : null));
@@ -208,7 +235,7 @@ function initFabricCanvasIfNeeded() {
     saveHistoryState();
   });
 
-  // Fare Olayları
+  // Fare & Dokunmatik Olayları
   fabricCanvas.on('mouse:down', onCanvasMouseDown);
   fabricCanvas.on('mouse:move', onCanvasMouseMove);
   fabricCanvas.on('mouse:up', onCanvasMouseUp);
@@ -218,6 +245,7 @@ function initFabricCanvasIfNeeded() {
     }
   });
 
+  window.addEventListener('resize', fitCanvasToScreen);
   window.addEventListener('keydown', onGlobalKeyDown);
 }
 
@@ -1432,25 +1460,134 @@ function insertTemplate(tplName) {
 }
 
 // ============================================================================
-// KATEX DENKLEM MODÜLÜ ENTEGRASYONU
+// KATEX DENKLEM MODÜLÜ ENTEGRASYONU & FORMATLAMA
 // ============================================================================
+
+const KATEX_SVG_CSS = `
+  .katex-mathml, math { display: none !important; }
+  .katex { font: normal 1.21em KaTeX_Main, "Times New Roman", serif; line-height: 1.2; text-indent: 0; text-rendering: auto; border-color: currentColor; }
+  .katex * { -ms-high-contrast-adjust: none; }
+  .katex .katex-html { display: inline-block; }
+  .katex .katex-html > .newline { display: block; }
+  .katex .base { position: relative; display: inline-block; white-space: nowrap; width: -webkit-min-content; width: -moz-min-content; width: min-content; text-align: left; }
+  .katex .strut { display: inline-block; }
+  .katex .textbf { font-weight: 700; }
+  .katex .textit { font-style: italic; }
+  .katex .mord { white-space: nowrap; }
+  .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct, .katex .minner { white-space: nowrap; }
+  .katex .mbin { margin-left: 0.2222em; margin-right: 0.2222em; }
+  .katex .mrel { margin-left: 0.2778em; margin-right: 0.2778em; }
+  .katex .mfrac { display: inline-block; vertical-align: -0.05em; text-align: center; }
+  .katex .mfrac .frac-line { border-bottom-style: solid !important; border-bottom-color: currentColor !important; display: inline-block !important; width: 100% !important; min-height: 1.5px !important; }
+  .katex .hdashline, .katex .hline, .katex .rule, .katex .underline .underline-line, .katex .overline .overline-line { min-height: 1px; }
+  .katex .vlist-t { border-collapse: collapse !important; display: inline-table !important; table-layout: fixed !important; }
+  .katex .vlist-r { display: table-row !important; }
+  .katex .vlist { display: table-cell !important; vertical-align: bottom !important; position: relative !important; }
+  .katex .vlist > span { display: block !important; height: 0 !important; position: relative !important; }
+  .katex .vlist > span > .pstrut { overflow: hidden; height: 0; }
+  .katex .vlist-t2 { margin-right: -2px; }
+  .katex .vlist-s { display: table-cell; vertical-align: bottom; font-size: 1px; width: 2px; min-width: 2px; }
+  .katex .vlist-t2 .vlist-r:last-child .vlist { position: relative; }
+  .katex .reset-size6.size3 { font-size: 0.7em; }
+  .katex .reset-size6.size4 { font-size: 0.8em; }
+  .katex .reset-size6.size5 { font-size: 0.9em; }
+  .katex .reset-size6.size6 { font-size: 1em; }
+  .katex .reset-size6.size7 { font-size: 1.2em; }
+  .katex .reset-size6.size8 { font-size: 1.4em; }
+  .katex .sqrt { display: inline-block; position: relative; }
+  .katex .sqrt > .root { margin-left: 0.2778em; margin-right: -0.5556em; }
+  .katex .sqrt > .vlist-t { position: relative; }
+  .katex .sqrt .svg-align { display: inline-block; width: 100%; }
+  .katex svg { display: block; position: absolute; width: 100%; height: 100%; fill: currentColor; stroke: currentColor; fill-rule: nonzero; fill-opacity: 1; stroke-width: 1; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-dashoffset: 0; stroke-opacity: 1; }
+  .katex .root { font-size: 0.7em; }
+`;
+
+export function formatLatex(latexStr) {
+  if (!latexStr) return '';
+  let s = latexStr.trim();
+  let prev;
+  do {
+    prev = s;
+    s = s.replace(/(^|[^\w\\{])([+-]?\w+)\s*\/\s*(\w+)($|[^\w}])/g, '$1\\frac{$2}{$3}$4');
+  } while (s !== prev);
+  return s;
+}
+
+export function toggleFormulaDrawer(open) {
+  const drawer = $('geoFormulaDrawer');
+  const btn = $('geoOpenFormulaBtn');
+  if (!drawer) return;
+
+  const shouldOpen = typeof open === 'boolean' ? open : drawer.classList.contains('hidden');
+  if (shouldOpen) {
+    drawer.classList.remove('hidden');
+    drawer.classList.add('flex');
+    btn?.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30');
+    $('geoTemplateDrawer')?.classList.add('hidden');
+    setTimeout(() => {
+      const input = $('geoFormulaInput');
+      if (input) {
+        input.focus();
+        input.select();
+      }
+      updateFormulaPreview();
+    }, 60);
+  } else {
+    drawer.classList.add('hidden');
+    drawer.classList.remove('flex');
+    btn?.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30');
+  }
+
+  setTimeout(() => {
+    if (fabricCanvas) {
+      fabricCanvas.calcOffset();
+      fabricCanvas.renderAll();
+    }
+  }, 100);
+}
+
+function updateFormulaPreview() {
+  const inputEl = $('geoFormulaInput');
+  const previewEl = $('geoFormulaPreview');
+  if (!inputEl || !previewEl) return;
+
+  const raw = inputEl.value.trim();
+  if (!raw) {
+    previewEl.innerHTML = '<span class="text-xs text-slate-400 italic">Formül yazın veya yukarıdan seçin</span>';
+    return;
+  }
+  const latex = formatLatex(raw);
+  const katex = window.katex;
+  if (katex) {
+    try {
+      katex.render(latex, previewEl, {
+        displayMode: true,
+        throwOnError: false,
+        output: 'html'
+      });
+    } catch (err) {
+      previewEl.innerText = latex;
+    }
+  } else {
+    previewEl.innerText = latex;
+  }
+}
 
 function setupKatexFormulaModule() {
   const tabsContainer = $('geoFormulaTabs');
   const buttonsGrid = $('geoFormulaButtonsGrid');
   const inputEl = $('geoFormulaInput');
-  const previewEl = $('geoFormulaPreview');
   const sizeSelect = $('geoFormulaSize');
 
-  if (!tabsContainer || !buttonsGrid || !inputEl || !previewEl) return;
+  if (!tabsContainer || !buttonsGrid || !inputEl) return;
 
   tabsContainer.querySelectorAll('[data-ftab]').forEach((btn) => {
     btn.onclick = () => {
       activeFormulaTab = btn.dataset.ftab;
       tabsContainer.querySelectorAll('[data-ftab]').forEach((b) => {
-        b.className = 'ftab-btn rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800';
+        b.className = 'ftab-btn rounded-lg px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 shrink-0';
       });
-      btn.className = 'ftab-btn active rounded-lg px-3 py-1.5 text-xs font-semibold bg-blue-600 text-white shadow-sm';
+      btn.className = 'ftab-btn active rounded-lg px-2.5 py-1 text-[11px] font-semibold bg-blue-600 text-white shadow-sm shrink-0';
       renderFormulaButtons();
     };
   });
@@ -1461,10 +1598,10 @@ function setupKatexFormulaModule() {
     items.forEach((item) => {
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50/80 px-2 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50/50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:border-blue-500 dark:hover:bg-slate-800 transition shadow-sm active:scale-95';
+      b.className = 'flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50/80 px-2 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50/50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:border-blue-500 dark:hover:bg-slate-800 transition shadow-sm active:scale-95 cursor-pointer';
       b.textContent = item.display;
       b.onclick = () => {
-        const val = inputEl.value;
+        const val = inputEl.value.trim();
         inputEl.value = val ? `${val} ${item.latex}` : item.latex;
         updateFormulaPreview();
         inputEl.focus();
@@ -1473,37 +1610,7 @@ function setupKatexFormulaModule() {
     });
   }
 
-  function updateFormulaPreview() {
-    const latex = inputEl.value.trim() || ' ';
-    const katex = window.katex;
-    if (katex) {
-      try {
-        katex.render(latex, previewEl, {
-          displayMode: true,
-          throwOnError: false
-        });
-      } catch (err) {
-        previewEl.innerText = latex;
-      }
-    } else {
-      previewEl.innerText = latex;
-    }
-    previewEl.style.color = formulaColor;
-  }
-
   inputEl.oninput = updateFormulaPreview;
-
-  const colorOptions = $('geoFormulaColorOptions');
-  if (colorOptions) {
-    colorOptions.querySelectorAll('[data-color]').forEach((btn) => {
-      btn.onclick = () => {
-        formulaColor = btn.dataset.color;
-        colorOptions.querySelectorAll('[data-color]').forEach((b) => b.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-1'));
-        btn.classList.add('ring-2', 'ring-blue-500', 'ring-offset-1');
-        updateFormulaPreview();
-      };
-    });
-  }
 
   if (sizeSelect) {
     sizeSelect.onchange = (e) => {
@@ -1513,16 +1620,17 @@ function setupKatexFormulaModule() {
 
   const closeBtn = $('geoFormulaClose');
   const cancelBtn = $('geoFormulaCancel');
-  if (closeBtn) closeBtn.onclick = () => closeModal('geoFormulaModal');
-  if (cancelBtn) cancelBtn.onclick = () => closeModal('geoFormulaModal');
+  if (closeBtn) closeBtn.onclick = () => toggleFormulaDrawer(false);
+  if (cancelBtn) cancelBtn.onclick = () => toggleFormulaDrawer(false);
 
   const insertBtn = $('geoFormulaInsertBtn');
   if (insertBtn) {
     insertBtn.onclick = async () => {
-      const latex = inputEl.value.trim();
-      if (!latex) return;
-      await addKatexFormulaToCanvas(latex, formulaColor, formulaSize);
-      closeModal('geoFormulaModal');
+      const raw = inputEl.value.trim();
+      if (!raw) return;
+      const latex = formatLatex(raw);
+      await addKatexFormulaToCanvas(latex, formulaSize);
+      toggleFormulaDrawer(false);
     };
   }
 
@@ -1530,7 +1638,7 @@ function setupKatexFormulaModule() {
   updateFormulaPreview();
 }
 
-async function addKatexFormulaToCanvas(latex, color = '#0f172a', fontSize = 26) {
+async function addKatexFormulaToCanvas(latex, fontSize = 26) {
   const fabric = window.fabric;
   const katex = window.katex;
   if (!fabric || !fabricCanvas || !katex) return;
@@ -1538,14 +1646,15 @@ async function addKatexFormulaToCanvas(latex, color = '#0f172a', fontSize = 26) 
   try {
     const htmlString = katex.renderToString(latex, {
       displayMode: true,
-      throwOnError: false
+      throwOnError: false,
+      output: 'html'
     });
 
     const wrapper = document.createElement('div');
     wrapper.style.display = 'inline-block';
     wrapper.style.fontSize = `${fontSize}px`;
-    wrapper.style.color = color;
-    wrapper.style.fontFamily = 'KaTeX_Main, Times New Roman, serif';
+    wrapper.style.color = '#0f172a';
+    wrapper.style.fontFamily = 'KaTeX_Main, "Times New Roman", serif';
     wrapper.style.padding = '8px 12px';
     wrapper.style.position = 'absolute';
     wrapper.style.left = '-9999px';
@@ -1554,15 +1663,19 @@ async function addKatexFormulaToCanvas(latex, color = '#0f172a', fontSize = 26) 
     document.body.appendChild(wrapper);
 
     const rect = wrapper.getBoundingClientRect();
-    const width = Math.max(Math.ceil(rect.width) + 8, 30);
-    const height = Math.max(Math.ceil(rect.height) + 8, 24);
+    const width = Math.max(Math.ceil(rect.width) + 12, 30);
+    const height = Math.max(Math.ceil(rect.height) + 10, 24);
     document.body.removeChild(wrapper);
 
     const scale = 4;
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="${width * scale}" height="${height * scale}" viewBox="0 0 ${width} ${height}">
+        <style>
+          ${KATEX_SVG_CSS}
+          .katex .mfrac .frac-line { border-bottom-color: #0f172a !important; }
+        </style>
         <foreignObject width="100%" height="100%">
-          <div xmlns="http://www.w3.org/1999/xhtml" style="font-size:${fontSize}px; color:${color}; font-family: KaTeX_Main, Times New Roman, serif; display:flex; align-items:center; justify-content:center; height:100%;">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="font-size:${fontSize}px; color:#0f172a; font-family: KaTeX_Main, 'Times New Roman', serif; display:flex; align-items:center; justify-content:center; width:100%; height:100%;">
             ${htmlString}
           </div>
         </foreignObject>
@@ -1583,9 +1696,10 @@ async function addKatexFormulaToCanvas(latex, color = '#0f172a', fontSize = 26) 
       const pngUrl = c.toDataURL('image/png');
 
       fabric.Image.fromURL(pngUrl, (fImg) => {
+        const center = fabricCanvas.getCenter ? fabricCanvas.getCenter() : { left: 380, top: 240 };
         fImg.set({
-          left: 380,
-          top: 240,
+          left: center.left,
+          top: center.top,
           originX: 'center',
           originY: 'center',
           selectable: true,
@@ -1652,6 +1766,19 @@ function onGlobalKeyDown(e) {
   if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
   if (e.key === 'Escape') {
+    const formulaDrawer = $('geoFormulaDrawer');
+    if (formulaDrawer && !formulaDrawer.classList.contains('hidden')) {
+      toggleFormulaDrawer(false);
+      e.stopPropagation();
+      return;
+    }
+    const tplDrawer = $('geoTemplateDrawer');
+    if (tplDrawer && !tplDrawer.classList.contains('hidden')) {
+      tplDrawer.classList.add('hidden');
+      if (fabricCanvas) fabricCanvas.calcOffset();
+      e.stopPropagation();
+      return;
+    }
     resetToolState();
   } else if (e.key === 'Enter' && activeTool === 'shape') {
     if (shapePoints.length >= 3) {
@@ -1733,7 +1860,7 @@ export function setupGeometryEventListeners() {
   // KaTeX Aç Butonu
   const openFormulaBtn = $('geoOpenFormulaBtn');
   if (openFormulaBtn) {
-    openFormulaBtn.onclick = () => openModal('geoFormulaModal');
+    openFormulaBtn.onclick = () => toggleFormulaDrawer();
   }
 
   // Şablon Çekmecesini Aç/Kapat
@@ -1741,10 +1868,19 @@ export function setupGeometryEventListeners() {
   const tplDrawer = $('geoTemplateDrawer');
   const closeDrawerBtn = $('geoCloseDrawerBtn');
   if (toggleTplBtn && tplDrawer) {
-    toggleTplBtn.onclick = () => tplDrawer.classList.toggle('hidden');
+    toggleTplBtn.onclick = () => {
+      tplDrawer.classList.toggle('hidden');
+      if (!tplDrawer.classList.contains('hidden')) {
+        toggleFormulaDrawer(false);
+      }
+      setTimeout(() => fabricCanvas?.calcOffset(), 100);
+    };
   }
   if (closeDrawerBtn && tplDrawer) {
-    closeDrawerBtn.onclick = () => tplDrawer.classList.add('hidden');
+    closeDrawerBtn.onclick = () => {
+      tplDrawer.classList.add('hidden');
+      setTimeout(() => fabricCanvas?.calcOffset(), 100);
+    };
   }
 
   if (tplDrawer) {

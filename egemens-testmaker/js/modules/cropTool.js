@@ -8,7 +8,7 @@ let pdfRenderTasks = {};
 let zoom = { s: 1, tx: 0, ty: 0 };
 let pinch = null;
 
-const CROP_ANS_BASE = 'h-6 w-6 rounded-md border text-[11px] font-medium transition ';
+const CROP_ANS_BASE = 'h-8 w-8 sm:h-7 sm:w-7 rounded-lg border text-xs font-semibold flex items-center justify-center transition cursor-pointer touch-manipulation ';
 const CROP_ANS_OFF = 'border-white/25 text-white/80 hover:border-white/60 hover:text-white';
 const CROP_ANS_ON = 'bg-white text-slate-900 border-white font-bold';
 
@@ -259,8 +259,8 @@ function renderCuts(onOcrRequested) {
   $('cutList').innerHTML = '<div class="mb-2.5 text-[11px] font-medium uppercase tracking-wide text-white/40">Kesilenler</div>' +
     (cuts.length ? cuts.map((c, i) => `<div class="group relative mb-2 overflow-hidden rounded-lg bg-white p-1"><img src="${c.src}" class="w-full">
       <span class="absolute left-1.5 top-1.5 rounded bg-slate-900/80 px-1.5 text-[10px] font-medium text-white">${i + 1}${c.answer ? ' · ' + c.answer : ''}</span>
-      <button data-ocr="${i}" class="absolute left-1.5 bottom-1.5 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-semibold text-slate-900">Metni oku</button>
-      <button data-i="${i}" class="absolute right-1.5 top-1.5 rounded bg-slate-900/80 px-1.5 text-[10px] text-white opacity-0 transition group-hover:opacity-100 hover:bg-rose-600">✕</button></div>`).join('')
+      <button data-ocr="${i}" class="absolute left-1 bottom-1 h-7 rounded-lg bg-amber-400 px-2 text-[11px] font-semibold text-slate-900 shadow-sm flex items-center justify-center">Metni oku</button>
+      <button data-i="${i}" class="absolute right-1 top-1 h-7 w-7 rounded-lg bg-slate-900/85 text-xs text-white opacity-85 transition hover:opacity-100 hover:bg-rose-600 flex items-center justify-center cursor-pointer shadow-sm">✕</button></div>`).join('')
       : '<div class="mt-4 text-center text-[11px] text-white/30">Henüz soru kesilmedi</div>');
 
   $('cutList').querySelectorAll('[data-i]').forEach(b => b.onclick = () => {

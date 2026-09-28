@@ -270,6 +270,12 @@ export function syncUI() {
 
 export function initSidebar() {
   $('sidebarToggle').onclick = openSidebar;
+  if ($('floatingSidebarToggle')) {
+    $('floatingSidebarToggle').onclick = () => {
+      if ($('sidebarPanel').classList.contains('open')) closeSidebar();
+      else openSidebar();
+    };
+  }
   $('sidebarClose').onclick = closeSidebar;
   $('sidebarOverlay').onclick = closeSidebar;
 

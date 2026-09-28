@@ -123,12 +123,28 @@ function initNeuralCanvas() {
   window.addEventListener('resize', resize);
   resize();
 
-  window.addEventListener('mousemove', (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-    document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
-    document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
-  });
+  function updatePointer(clientX, clientY) {
+    mouse.x = clientX;
+    mouse.y = clientY;
+    document.documentElement.style.setProperty('--mouse-x', `${clientX}px`);
+    document.documentElement.style.setProperty('--mouse-y', `${clientY}px`);
+  }
+
+  window.addEventListener('mousemove', (e) => updatePointer(e.clientX, e.clientY));
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches && e.touches.length > 0) {
+      updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: true });
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches.length > 0) {
+      updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: true });
+  window.addEventListener('touchend', () => {
+    mouse.x = -9999;
+    mouse.y = -9999;
+  }, { passive: true });
 
   const particleCount = Math.min(Math.floor(window.innerWidth / 20), 75);
   for (let i = 0; i < particleCount; i++) {
@@ -285,6 +301,18 @@ function init3DTilt() {
       const isChecked = card.querySelector('input[type="radio"]:checked');
       card.style.transform = isChecked ? 'translateY(-3px) scale(1.02)' : 'none';
     });
+
+    card.addEventListener('touchend', () => {
+      setTimeout(() => {
+        const isChecked = card.querySelector('input[type="radio"]:checked');
+        card.style.transform = isChecked ? 'translateY(-3px) scale(1.02)' : 'none';
+      }, 150);
+    }, { passive: true });
+
+    card.addEventListener('touchcancel', () => {
+      const isChecked = card.querySelector('input[type="radio"]:checked');
+      card.style.transform = isChecked ? 'translateY(-3px) scale(1.02)' : 'none';
+    }, { passive: true });
   });
 }
 
@@ -696,6 +724,13 @@ ${gs ? `- Daily study time should not exceed ${gs}.` : '- Daily study duration s
 
   const finalPrompt = tidy(sonuc) + TURKISH_RULE;
   streamPrompt(finalPrompt);
+
+  if (window.innerWidth <= 1100) {
+    const paper = document.getElementById('paper');
+    if (paper) {
+      paper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -917,6 +952,40 @@ document.addEventListener("DOMContentLoaded", () => {
       generatePrompt();
     }
   });
+
+  // Tablet Hızlı Atlama Kontrolcüsü
+  window.toggleTabletJump = function() {
+    const paper = document.getElementById('paper');
+    const icon = document.getElementById('tablet-jump-icon');
+    const txt = document.getElementById('tablet-jump-text');
+    if (!paper) return;
+    const paperTop = paper.getBoundingClientRect().top;
+    if (paperTop > 250) {
+      paper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (icon) icon.textContent = '⬆️';
+      if (txt) txt.textContent = 'Forma Dön';
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (icon) icon.textContent = '⬇️';
+      if (txt) txt.textContent = 'Promptu Gör';
+    }
+  };
+
+  window.addEventListener('scroll', () => {
+    if (window.innerWidth > 1100) return;
+    const paper = document.getElementById('paper');
+    const icon = document.getElementById('tablet-jump-icon');
+    const txt = document.getElementById('tablet-jump-text');
+    if (!paper || !icon || !txt) return;
+    const paperTop = paper.getBoundingClientRect().top;
+    if (paperTop <= 250) {
+      icon.textContent = '⬆️';
+      txt.textContent = 'Forma Dön';
+    } else {
+      icon.textContent = '⬇️';
+      txt.textContent = 'Promptu Gör';
+    }
+  }, { passive: true });
 
   // Varsayılan ilk şablonu seçili başlat
   const firstRadio = document.querySelector('input[name="materyal"][value="maarif"]');

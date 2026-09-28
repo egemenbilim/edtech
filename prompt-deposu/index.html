@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="description" content="Eğitim Teknolojileri — Öğretmenler ve eğitimciler için pedagojik yapay zekâ prompt deposu.">
   <title>Eğitim Promptları — Prompt Deposu | Egemen's EdTech</title>
 
@@ -559,6 +559,12 @@ Kopyalayacağınız prompt metni pedagojik standartlara, İngilizce komut ve Tü
     </footer>
 
   </div>
+
+  <!-- Tablet Hızlı Atlama Butonu (Form ↔ Terminal) -->
+  <button type="button" id="btn-tablet-jump" class="btn-tablet-jump" onclick="window.toggleTabletJump()" title="Form ve Terminal Arasında Hızlı Geçiş Yap">
+    <span id="tablet-jump-icon">⬇️</span>
+    <span id="tablet-jump-text">Promptu Gör</span>
+  </button>
 
   <!-- Toast Bildirim Konteyneri -->
   <div class="toast-wrap" id="toast-wrap"></div>
