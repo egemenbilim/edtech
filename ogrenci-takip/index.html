@@ -640,19 +640,7 @@ Yanlış Sayısı: 3"></textarea>
       <div class="field" style="grid-column:1/-1"><label>📚 Ders Seçimi (Ctrl ile çoklu — boş = tümü)</label><select id="raporDersSelect" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="dersSecTumu()">Tümünü Seç</button><button class="btn gray sm" onclick="dersSecTemizle()">Temizle</button></div></div>
       <div class="field"><label>📈 Gelişim Analizi — TYT Denemeleri</label><select id="raporGelisimTYT" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="gelisimSec('TYT')">Son 10</button><button class="btn gray sm" onclick="gelisimTemizle('TYT')">Temizle</button></div></div>
       <div class="field"><label>📈 Gelişim Analizi — AYT Denemeleri</label><select id="raporGelisimAYT" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="gelisimSec('AYT')">Son 10</button><button class="btn gray sm" onclick="gelisimTemizle('AYT')">Temizle</button></div></div>
-      <div class="field" style="grid-column:1/-1">
-        <div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px">
-          <label style="margin:0">👩‍🎓 Öğrenci (Ctrl ile çoklu — boş = tümü)</label>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;font-weight:700;color:var(--indigo)">🏫 Sınıfa Göre Seç:</span>
-            <select id="raporSinifFiltre" style="font-size:12px;padding:4px 8px;border-radius:6px;border:1.5px solid #cbd5e1" onchange="raporSinifSecildi(this.value)">
-              <option value="">Tüm Sınıflar</option>
-            </select>
-          </div>
-        </div>
-        <select id="raporOgrenciSelect" class="sel-multi" multiple size="5"></select>
-        <div class="flex mt-3"><button class="btn gray sm" onclick="ogrSecTumu()">Tümünü Seç</button><button class="btn gray sm" onclick="ogrSecTemizle()">Temizle</button></div>
-      </div>
+      <div class="field" style="grid-column:1/-1"><label>👩‍🎓 Öğrenci (Ctrl ile çoklu — boş = tümü)</label><select id="raporOgrenciSelect" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="ogrSecTumu()">Tümünü Seç</button><button class="btn gray sm" onclick="ogrSecTemizle()">Temizle</button></div></div>
       <div class="field" style="grid-column:1/-1"><label>&nbsp;</label><div class="flex"><button class="btn" style="flex:1" onclick="renderRapor()">🔍 Rapor Oluştur</button><button class="btn green" onclick="raporPDF()">📄 PDF İndir</button></div></div>
     </div>
     <div style="margin-top:12px;padding:10px;background:#f8fafc;border:1px solid var(--border);border-radius:8px">
@@ -668,7 +656,6 @@ Yanlış Sayısı: 3"></textarea>
   </div>
   <div id="raporGelisimAnaliz" class="mt-4 hidden"></div>
   <div id="raporSinifSiralama" class="mt-4 hidden"></div>
-  <div id="raporOrtalamaAltinda" class="mt-4 hidden"></div>
   <div id="raporSonuc"></div>
 </section>
 

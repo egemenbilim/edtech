@@ -35,9 +35,7 @@ import {
 import {
   doldurRaporFiltreleri, dersSecTumu, dersSecTemizle,
   ogrSecTumu, ogrSecTemizle, gelisimSec, gelisimTemizle,
-  renderRapor, renderDetayliAnaliz, renderOrtalamaAltinda,
-  renderOrtalamaAltindaIcerik, altindaFiltreDegisti,
-  altindaFiltreSifirla, raporSinifSecildi, raporPDF
+  renderRapor, renderDetayliAnaliz, raporPDF
 } from './modules/raporlar.js';
 import {
   disaAktar, iceriAktar, handleFile, tumunuSil,
@@ -241,11 +239,6 @@ window.ogrSecTemizle = ogrSecTemizle;
 window.gelisimSec = gelisimSec;
 window.gelisimTemizle = gelisimTemizle;
 window.renderRapor = renderRapor;
-window.renderOrtalamaAltinda = renderOrtalamaAltinda;
-window.renderOrtalamaAltindaIcerik = renderOrtalamaAltindaIcerik;
-window.altindaFiltreDegisti = altindaFiltreDegisti;
-window.altindaFiltreSifirla = altindaFiltreSifirla;
-window.raporSinifSecildi = raporSinifSecildi;
 window.raporPDF = raporPDF;
 
 // PDF Ayrıştırma ve Onay
