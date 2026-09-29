@@ -433,18 +433,8 @@ Deneme Adı: Özdebir AYT 1
           <div style="width:36px;height:36px;background:#059669;color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px">2</div>
           <div>
             <h2 style="margin:0;font-size:16px;color:#0f172a">Ödev / Soru Girişi</h2>
-            <p style="margin:2px 0 0;font-size:11.5px;color:#64748b">Ders ve konu seçimi yapın, hedef ve sonuçları kaydedin.</p>
+            <p style="margin:2px 0 0;font-size:11.5px;color:#64748b">Ödev verin veya çözülen soruları kaydedin; durumunu ve öğrenme seviyesini takip edin.</p>
           </div>
-        </div>
-
-        <!-- Tür Değiştirici Buton Grubu (Soru vs Ödev) -->
-        <div class="toggle-group" style="display:inline-flex;background:#f1f5f9;padding:4px;border-radius:10px;gap:4px">
-          <button type="button" id="hfTurBtnSoru" class="toggle-btn active" onclick="hfTurDegis('soru')" style="border:none;padding:7px 16px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .15s">
-            🎯 Soru Çözümü
-          </button>
-          <button type="button" id="hfTurBtnOdev" class="toggle-btn" onclick="hfTurDegis('odev')" style="border:none;padding:7px 16px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .15s">
-            📝 Ödev / Görev Takibi
-          </button>
         </div>
       </div>
 
@@ -487,24 +477,55 @@ Deneme Adı: Özdebir AYT 1
       <!-- TARİH VE DETAY ALANLARI -->
       <div class="grid-3" style="margin-bottom:14px">
         <div class="field">
-          <label>Hafta Başlangıcı *</label>
+          <label>Hafta Başlangıcı / Veriliş Tarihi *</label>
           <input type="date" id="hfBas" onchange="hfBitisOtomatik()">
         </div>
         <div class="field">
-          <label>Hafta Bitişi</label>
+          <label>Hafta Bitişi / Kontrol Tarihi</label>
           <input type="date" id="hfBit">
         </div>
         <div class="field">
-          <label>Hedef Soru / Sayfa</label>
+          <label>Hedef Soru Sayısı</label>
           <input type="number" id="hfHedef" value="0" min="0" placeholder="Örn: 100">
         </div>
       </div>
 
-      <!-- SORU ÇÖZÜMÜ DETAYLARI -->
-      <div id="hfSoruEkAlanlar">
-        <div class="grid-3">
+      <!-- ÖDEV DURUMU, BAŞLIK / NOT VE ÖĞRENME DERECELENDİRMESİ -->
+      <div class="grid-3" style="margin-bottom:14px">
+        <div class="field">
+          <label>Ödev / Takip Durumu *</label>
+          <select id="hfOdevDurum">
+            <option value="Verildi">⏳ Verildi (Kontrol Bekliyor)</option>
+            <option value="Tamamlandı">✅ Tam Yapıldı</option>
+            <option value="Kısmi">⚠️ Eksik Yapıldı</option>
+            <option value="Yapılmadı">❌ Yapılmadı</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Ödev Başlığı / Görev Tanımı / Kaynak Kitap</label>
+          <input id="hfBaslik" placeholder="Örn: 3D Soru Bankası Test 4 / Limit Fasikülü...">
+        </div>
+        <div class="field">
+          <label>⭐ Öğrenme Derecelendirmesi (1-5 Yıldız)</label>
+          <div style="display:flex;align-items:center;gap:8px;padding-top:4px">
+            <div id="hfYildizSecici" style="display:inline-flex;gap:3px;font-size:22px;cursor:pointer;color:#cbd5e1;user-select:none">
+              <span class="hf-star" data-val="1" onclick="hfYildizSec(1)" title="1 - Öğrenilmedi">★</span>
+              <span class="hf-star" data-val="2" onclick="hfYildizSec(2)" title="2 - Zayıf">★</span>
+              <span class="hf-star" data-val="3" onclick="hfYildizSec(3)" title="3 - Orta">★</span>
+              <span class="hf-star" data-val="4" onclick="hfYildizSec(4)" title="4 - İyi">★</span>
+              <span class="hf-star" data-val="5" onclick="hfYildizSec(5)" title="5 - Çok İyi Öğrenildi">★</span>
+            </div>
+            <span id="hfYildizEtiket" style="font-size:11.5px;font-weight:600;color:var(--muted)">Henüz Derecelendirilmedi</span>
+            <button type="button" class="btn gray sm" onclick="hfYildizSec(0)" style="padding:2px 6px;font-size:10px" title="Sıfırla">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SORU ÇÖZÜMÜ VE NET HESAPLAMA -->
+      <div style="background:#f8fafc;padding:14px;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:14px">
+        <div class="grid-3" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));gap:10px">
           <div class="field">
-            <label>Çözülen Toplam Soru *</label>
+            <label>Soru Sayısı</label>
             <input type="number" id="hfSoru" value="0" min="0" oninput="hfNetHesaplaLive()">
           </div>
           <div class="field">
@@ -521,38 +542,16 @@ Deneme Adı: Özdebir AYT 1
           </div>
           <div class="field">
             <label>Hesaplanan Net</label>
-            <div class="stat" style="padding:7px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
+            <div class="stat" style="padding:7px 12px;background:#fff;border-radius:8px;border:1px solid #e2e8f0;text-align:center">
               <div class="v mono" id="hfNet" style="font-size:18px;color:var(--indigo)">0.00</div>
             </div>
-          </div>
-          <div class="field">
-            <label>Not / Kaynak Kitap</label>
-            <input id="hfNotlar" placeholder="Örn: 3D Soru Bankası Test 4">
-          </div>
-        </div>
-      </div>
-
-      <!-- ÖDEV DETAYLARI -->
-      <div id="hfOdevEkAlanlar" class="hidden">
-        <div class="grid-2" style="margin-bottom:12px">
-          <div class="field">
-            <label>Ödev Başlığı / Görev Tanımı *</label>
-            <input id="hfBaslik" placeholder="Örn: Orijinal Mat. Fasikül 3 Sayfa 40-50">
-          </div>
-          <div class="field">
-            <label>Ödev Durumu *</label>
-            <select id="hfOdevDurum">
-              <option value="Tamamlandı">✅ Tamamlandı</option>
-              <option value="Kısmi">⏳ Kısmi / Eksik Yapıldı</option>
-              <option value="Yapılmadı">❌ Yapılmadı</option>
-            </select>
           </div>
         </div>
       </div>
 
       <div class="flex mt-3" style="justify-content:flex-end">
         <button class="btn green" id="hfKaydetBtn" onclick="hfKaydet()" style="padding:10px 24px;font-size:14px;font-weight:600">
-          💾 Soru Kaydını Ekle
+          💾 Ödev / Soru Kaydını Ekle
         </button>
       </div>
     </div>
@@ -599,19 +598,32 @@ Yanlış Sayısı: 3"></textarea>
 
   <!-- KAYITLAR VE FİLTRELEME ARAÇ ÇUBUĞU -->
   <div class="card mt-4" style="padding:14px 16px;border-radius:12px;background:#ffffff">
-    <div class="flex" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-      <div class="flex" style="align-items:center;gap:10px">
-        <h2 style="font-size:16px;margin:0">📋 Kayıtlı Takip Listesi</h2>
-        <!-- Tür Filtre Butonları -->
-        <div id="hfFiltreTurGrup" class="toggle-group" style="display:inline-flex;background:#f1f5f9;padding:3px;border-radius:8px;gap:2px">
-          <button type="button" class="toggle-btn active" data-tur="hepsi" onclick="hfFiltreTurSec('hepsi')" style="padding:4px 10px;font-size:11.5px;border:none;border-radius:6px;cursor:pointer">Tümü</button>
-          <button type="button" class="toggle-btn" data-tur="soru" onclick="hfFiltreTurSec('soru')" style="padding:4px 10px;font-size:11.5px;border:none;border-radius:6px;cursor:pointer">🎯 Sadece Sorular</button>
-          <button type="button" class="toggle-btn" data-tur="odev" onclick="hfFiltreTurSec('odev')" style="padding:4px 10px;font-size:11.5px;border:none;border-radius:6px;cursor:pointer">📝 Sadece Ödevler</button>
+    <div class="flex" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <!-- Durum Filtreleri -->
+      <div class="flex" style="align-items:center;gap:8px;flex-wrap:wrap">
+        <h2 style="font-size:15px;margin:0;white-space:nowrap">📋 Takip Listesi:</h2>
+        <div id="hfFiltreDurumGrup" class="toggle-group" style="display:inline-flex;background:#f1f5f9;padding:3px;border-radius:8px;gap:2px;flex-wrap:wrap">
+          <button type="button" class="toggle-btn active" data-durum="hepsi" onclick="hfFiltreDurumSec('hepsi')" style="padding:5px 10px;font-size:12px;border:none;border-radius:6px;cursor:pointer">Tümü</button>
+          <button type="button" class="toggle-btn" data-durum="Verildi" onclick="hfFiltreDurumSec('Verildi')" style="padding:5px 10px;font-size:12px;border:none;border-radius:6px;cursor:pointer">⏳ Kontrol Bekleyenler</button>
+          <button type="button" class="toggle-btn" data-durum="Tamamlandı" onclick="hfFiltreDurumSec('Tamamlandı')" style="padding:5px 10px;font-size:12px;border:none;border-radius:6px;cursor:pointer">✅ Tam Yapılanlar</button>
+          <button type="button" class="toggle-btn" data-durum="Kısmi" onclick="hfFiltreDurumSec('Kısmi')" style="padding:5px 10px;font-size:12px;border:none;border-radius:6px;cursor:pointer">⚠️ Eksik Yapılanlar</button>
+          <button type="button" class="toggle-btn" data-durum="Yapılmadı" onclick="hfFiltreDurumSec('Yapılmadı')" style="padding:5px 10px;font-size:12px;border:none;border-radius:6px;cursor:pointer">❌ Yapılmayanlar</button>
         </div>
       </div>
 
+      <!-- Tarih ve Öğrenci Filtreleri -->
       <div class="flex" style="gap:8px;align-items:center;flex-wrap:wrap">
-        <select id="filtreHfOgrenci" style="width:auto;min-width:180px;font-size:13px" onchange="hfOgrenciSecildi(this.value)">
+        <button type="button" class="btn sm gray" onclick="hfFiltreSon1Hafta()" style="font-weight:600;white-space:nowrap" title="Son 7 günün ödev ve soru kayıtlarını listeler">
+          📅 Son 1 Hafta
+        </button>
+        <div class="flex" style="align-items:center;gap:4px">
+          <input type="date" id="hfFiltreBas" style="width:auto;padding:4px 8px;font-size:12px" onchange="renderHaftalik()" title="Başlangıç Tarihi">
+          <span style="color:#94a3b8;font-size:11px">–</span>
+          <input type="date" id="hfFiltreBit" style="width:auto;padding:4px 8px;font-size:12px" onchange="renderHaftalik()" title="Bitiş Tarihi">
+          <button type="button" class="btn sm gray" onclick="hfFiltreTarihTemizle()" style="padding:4px 8px;font-size:11px" title="Tarih Filtresini Sıfırla">✕</button>
+        </div>
+
+        <select id="filtreHfOgrenci" style="width:auto;min-width:160px;font-size:13px" onchange="hfOgrenciSecildi(this.value)">
           <option value="">Tüm Öğrenciler</option>
         </select>
         <button class="btn sm" onclick="hfOzelRaporAc()" style="background:linear-gradient(135deg,#4f46e5,#3b82f6);color:#fff;border:none;font-weight:600">
@@ -639,8 +651,25 @@ Yanlış Sayısı: 3"></textarea>
     <div class="grid-3" style="grid-template-columns:1fr 1fr">
       <div class="field" style="grid-column:1/-1"><label>📚 Ders Seçimi (Ctrl ile çoklu — boş = tümü)</label><select id="raporDersSelect" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="dersSecTumu()">Tümünü Seç</button><button class="btn gray sm" onclick="dersSecTemizle()">Temizle</button></div></div>
       <div class="field"><label>📈 Gelişim Analizi — TYT Denemeleri</label><select id="raporGelisimTYT" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="gelisimSec('TYT')">Son 10</button><button class="btn gray sm" onclick="gelisimTemizle('TYT')">Temizle</button></div></div>
-      <div class="field"><label>📈 Gelişim Analizi — AYT Denemeleri</label><select id="raporGelisimAYT" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="gelisimSec('AYT')">Son 10</button><button class="btn gray sm" onclick="gelisimTemizle('AYT')">Temizle</button></div></div>
-      <div class="field" style="grid-column:1/-1"><label>👩‍🎓 Öğrenci (Ctrl ile çoklu — boş = tümü)</label><select id="raporOgrenciSelect" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="ogrSecTumu()">Tümünü Seç</button><button class="btn gray sm" onclick="ogrSecTemizle()">Temizle</button></div></div>
+      <div class="field">
+        <label>👩‍🎓 Öğrenci (Ctrl ile çoklu — boş = seçili sınıftaki tümü)</label>
+        <select id="raporOgrenciSelect" class="sel-multi" multiple size="5" disabled>
+          <option disabled selected value="">⚠️ Lütfen önce sağ taraftan sınıf seçin</option>
+        </select>
+        <div class="flex mt-3">
+          <button class="btn gray sm" id="btnRaporOgrTumu" onclick="ogrSecTumu()" disabled>Tümünü Seç</button>
+          <button class="btn gray sm" id="btnRaporOgrTemizle" onclick="ogrSecTemizle()" disabled>Temizle</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>🏫 Sınıf Seçimi <span style="color:var(--red);font-weight:700">* (Zorunlu)</span></label>
+        <select id="raporSinifSelect" onchange="raporSinifDegisti(this.value)" style="padding:9px 12px;font-size:13.5px;font-weight:600;border:1.5px solid var(--indigo);border-radius:8px">
+          <option value="">Lütfen Bir Sınıf Seçin</option>
+        </select>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.4;background:#f8fafc;padding:8px 10px;border-radius:6px;border:1px solid #e2e8f0">
+          💡 <b>Not:</b> İlgili sınıf seçilmeden öğrenci seçilemez. Rapor sonuçları seçilen sınıftaki öğrencilere göre hesaplanır.
+        </div>
+      </div>
       <div class="field" style="grid-column:1/-1"><label>&nbsp;</label><div class="flex"><button class="btn" style="flex:1" onclick="renderRapor()">🔍 Rapor Oluştur</button><button class="btn green" onclick="raporPDF()">📄 PDF İndir</button></div></div>
     </div>
     <div style="margin-top:12px;padding:10px;background:#f8fafc;border:1px solid var(--border);border-radius:8px">
@@ -723,6 +752,84 @@ Yanlış Sayısı: 3"></textarea>
           🌐 <a href="https://www.instagram.com/egemenbilim/" target="_blank" rel="noopener" style="color:var(--indigo)">@egemenbilim</a>
         </p>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ÖDEV / SORU KONTROL & DÜZENLEME MODAL -->
+<div id="hfKontrolModal" class="modal hidden">
+  <div class="modal-inner" style="max-width:540px;padding:24px">
+    <button class="modal-close" onclick="hfKontrolModalKapat()">×</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;border-bottom:1px solid #e2e8f0;padding-bottom:12px">
+      <span style="font-size:26px">📝</span>
+      <div>
+        <h3 style="margin:0;font-size:17px;color:#0f172a">Ödev Kontrol & Sonuç Düzenleme</h3>
+        <p id="hfKntOgrenciBilgi" style="margin:2px 0 0;font-size:12px;color:var(--muted)"></p>
+      </div>
+    </div>
+    <input type="hidden" id="hfKntKayitId">
+    
+    <div style="background:#f8fafc;padding:12px;border-radius:10px;margin-bottom:14px;border:1px solid #e2e8f0">
+      <div style="font-size:13px;color:#334155;margin-bottom:4px"><b id="hfKntDersKonu"></b></div>
+      <div style="font-size:12px;color:var(--muted)" id="hfKntTarihBilgi"></div>
+    </div>
+
+    <div class="field" style="margin-bottom:12px">
+      <label>Ödev Durumu *</label>
+      <select id="hfKntDurum" style="font-size:13.5px;font-weight:600">
+        <option value="Verildi">⏳ Verildi (Kontrol Bekliyor)</option>
+        <option value="Tamamlandı">✅ Tam Yapıldı</option>
+        <option value="Kısmi">⚠️ Eksik Yapıldı</option>
+        <option value="Yapılmadı">❌ Yapılmadı</option>
+      </select>
+    </div>
+
+    <div class="field" style="margin-bottom:12px">
+      <label>⭐ Öğrenme Derecelendirmesi (Konu Kavrama Seviyesi)</label>
+      <div style="display:flex;align-items:center;gap:8px;padding-top:4px">
+        <div id="hfKntYildizSecici" style="display:inline-flex;gap:4px;font-size:24px;cursor:pointer;color:#cbd5e1;user-select:none">
+          <span class="hf-knt-star" data-val="1" onclick="hfKntYildizSec(1)" title="1 - Öğrenilmedi">★</span>
+          <span class="hf-knt-star" data-val="2" onclick="hfKntYildizSec(2)" title="2 - Zayıf">★</span>
+          <span class="hf-knt-star" data-val="3" onclick="hfKntYildizSec(3)" title="3 - Orta">★</span>
+          <span class="hf-knt-star" data-val="4" onclick="hfKntYildizSec(4)" title="4 - İyi">★</span>
+          <span class="hf-knt-star" data-val="5" onclick="hfKntYildizSec(5)" title="5 - Çok İyi Öğrenildi">★</span>
+        </div>
+        <span id="hfKntYildizEtiket" style="font-size:12px;font-weight:600;color:var(--muted)">Derecelendirilmedi</span>
+        <button type="button" class="btn gray sm" onclick="hfKntYildizSec(0)" style="padding:2px 6px;font-size:10px" title="Sıfırla">✕</button>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:12px">
+      <label>Ödev / Görev Tanımı / Not</label>
+      <input id="hfKntBaslik" placeholder="Ödev tanımı veya kaynak notu...">
+    </div>
+
+    <div style="background:#f1f5f9;padding:12px;border-radius:10px;margin-bottom:16px">
+      <div class="grid-3" style="grid-template-columns: repeat(4, 1fr);gap:8px">
+        <div class="field">
+          <label style="font-size:11px">Soru Sayısı</label>
+          <input type="number" id="hfKntSoru" value="0" min="0" oninput="hfKntNetHesapla()">
+        </div>
+        <div class="field">
+          <label style="font-size:11px">Doğru</label>
+          <input type="number" id="hfKntDogru" value="0" min="0" oninput="hfKntNetHesapla()">
+        </div>
+        <div class="field">
+          <label style="font-size:11px">Yanlış</label>
+          <input type="number" id="hfKntYanlis" value="0" min="0" oninput="hfKntNetHesapla()">
+        </div>
+        <div class="field">
+          <label style="font-size:11px">Net</label>
+          <div class="stat" style="padding:6px;background:#fff;border-radius:6px;border:1px solid #cbd5e1;text-align:center">
+            <b class="mono" id="hfKntNet" style="font-size:14px;color:var(--indigo)">0.00</b>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex" style="justify-content:flex-end;gap:8px">
+      <button type="button" class="btn gray" onclick="hfKontrolModalKapat()">Vazgeç</button>
+      <button type="button" class="btn green" onclick="hfKontrolKaydet()" style="font-weight:600">💾 Güncelle ve Kaydet</button>
     </div>
   </div>
 </div>

@@ -8,11 +8,13 @@ import { $, toast, fmtTarih, ogrenciAdi, cizgiGrafik } from '../utils.js';
 let RAPOR_DURUM = null;
 
 export function doldurRaporFiltreleri() {
-  const ogrSel = $('raporOgrenciSelect');
-  if (ogrSel) {
-    ogrSel.innerHTML = DB.ogrenciler.map(o => `
-      <option value="${o.id}">${o.adSoyad} (${sinifAdi(o.sinifId)})</option>
+  const sinifSel = $('raporSinifSelect');
+  if (sinifSel) {
+    const curVal = sinifSel.value;
+    sinifSel.innerHTML = '<option value="">Lütfen Bir Sınıf Seçin</option>' + DB.siniflar.map(s => `
+      <option value="${s.id}" ${String(s.id) === String(curVal) ? 'selected' : ''}>${s.ad}</option>
     `).join('');
+    raporSinifDegisti(sinifSel.value);
   }
 
   const ds = new Set();
@@ -38,6 +40,35 @@ export function doldurRaporFiltreleri() {
   if (gAyt) gAyt.innerHTML = aytPool.map(d => `<option value="${d.id}">${fmtTarih(d.tarih)} • ${d.ad}</option>`).join('');
 }
 
+export function raporSinifDegisti(sinifId) {
+  const ogrSel = $('raporOgrenciSelect');
+  const btnTumu = $('btnRaporOgrTumu');
+  const btnTemizle = $('btnRaporOgrTemizle');
+  if (!ogrSel) return;
+
+  const parsedSinifId = Number(sinifId) || 0;
+  if (!parsedSinifId) {
+    ogrSel.disabled = true;
+    ogrSel.innerHTML = '<option disabled selected value="">⚠️ Lütfen önce sağ taraftan sınıf seçin</option>';
+    if (btnTumu) btnTumu.disabled = true;
+    if (btnTemizle) btnTemizle.disabled = true;
+    return;
+  }
+
+  ogrSel.disabled = false;
+  if (btnTumu) btnTumu.disabled = false;
+  if (btnTemizle) btnTemizle.disabled = false;
+
+  const sinifOgrencileri = DB.ogrenciler.filter(o => o.sinifId === parsedSinifId);
+  if (!sinifOgrencileri.length) {
+    ogrSel.innerHTML = '<option disabled value="">Bu sınıfta kayıtlı öğrenci bulunamadı</option>';
+  } else {
+    ogrSel.innerHTML = sinifOgrencileri.map(o => `
+      <option value="${o.id}">${o.adSoyad}</option>
+    `).join('');
+  }
+}
+
 export function dersSecTumu() {
   [...$('raporDersSelect').options].forEach(o => o.selected = true);
 }
@@ -45,9 +76,11 @@ export function dersSecTemizle() {
   [...$('raporDersSelect').options].forEach(o => o.selected = false);
 }
 export function ogrSecTumu() {
+  if (!$('raporOgrenciSelect') || $('raporOgrenciSelect').disabled) return;
   [...$('raporOgrenciSelect').options].forEach(o => o.selected = true);
 }
 export function ogrSecTemizle() {
+  if (!$('raporOgrenciSelect') || $('raporOgrenciSelect').disabled) return;
   [...$('raporOgrenciSelect').options].forEach(o => o.selected = false);
 }
 export function gelisimSec(tur) {
@@ -63,8 +96,8 @@ export function seciliGelisimDenemeleri() {
   if (turF) denPool = denPool.filter(d => d.tur === turF);
 
   let ids = [
-    ...[...$('raporGelisimTYT').selectedOptions].map(o => Number(o.value)),
-    ...[...$('raporGelisimAYT').selectedOptions].map(o => Number(o.value))
+    ...[...($('raporGelisimTYT')?.selectedOptions || [])].map(o => Number(o.value)),
+    ...[...($('raporGelisimAYT')?.selectedOptions || [])].map(o => Number(o.value))
   ].filter(Boolean);
 
   if (ids.length === 0) {
@@ -100,25 +133,63 @@ export function renderGelisimAnalizi(ogrIds, dersF) {
     const ogr = DB.ogrenciler.find(o => o.id === oid);
     if (!ogr) return;
 
+    // 1. KURAL: Gelişim göstermesi için öğrencinin iki denemeye de (ilk ve son) girmiş olması şarttır!
+    // Önceki sınava veya son sınava girmeyenler gelişime dahil edilmez.
+    const ilkGirdi = DB.sonuclar.some(s => s.ogrenciId === oid && s.denemeId === ilk.id);
+    const sonGirdi = DB.sonuclar.some(s => s.ogrenciId === oid && s.denemeId === son.id);
+    if (!ilkGirdi || !sonGirdi) return;
+
+    // 2. KURAL: Eğer öğrencinin girdiği son sınav seçimlerde yoksa veya son sınava girmemişse dahil edilmemeli
+    const ogrSonucDenemeleri = DB.sonuclar.filter(s => s.ogrenciId === oid).map(s => s.denemeId);
+    if (!ogrSonucDenemeleri.includes(son.id)) return;
+
+    // 3. KURAL: Seçili dersler için geçerli net kontrolü
+    const ilkDersNetleri = dersler.map(d => ogrenciDersNet(oid, ilk.id, d));
+    const sonDersNetleri = dersler.map(d => ogrenciDersNet(oid, son.id, d));
+    if (!ilkDersNetleri.some(n => n !== null) || !sonDersNetleri.some(n => n !== null)) return;
+
     const ilkTop = dersler.reduce((a, d) => a + (ogrenciDersNet(oid, ilk.id, d) || 0), 0);
     const sonTop = dersler.reduce((a, d) => a + (ogrenciDersNet(oid, son.id, d) || 0), 0);
     const fark = Math.round((sonTop - ilkTop) * 100) / 100;
-    const yuzde = ilkTop === 0 ? (sonTop > 0 ? 100 : 0) : Math.round(((fark / ilkTop) * 100) * 100) / 100;
+    
+    // Yüzde hesabı: ilkTop 0 ise yapay 100% üretilmez!
+    let yuzde = null;
+    if (ilkTop > 0) {
+      yuzde = Math.round(((fark / ilkTop) * 100) * 100) / 100;
+    }
 
+    // Ders Bazlı İlerleyiş Detayı:
+    // Önceki sınava girmeyip yeni sınava girenler için %100 başarı artışı bozulması engellenir
     const dersDetay = dersler.map(d => {
-      const i = ogrenciDersNet(oid, ilk.id, d) || 0;
-      const s = ogrenciDersNet(oid, son.id, d) || 0;
-      const df = Math.round((s - i) * 100) / 100;
-      const yp = i === 0 ? (s > 0 ? 100 : 0) : Math.round(((df / i) * 100) * 100) / 100;
+      const i = ogrenciDersNet(oid, ilk.id, d);
+      const s = ogrenciDersNet(oid, son.id, d);
+      if (i === null && s === null) return null;
+
+      let df = null;
+      let yp = null;
+      if (i !== null && s !== null) {
+        df = Math.round((s - i) * 100) / 100;
+        if (i > 0) {
+          yp = Math.round(((df / i) * 100) * 100) / 100;
+        } else if (i === 0 && s > 0) {
+          yp = null; // Başlangıç 0 net, yapay 100% gösterilmez
+        } else {
+          yp = 0;
+        }
+      }
       return { ders: d, ilk: i, son: s, fark: df, yuzde: yp };
-    }).sort((a, b) => Math.abs(b.fark) - Math.abs(a.fark));
+    }).filter(Boolean).sort((a, b) => {
+      const bF = b.fark !== null ? Math.abs(b.fark) : -1;
+      const aF = a.fark !== null ? Math.abs(a.fark) : -1;
+      return bF - aF;
+    });
 
     analiz.push({ oid, ad: ogr.adSoyad, ilkTop, sonTop, fark, yuzde, dersDetay });
   });
 
   if (!analiz.length) return;
 
-  const gelisen = [...analiz].sort((a, b) => b.fark - a.fark).slice(0, 5);
+  const gelisen = [...analiz].filter(a => a.fark > 0).sort((a, b) => b.fark - a.fark).slice(0, 5);
   const dusen = [...analiz].sort((a, b) => a.fark - b.fark).slice(0, 5);
 
   const chartData = denemeler.map(d => {
@@ -174,7 +245,13 @@ export function renderGelisimAnalizi(ogrIds, dersF) {
               <table class="table">
                 <thead><tr><th>Öğrenci</th><th class="num">İlk</th><th class="num">Son</th><th class="num">Net Artışı</th><th class="num">%</th></tr></thead>
                 <tbody>
-                  ${gelisen.map(a => `<tr><td style="font-weight:600">${a.ad}</td><td class="num mono">${a.ilkTop.toFixed(2)}</td><td class="num mono">${a.sonTop.toFixed(2)}</td><td class="num mono green">${a.fark > 0 ? '+' : ''}${a.fark.toFixed(2)}</td><td class="num mono green">${a.yuzde > 0 ? '+' : ''}${a.yuzde.toFixed(2)}%</td></tr>`).join('')}
+                  ${gelisen.length ? gelisen.map(a => `<tr>
+                    <td style="font-weight:600">${a.ad}</td>
+                    <td class="num mono">${a.ilkTop.toFixed(2)}</td>
+                    <td class="num mono">${a.sonTop.toFixed(2)}</td>
+                    <td class="num mono green">${a.fark > 0 ? '+' : ''}${a.fark.toFixed(2)}</td>
+                    <td class="num mono green">${a.yuzde !== null ? (a.yuzde > 0 ? '+' : '') + a.yuzde.toFixed(2) + '%' : '<span class="pillbad green" style="font-size:10px">İlk: 0 Net</span>'}</td>
+                  </tr>`).join('') : '<tr><td colspan="5" class="muted" style="text-align:center;padding:12px">Gelişim gösteren öğrenci bulunamadı.</td></tr>'}
                 </tbody>
               </table>
             </div>
@@ -185,7 +262,13 @@ export function renderGelisimAnalizi(ogrIds, dersF) {
               <table class="table">
                 <thead><tr><th>Öğrenci</th><th class="num">İlk</th><th class="num">Son</th><th class="num">Net Farkı</th><th class="num">%</th></tr></thead>
                 <tbody>
-                  ${dusen.map(a => `<tr><td style="font-weight:600">${a.ad}</td><td class="num mono">${a.ilkTop.toFixed(2)}</td><td class="num mono">${a.sonTop.toFixed(2)}</td><td class="num mono ${a.fark < 0 ? 'red-c' : 'green'}">${a.fark > 0 ? '+' : ''}${a.fark.toFixed(2)}</td><td class="num mono ${a.yuzde < 0 ? 'red-c' : 'green'}">${a.yuzde > 0 ? '+' : ''}${a.yuzde.toFixed(2)}%</td></tr>`).join('')}
+                  ${dusen.map(a => `<tr>
+                    <td style="font-weight:600">${a.ad}</td>
+                    <td class="num mono">${a.ilkTop.toFixed(2)}</td>
+                    <td class="num mono">${a.sonTop.toFixed(2)}</td>
+                    <td class="num mono ${a.fark < 0 ? 'red-c' : 'green'}">${a.fark > 0 ? '+' : ''}${a.fark.toFixed(2)}</td>
+                    <td class="num mono ${a.yuzde !== null && a.yuzde < 0 ? 'red-c' : 'green'}">${a.yuzde !== null ? (a.yuzde > 0 ? '+' : '') + a.yuzde.toFixed(2) + '%' : (a.fark < 0 ? 'Düşüş' : 'İlk: 0 Net')}</td>
+                  </tr>`).join('')}
                 </tbody>
               </table>
             </div>
@@ -205,14 +288,41 @@ export function renderGelisimAnalizi(ogrIds, dersF) {
     `;
 
     analiz.sort((a, b) => b.fark - a.fark).forEach(a => {
+      const yzMetin = a.yuzde !== null ? `${a.yuzde >= 0 ? '+' : ''}${a.yuzde.toFixed(2)}%` : (a.fark > 0 ? 'İlk: 0 Net' : '0%');
       h += `
         <div style="margin:10px 0;padding:10px;border:1px solid var(--border);border-radius:10px">
-          <b>${a.ad}</b> <span class="pillbad ${a.fark >= 0 ? 'up' : 'down'}">${a.fark >= 0 ? '+' : ''}${a.fark.toFixed(2)} net • ${a.yuzde >= 0 ? '+' : ''}${a.yuzde.toFixed(2)}%</span>
+          <b>${a.ad}</b> <span class="pillbad ${a.fark >= 0 ? 'up' : 'down'}">${a.fark >= 0 ? '+' : ''}${a.fark.toFixed(2)} net • ${yzMetin}</span>
           <div style="overflow-x:auto;margin-top:6px">
             <table class="table">
-              <thead><tr><th>Ders</th><th class="num">İlk</th><th class="num">Son</th><th class="num">Net Farkı</th><th class="num">%</th></tr></thead>
+              <thead><tr><th>Ders</th><th class="num">İlk</th><th class="num">Son</th><th class="num">Net Farkı</th><th class="num">% Değişim</th></tr></thead>
               <tbody>
-                ${a.dersDetay.map(d => `<tr><td>${d.ders}</td><td class="num mono">${d.ilk.toFixed(2)}</td><td class="num mono">${d.son.toFixed(2)}</td><td class="num mono ${d.fark >= 0 ? 'green' : 'red-c'}">${d.fark >= 0 ? '+' : ''}${d.fark.toFixed(2)}</td><td class="num mono ${d.yuzde >= 0 ? 'green' : 'red-c'}">${d.yuzde >= 0 ? '+' : ''}${d.yuzde.toFixed(2)}%</td></tr>`).join('')}
+                ${a.dersDetay.map(d => {
+                  const ilkStr = d.ilk !== null ? d.ilk.toFixed(2) : '<span class="muted" style="font-size:11px">Girilmedi</span>';
+                  const sonStr = d.son !== null ? d.son.toFixed(2) : '<span class="muted" style="font-size:11px">Girilmedi</span>';
+                  let farkStr = '—';
+                  let yuzdeStr = '—';
+                  let cls = 'muted';
+                  if (d.fark !== null) {
+                    farkStr = (d.fark >= 0 ? '+' : '') + d.fark.toFixed(2);
+                    cls = d.fark >= 0 ? 'green' : 'red-c';
+                    if (d.yuzde !== null) {
+                      yuzdeStr = (d.yuzde >= 0 ? '+' : '') + d.yuzde.toFixed(2) + '%';
+                    } else if (d.ilk === 0 && d.son > 0) {
+                      yuzdeStr = '<span class="pillbad green" style="font-size:10px">İlk Sınav: 0 Net</span>';
+                    }
+                  } else if (d.ilk === null && d.son !== null) {
+                    yuzdeStr = '<span class="pillbad" style="font-size:10px;background:#e0e7ff;color:#3730a3">İlk Sınava Girmedi</span>';
+                  } else if (d.ilk !== null && d.son === null) {
+                    yuzdeStr = '<span class="pillbad" style="font-size:10px;background:#fee2e2;color:#991b1b">Son Sınava Girmedi</span>';
+                  }
+                  return `<tr>
+                    <td><b>${d.ders}</b></td>
+                    <td class="num mono">${ilkStr}</td>
+                    <td class="num mono">${sonStr}</td>
+                    <td class="num mono ${cls}">${farkStr}</td>
+                    <td class="num mono ${cls}">${yuzdeStr}</td>
+                  </tr>`;
+                }).join('')}
               </tbody>
             </table>
           </div>
@@ -345,14 +455,24 @@ export function renderRapor() {
   const sr = $('raporSinifSiralama');
   if (sr) { sr.innerHTML = ''; sr.classList.add('hidden'); }
 
-  const turF = $('raporTur').value;
-  const ogrIds = [...$('raporOgrenciSelect').selectedOptions].map(o => Number(o.value)).filter(Boolean);
-  const dersF = [...$('raporDersSelect').selectedOptions].map(o => o.value).filter(Boolean);
+  const sinifId = Number($('raporSinifSelect') ? $('raporSinifSelect').value : 0);
+  if (!sinifId) {
+    toast('Lütfen rapor oluşturmak için önce bir sınıf seçin!', false);
+    if ($('raporSinifSelect')) $('raporSinifSelect').focus();
+    return;
+  }
+
+  const turF = $('raporTur')?.value || '';
+  let ogrIds = [...($('raporOgrenciSelect')?.selectedOptions || [])].map(o => Number(o.value)).filter(Boolean);
+  if (!ogrIds.length) {
+    ogrIds = DB.ogrenciler.filter(o => o.sinifId === sinifId).map(o => o.id);
+  }
+  const dersF = [...($('raporDersSelect')?.selectedOptions || [])].map(o => o.value).filter(Boolean);
   const siralamaGoster = $('raporSiralama') && $('raporSiralama').checked;
 
   const seciliGelisimIds = [
-    ...[...$('raporGelisimTYT').selectedOptions].map(o => Number(o.value)),
-    ...[...$('raporGelisimAYT').selectedOptions].map(o => Number(o.value))
+    ...[...($('raporGelisimTYT')?.selectedOptions || [])].map(o => Number(o.value)),
+    ...[...($('raporGelisimAYT')?.selectedOptions || [])].map(o => Number(o.value))
   ].filter(Boolean);
 
   let denemeler;
@@ -364,12 +484,11 @@ export function renderRapor() {
   }
   const denIds = new Set(denemeler.map(d => d.id));
 
-  let sonuc = DB.sonuclar.filter(s => denIds.has(s.denemeId));
-  if (ogrIds.length) sonuc = sonuc.filter(s => ogrIds.includes(s.ogrenciId));
+  let sonuc = DB.sonuclar.filter(s => denIds.has(s.denemeId) && ogrIds.includes(s.ogrenciId));
   if (dersF.length) sonuc = sonuc.filter(s => dersF.includes(s.ders));
 
   if (!sonuc.length) {
-    el.innerHTML = '<div class="empty mt-6"><p style="font-size:36px">📭</p><p>Filtrelere uygun veri yok.</p></div>';
+    el.innerHTML = '<div class="empty mt-6"><p style="font-size:36px">📭</p><p>Seçilen sınıfa ve filtrelere uygun veri yok.</p></div>';
     return;
   }
 

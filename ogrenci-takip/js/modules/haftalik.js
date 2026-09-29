@@ -16,11 +16,23 @@ import {
 
 // Modül içi aktif durum
 export let seciliHfOgrenciId = null;
-export let aktifTur = 'soru'; // 'soru' | 'odev'
+export let aktifTur = 'odev_soru'; // 'odev_soru' | 'soru' | 'odev'
 export let seciliSinavTuru = 'TYT';
 export let seciliDers = 'Türkçe';
 export let seciliKonu = '📌 Genel';
-export let filtreTur = 'hepsi'; // 'hepsi' | 'soru' | 'odev'
+export let filtreTur = 'hepsi';
+export let filtreDurum = 'hepsi'; // 'hepsi' | 'Verildi' | 'Tamamlandı' | 'Kısmi' | 'Yapılmadı'
+export let seciliYildiz = 0;
+export let seciliKntYildiz = 0;
+
+export const YILDIZ_METINLERI = [
+  'Henüz Derecelendirilmedi',
+  '⭐ 1 - Öğrenilmedi',
+  '⭐⭐ 2 - Zayıf',
+  '⭐⭐⭐ 3 - Orta (Pekiştirilmeli)',
+  '⭐⭐⭐⭐ 4 - İyi (Kavrandı)',
+  '⭐⭐⭐⭐⭐ 5 - Çok İyi Öğrenildi'
+];
 
 /* ═════ ÖĞRENCİ SEÇİMİ VE KADEME UYARLAMASI ═════ */
 
@@ -83,12 +95,16 @@ function renderOgrenciProfilKarti(kademeBilgi) {
 
   // İstatistikler
   const kayitlar = DB.haftalik.filter(h => h.ogrenciId === seciliHfOgrenciId);
-  const soruKayitlari = kayitlar.filter(h => (h.tur || 'soru') === 'soru');
-  const odevKayitlari = kayitlar.filter(h => h.tur === 'odev');
+  const toplamSoru = kayitlar.reduce((a, b) => a + (b.soruSayisi || 0), 0);
+  const toplamNet = kayitlar.reduce((a, b) => a + (b.net || 0), 0);
+  const bekleyenOdev = kayitlar.filter(h => h.durum === 'Verildi').length;
+  const tamamlananOdev = kayitlar.filter(h => h.durum === 'Tamamlandı').length;
+  const toplamOdev = kayitlar.length;
 
-  const toplamSoru = soruKayitlari.reduce((a, b) => a + (b.soruSayisi || 0), 0);
-  const toplamNet = soruKayitlari.reduce((a, b) => a + (b.net || 0), 0);
-  const tamamlananOdev = odevKayitlari.filter(h => h.durum === 'Tamamlandı').length;
+  const puanliKayitlar = kayitlar.filter(h => h.ogrenmeDerecesi && h.ogrenmeDerecesi > 0);
+  const ortalamaPuan = puanliKayitlar.length
+    ? (puanliKayitlar.reduce((a, b) => a + b.ogrenmeDerecesi, 0) / puanliKayitlar.length).toFixed(1)
+    : '—';
 
   const sinifAd = sinifAdi(ogr.sinifId);
   const kademeRozet = kademeBilgi.kademe.includes('lgs') || kademeBilgi.kademe.includes('orta')
@@ -120,13 +136,21 @@ function renderOgrenciProfilKarti(kademeBilgi) {
             <span style="font-size:10.5px;color:#64748b;display:block">Toplam Soru</span>
             <b style="font-size:14px;color:#0f172a">${toplamSoru.toLocaleString()}</b>
           </div>
+          <div style="background:#fef9c3;padding:6px 12px;border-radius:8px;text-align:center;border:1px solid #fef08a">
+            <span style="font-size:10.5px;color:#854d0e;display:block">Kontrol Bekleyen</span>
+            <b style="font-size:14px;color:#a16207">${bekleyenOdev} Ödev</b>
+          </div>
           <div style="background:#f0fdf4;padding:6px 12px;border-radius:8px;text-align:center;border:1px solid #bbf7d0">
             <span style="font-size:10.5px;color:#166534;display:block">Ödev Başarısı</span>
-            <b style="font-size:14px;color:#15803d">${tamamlananOdev}/${odevKayitlari.length}</b>
+            <b style="font-size:14px;color:#15803d">${tamamlananOdev}/${toplamOdev}</b>
           </div>
           <div style="background:#eff6ff;padding:6px 12px;border-radius:8px;text-align:center;border:1px solid #bfdbfe">
             <span style="font-size:10.5px;color:#1d4ed8;display:block">Toplam Net</span>
             <b style="font-size:14px;color:#1e40af" class="mono">${toplamNet.toFixed(1)}</b>
+          </div>
+          <div style="background:#fffbeb;padding:6px 12px;border-radius:8px;text-align:center;border:1px solid #fde68a">
+            <span style="font-size:10.5px;color:#b45309;display:block">Öğrenme Puanı</span>
+            <b style="font-size:14px;color:#d97706">${ortalamaPuan !== '—' ? `⭐ ${ortalamaPuan}/5` : '—'}</b>
           </div>
 
           <!-- ÖZEL RAPOR OLUŞTURMA BUTONU -->
@@ -261,24 +285,153 @@ export function hfKonuSecildi(konuAd) {
   }
 }
 
-/* ═════ GİRİŞ TÜRÜ (SORU ÇÖZÜMÜ vs ÖDEV) DEĞİŞİMİ ═════ */
+/* ═════ GİRİŞ TÜRÜ VE YILDIZ SEÇİMLERİ ═════ */
 
 export function hfTurDegis(yeniTur) {
-  aktifTur = yeniTur;
-  const btnSoru = $('hfTurBtnSoru');
-  const btnOdev = $('hfTurBtnOdev');
-  if (btnSoru) btnSoru.classList.toggle('active', yeniTur === 'soru');
-  if (btnOdev) btnOdev.classList.toggle('active', yeniTur === 'odev');
+  aktifTur = yeniTur || 'odev_soru';
+}
 
-  const odevAlanlari = $('hfOdevEkAlanlar');
-  const soruAlanlari = $('hfSoruEkAlanlar');
-  if (odevAlanlari) odevAlanlari.classList.toggle('hidden', yeniTur !== 'odev');
-  if (soruAlanlari) soruAlanlari.classList.toggle('hidden', yeniTur !== 'soru');
+export function hfYildizSec(val) {
+  seciliYildiz = Number(val) || 0;
+  const stars = document.querySelectorAll('#hfYildizSecici .hf-star');
+  stars.forEach(s => {
+    const v = Number(s.dataset.val);
+    s.classList.toggle('active', v <= seciliYildiz);
+  });
+  const etiket = $('hfYildizEtiket');
+  if (etiket) etiket.textContent = YILDIZ_METINLERI[seciliYildiz] || 'Henüz Derecelendirilmedi';
+}
 
-  const kaydetBtn = $('hfKaydetBtn');
-  if (kaydetBtn) {
-    kaydetBtn.innerHTML = yeniTur === 'soru' ? '💾 Soru Kaydını Ekle' : '💾 Ödevi Kaydet';
-  }
+export function hfKntYildizSec(val) {
+  seciliKntYildiz = Number(val) || 0;
+  const stars = document.querySelectorAll('#hfKntYildizSecici .hf-knt-star');
+  stars.forEach(s => {
+    const v = Number(s.dataset.val);
+    s.classList.toggle('active', v <= seciliKntYildiz);
+  });
+  const etiket = $('hfKntYildizEtiket');
+  if (etiket) etiket.textContent = YILDIZ_METINLERI[seciliKntYildiz] || 'Henüz Derecelendirilmedi';
+}
+
+export function hfHizliYildizAyarla(id, val) {
+  const k = DB.haftalik.find(h => h.id === id);
+  if (!k) return;
+  k.ogrenmeDerecesi = Number(val) || 0;
+  saveDB();
+  const kademeBilgi = ogrenciKademeBelirle(seciliHfOgrenciId);
+  renderOgrenciProfilKarti(kademeBilgi);
+  renderHaftalik();
+  toast(`⭐ Öğrenme Derecesi: ${k.ogrenmeDerecesi > 0 ? k.ogrenmeDerecesi + '/5' : 'Sıfırlandı'}`);
+}
+
+/* ═════ TARİH & DURUM FİLTRELERİ ═════ */
+
+export function hfFiltreSon1Hafta() {
+  const bugun = new Date();
+  const birHaftaOnce = new Date();
+  birHaftaOnce.setDate(birHaftaOnce.getDate() - 7);
+
+  const bitStr = bugun.toISOString().split('T')[0];
+  const basStr = birHaftaOnce.toISOString().split('T')[0];
+
+  if ($('hfFiltreBas')) $('hfFiltreBas').value = basStr;
+  if ($('hfFiltreBit')) $('hfFiltreBit').value = bitStr;
+  renderHaftalik();
+  toast('📅 Son 1 haftalık veriler listelendi');
+}
+
+export function hfFiltreTarihTemizle() {
+  if ($('hfFiltreBas')) $('hfFiltreBas').value = '';
+  if ($('hfFiltreBit')) $('hfFiltreBit').value = '';
+  renderHaftalik();
+}
+
+export function hfFiltreDurumSec(durum) {
+  filtreDurum = durum;
+  document.querySelectorAll('#hfFiltreDurumGrup button').forEach(b => {
+    b.classList.toggle('active', b.dataset.durum === durum);
+  });
+  renderHaftalik();
+}
+
+export function hfFiltreTurSec(tur) {
+  // Geriye dönük uyumluluk
+  filtreDurum = tur;
+  renderHaftalik();
+}
+
+/* ═════ KONTROL & DÜZENLEME MODALI ═════ */
+
+export function hfKontrolModalAc(id) {
+  const k = DB.haftalik.find(h => h.id === id);
+  if (!k) return;
+
+  const modal = $('hfKontrolModal');
+  if (!modal) return;
+
+  const ogrAd = ogrenciAdi(k.ogrenciId);
+  if ($('hfKntOgrenciBilgi')) $('hfKntOgrenciBilgi').textContent = `Öğrenci: ${ogrAd}`;
+  if ($('hfKntKayitId')) $('hfKntKayitId').value = k.id;
+  if ($('hfKntDersKonu')) $('hfKntDersKonu').textContent = `${k.ders} • ${k.konu || '📌 Genel'}`;
+  
+  const trhStr = `${fmtTarih(k.haftaBas)}${k.haftaBit && k.haftaBit !== k.haftaBas ? ' – ' + fmtTarih(k.haftaBit) : ''}${k.hedef ? ' • Hedef: ' + k.hedef + ' Soru' : ''}`;
+  if ($('hfKntTarihBilgi')) $('hfKntTarihBilgi').textContent = `Tarih: ${trhStr}`;
+
+  if ($('hfKntDurum')) $('hfKntDurum').value = k.durum || 'Tamamlandı';
+  if ($('hfKntBaslik')) $('hfKntBaslik').value = k.baslik || k.notlar || '';
+  if ($('hfKntSoru')) $('hfKntSoru').value = k.soruSayisi || 0;
+  if ($('hfKntDogru')) $('hfKntDogru').value = k.dogru || 0;
+  if ($('hfKntYanlis')) $('hfKntYanlis').value = k.yanlis || 0;
+  if ($('hfKntNet')) $('hfKntNet').textContent = (typeof k.net === 'number' ? k.net : 0).toFixed(2);
+
+  hfKntYildizSec(k.ogrenmeDerecesi || 0);
+
+  modal.classList.remove('hidden');
+}
+
+export function hfKontrolModalKapat() {
+  const modal = $('hfKontrolModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+export function hfKntNetHesapla() {
+  const d = Number($('hfKntDogru') ? $('hfKntDogru').value : 0) || 0;
+  const y = Number($('hfKntYanlis') ? $('hfKntYanlis').value : 0) || 0;
+  const s = Number($('hfKntSoru') ? $('hfKntSoru').value : 0) || 0;
+  const net = netHesapla('TYT', d, y);
+  if ($('hfKntNet')) $('hfKntNet').textContent = net.toFixed(2);
+}
+
+export function hfKontrolKaydet() {
+  const id = Number($('hfKntKayitId')?.value) || 0;
+  const k = DB.haftalik.find(h => h.id === id);
+  if (!k) return;
+
+  const durum = $('hfKntDurum')?.value || 'Tamamlandı';
+  const baslik = $('hfKntBaslik')?.value.trim() || '';
+  const soruSayisi = Number($('hfKntSoru')?.value) || 0;
+  const dogru = Number($('hfKntDogru')?.value) || 0;
+  const yanlis = Number($('hfKntYanlis')?.value) || 0;
+  const bos = Math.max(0, soruSayisi - (dogru + yanlis));
+  const netVal = netHesapla(k.sinavTuru === 'LGS' ? 'LGS' : 'TYT', dogru, yanlis);
+
+  k.durum = durum;
+  k.baslik = baslik;
+  k.notlar = baslik;
+  k.soruSayisi = soruSayisi;
+  k.dogru = dogru;
+  k.yanlis = yanlis;
+  k.bos = bos;
+  k.net = netVal;
+  k.ogrenmeDerecesi = seciliKntYildiz || 0;
+
+  saveDB();
+  hfKontrolModalKapat();
+
+  const kademeBilgi = ogrenciKademeBelirle(seciliHfOgrenciId);
+  renderOgrenciProfilKarti(kademeBilgi);
+  renderHaftalik();
+  toast('✅ Ödev kontrol kaydı güncellendi');
 }
 
 /* ═════ HESAPLAMA VE YARDIMCILAR ═════ */
@@ -307,7 +460,6 @@ export function hfNetHesaplaLive() {
 }
 
 export function hfDersOnerileriGuncelle() {
-  // Geriye dönük uyumluluk için korundu
   hfDersListesiGuncelle();
 }
 
@@ -322,7 +474,7 @@ export function hfKaydet() {
 
   const basTarih = $('hfBas').value;
   if (!basTarih) {
-    toast('Hafta başlangıç tarihi zorunludur', false);
+    toast('Hafta başlangıç / veriliş tarihi zorunludur', false);
     return;
   }
 
@@ -334,14 +486,13 @@ export function hfKaydet() {
   const netVal = netHesapla(seciliSinavTuru === 'LGS' ? 'LGS' : 'TYT', dogru, yanlis);
 
   const hedef = Number($('hfHedef') ? $('hfHedef').value : 0) || 0;
-  const durum = $('hfOdevDurum') ? $('hfOdevDurum').value : 'Tamamlandı';
+  const durum = $('hfOdevDurum') ? $('hfOdevDurum').value : 'Verildi';
   const baslik = $('hfBaslik') ? $('hfBaslik').value.trim() : '';
-  const notlar = $('hfNotlar') ? $('hfNotlar').value.trim() : '';
 
   const yeniKayit = {
     id: nid(),
     ogrenciId: seciliHfOgrenciId,
-    tur: aktifTur, // 'soru' | 'odev'
+    tur: 'odev_soru',
     sinavTuru: seciliSinavTuru,
     ders: seciliDers,
     konu: seciliKonu || '📌 Genel',
@@ -354,22 +505,23 @@ export function hfKaydet() {
     yanlis: yanlis,
     bos: bos,
     net: netVal,
-    durum: aktifTur === 'odev' ? durum : (soruSayisi > 0 ? 'Tamamlandı' : 'Kısmi'),
-    notlar: notlar
+    durum: durum,
+    ogrenmeDerecesi: seciliYildiz || 0,
+    notlar: baslik
   };
 
   DB.haftalik.push(yeniKayit);
   saveDB();
 
-  toast(aktifTur === 'soru' ? '✅ Soru çözümü kaydedildi' : '✅ Ödev kaydedildi');
+  toast(durum === 'Verildi' ? '⏳ Ödev verildi olarak kaydedildi' : '✅ Ödev / Soru kaydı eklendi');
 
   // Form alanlarını sıfırla
   ['hfSoru', 'hfDogru', 'hfYanlis', 'hfBos', 'hfHedef'].forEach(i => {
     if ($(i)) $(i).value = 0;
   });
   if ($('hfBaslik')) $('hfBaslik').value = '';
-  if ($('hfNotlar')) $('hfNotlar').value = '';
   if ($('hfNet')) $('hfNet').textContent = '0.00';
+  hfYildizSec(0);
 
   // Profili ve tabloyu yenile
   const kademeBilgi = ogrenciKademeBelirle(seciliHfOgrenciId);
@@ -390,24 +542,47 @@ export function hfSil(id) {
 export function hfOdevDurumHizliDegis(id) {
   const k = DB.haftalik.find(h => h.id === id);
   if (!k) return;
-  const silsile = ['Tamamlandı', 'Kısmi', 'Yapılmadı'];
-  const curIdx = silsile.indexOf(k.durum || 'Tamamlandı');
+  const silsile = ['Verildi', 'Tamamlandı', 'Kısmi', 'Yapılmadı'];
+  const curIdx = silsile.indexOf(k.durum || 'Verildi');
   k.durum = silsile[(curIdx + 1) % silsile.length];
   saveDB();
   const kademeBilgi = ogrenciKademeBelirle(seciliHfOgrenciId);
   renderOgrenciProfilKarti(kademeBilgi);
   renderHaftalik();
-  toast(`Durum: ${k.durum}`);
+  
+  const mapLabel = {
+    'Verildi': '⏳ Kontrol Bekliyor',
+    'Tamamlandı': '✅ Tam Yapıldı',
+    'Kısmi': '⚠️ Eksik Yapıldı',
+    'Yapılmadı': '❌ Yapılmadı'
+  };
+  toast(`Durum: ${mapLabel[k.durum] || k.durum}`);
 }
 
 /* ═════ TABLO VE KAYIT LİSTELEME ═════ */
 
-export function hfFiltreTurSec(tur) {
-  filtreTur = tur;
-  document.querySelectorAll('#hfFiltreTurGrup button').forEach(b => {
-    b.classList.toggle('active', b.dataset.tur === tur);
-  });
-  renderHaftalik();
+function renderYildizHtml(id, derece) {
+  const d = Number(derece) || 0;
+  let html = `<div class="star-clickable-row" title="Öğrenme Derecesi: ${d > 0 ? d + '/5' : 'Derecelendirilmedi'} (Değiştirmek için tıklayın)">`;
+  for (let s = 1; s <= 5; s++) {
+    const dolu = s <= d;
+    html += `<span onclick="event.stopPropagation();window.hfHizliYildizAyarla(${id},${s === d ? 0 : s})" style="color:${dolu ? '#f59e0b' : '#cbd5e1'};font-size:16px;line-height:1">★</span>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function renderDurumBadge(id, durum) {
+  const dur = durum || 'Verildi';
+  if (dur === 'Verildi') {
+    return `<button class="pillbad yellow" onclick="window.hfOdevDurumHizliDegis(${id})" title="Durumu değiştirmek için tıklayın" style="cursor:pointer;border:none">⏳ Kontrol Bekliyor</button>`;
+  } else if (dur === 'Tamamlandı') {
+    return `<button class="pillbad green" onclick="window.hfOdevDurumHizliDegis(${id})" title="Durumu değiştirmek için tıklayın" style="cursor:pointer;border:none">✅ Tam Yapıldı</button>`;
+  } else if (dur === 'Kısmi') {
+    return `<button class="pillbad orange" onclick="window.hfOdevDurumHizliDegis(${id})" title="Durumu değiştirmek için tıklayın" style="cursor:pointer;border:none">⚠️ Eksik Yapıldı</button>`;
+  } else {
+    return `<button class="pillbad red" onclick="window.hfOdevDurumHizliDegis(${id})" title="Durumu değiştirmek için tıklayın" style="cursor:pointer;border:none">❌ Yapılmadı</button>`;
+  }
 }
 
 export function renderHaftalik() {
@@ -421,17 +596,27 @@ export function renderHaftalik() {
     list = list.filter(h => h.ogrenciId === fOgr);
   }
 
-  // Tür Filtresi (Hepsi / Soru / Ödev)
-  if (filtreTur && filtreTur !== 'hepsi') {
-    list = list.filter(h => (h.tur || 'soru') === filtreTur);
+  // Durum Filtresi (Hepsi / Verildi / Tamamlandı / Kısmi / Yapılmadı)
+  if (filtreDurum && filtreDurum !== 'hepsi') {
+    list = list.filter(h => (h.durum || 'Tamamlandı') === filtreDurum);
+  }
+
+  // Tarih Filtresi
+  const basF = $('hfFiltreBas') ? $('hfFiltreBas').value : '';
+  const bitF = $('hfFiltreBit') ? $('hfFiltreBit').value : '';
+  if (basF) {
+    list = list.filter(h => (h.haftaBas >= basF) || (h.haftaBit && h.haftaBit >= basF));
+  }
+  if (bitF) {
+    list = list.filter(h => h.haftaBas <= bitF);
   }
 
   if (!list.length) {
     container.innerHTML = `
       <div class="empty" style="padding:32px 16px;text-align:center;background:#fff;border-radius:12px;border:1px solid #e2e8f0">
         <div style="font-size:32px;margin-bottom:6px">📋</div>
-        <p style="color:#64748b;font-weight:600">Henüz kayıtlı soru veya ödev bulunamadı.</p>
-        <span style="font-size:12px;color:#94a3b8">Yukarıdaki panelden ilk soru veya ödev kaydını ekleyebilirsiniz.</span>
+        <p style="color:#64748b;font-weight:600">Seçilen filtrelere uygun kayıtlı soru veya ödev bulunamadı.</p>
+        <span style="font-size:12px;color:#94a3b8">Yukarıdaki panelden yeni ödev/soru ekleyebilir veya filtreleri temizleyebilirsiniz.</span>
       </div>
     `;
     return;
@@ -439,37 +624,20 @@ export function renderHaftalik() {
 
   // Tablo Satırları
   const rows = [...list].reverse().map(h => {
-    const isOdev = h.tur === 'odev';
-    const turBadge = isOdev
-      ? '<span class="pillbad" style="background:#fef3c7;color:#92400e;font-weight:600">📝 Ödev</span>'
-      : '<span class="pillbad" style="background:#e0e7ff;color:#3730a3;font-weight:600">🎯 Soru</span>';
-
-    // Durum Rozeti (Ödev için tıklanarak hızlı değişir)
-    let durumRozet = '';
-    if (isOdev) {
-      const dur = h.durum || 'Tamamlandı';
-      const renk = dur === 'Tamamlandı' ? 'green' : dur === 'Kısmi' ? 'yellow' : 'red';
-      const ico = dur === 'Tamamlandı' ? '✅' : dur === 'Kısmi' ? '⏳' : '❌';
-      durumRozet = `
-        <button class="pillbad ${renk}" onclick="window.hfOdevDurumHizliDegis(${h.id})" title="Durumu değiştirmek için tıklayın" style="cursor:pointer;border:none">
-          ${ico} ${dur}
-        </button>
-      `;
-    }
-
+    const isGenel = (h.konu || '').includes('Genel');
     const konuStr = h.konu || '📌 Genel';
-    const isGenel = konuStr.includes('Genel');
 
     return `
       <tr>
         <td style="font-weight:600;white-space:nowrap">${ogrenciAdi(h.ogrenciId)}</td>
-        <td>${turBadge}</td>
         <td>
           <b style="color:#0f172a">${h.ders}</b>
           <div style="font-size:11.5px;color:${isGenel ? 'var(--indigo)' : '#475569'};font-weight:${isGenel ? '600' : '400'}">
             ${konuStr}
           </div>
-          ${h.baslik ? `<div style="font-size:11px;color:#64748b;font-style:italic">${h.baslik}</div>` : ''}
+        </td>
+        <td>
+          <div style="font-size:12px;color:#334155;max-width:240px">${h.baslik || h.notlar || '<span class="muted">—</span>'}</div>
         </td>
         <td style="font-size:11.5px;color:#64748b;white-space:nowrap">
           ${fmtTarih(h.haftaBas)}${h.haftaBit && h.haftaBit !== h.haftaBas ? `<br>– ${fmtTarih(h.haftaBit)}` : ''}
@@ -484,8 +652,10 @@ export function renderHaftalik() {
         <td class="num mono" style="color:var(--indigo);font-weight:700">
           ${typeof h.net === 'number' ? h.net.toFixed(2) : '—'}
         </td>
-        <td>${durumRozet}</td>
-        <td class="num">
+        <td>${renderYildizHtml(h.id, h.ogrenmeDerecesi)}</td>
+        <td>${renderDurumBadge(h.id, h.durum)}</td>
+        <td class="num" style="white-space:nowrap">
+          <button class="btn sm" onclick="window.hfKontrolModalAc(${h.id})" title="Ödevi Kontrol Et / Düzenle" style="background:#e0e7ff;color:#3730a3;padding:4px 8px;margin-right:4px">✏️ Kontrol Et</button>
           <button class="btn sm red" onclick="window.hfSil(${h.id})" title="Sil" style="padding:4px 8px">🗑️</button>
         </td>
       </tr>
@@ -498,16 +668,17 @@ export function renderHaftalik() {
         <thead>
           <tr>
             <th>Öğrenci</th>
-            <th>Tür</th>
             <th>Ders & Konu</th>
-            <th>Tarih / Hafta</th>
-            <th class="num">Miktar / Soru</th>
+            <th>Ödev Tanımı / Not</th>
+            <th>Tarih</th>
+            <th class="num">Soru Sayısı</th>
             <th class="num">D</th>
             <th class="num">Y</th>
             <th class="num">B</th>
             <th class="num">Net</th>
+            <th>Öğrenme Seviyesi</th>
             <th>Durum</th>
-            <th></th>
+            <th class="num">İşlemler</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -732,30 +903,30 @@ export function hfOzelRaporRender() {
           <thead>
             <tr>
               <th>Tarih</th>
-              <th>Tür</th>
               <th>Ders & Konu</th>
-              <th>Açıklama / Kitap</th>
-              <th class="num">Miktar</th>
+              <th>Ödev Tanımı / Not</th>
+              <th class="num">Soru Sayısı</th>
               <th class="num">Net</th>
+              <th>Öğrenme Seviyesi</th>
               <th>Durum</th>
             </tr>
           </thead>
           <tbody>
             ${kayitlar.map(k => {
-              const isOdev = k.tur === 'odev';
-              const turBadge = isOdev
-                ? '<span class="pillbad" style="background:#fef3c7;color:#92400e;font-size:10px">Ödev</span>'
-                : '<span class="pillbad" style="background:#e0e7ff;color:#3730a3;font-size:10px">Soru</span>';
-
               const dur = k.durum || 'Tamamlandı';
-              const durBadge = isOdev
-                ? `<span class="pillbad ${dur === 'Tamamlandı' ? 'green' : dur === 'Kısmi' ? 'yellow' : 'red'}" style="font-size:10px">${dur}</span>`
-                : '<span class="pillbad green" style="font-size:10px">Tamamlandı</span>';
+              let durBadge = '';
+              if (dur === 'Verildi') durBadge = '<span class="pillbad yellow" style="font-size:10px">⏳ Kontrol Bekliyor</span>';
+              else if (dur === 'Tamamlandı') durBadge = '<span class="pillbad green" style="font-size:10px">✅ Tam Yapıldı</span>';
+              else if (dur === 'Kısmi') durBadge = '<span class="pillbad orange" style="font-size:10px">⚠️ Eksik Yapıldı</span>';
+              else durBadge = '<span class="pillbad red" style="font-size:10px">❌ Yapılmadı</span>';
+
+              const yildizStr = k.ogrenmeDerecesi > 0 
+                ? `<span style="color:#f59e0b;font-size:13px">${'★'.repeat(k.ogrenmeDerecesi)}${'☆'.repeat(5 - k.ogrenmeDerecesi)}</span>` 
+                : '<span class="muted">—</span>';
 
               return `
                 <tr>
                   <td style="color:#64748b;white-space:nowrap">${fmtTarih(k.haftaBas)}</td>
-                  <td>${turBadge}</td>
                   <td>
                     <b>${k.ders}</b>
                     <div style="color:${(k.konu || '').includes('Genel') ? 'var(--indigo)' : '#475569'};font-size:11px">
@@ -765,6 +936,7 @@ export function hfOzelRaporRender() {
                   <td>${k.baslik || k.notlar || '<span class="muted">—</span>'}</td>
                   <td class="num">${k.soruSayisi || 0}${k.hedef ? ` / ${k.hedef}` : ''}</td>
                   <td class="num mono" style="color:var(--indigo);font-weight:600">${typeof k.net === 'number' ? k.net.toFixed(2) : '—'}</td>
+                  <td>${yildizStr}</td>
                   <td>${durBadge}</td>
                 </tr>
               `;

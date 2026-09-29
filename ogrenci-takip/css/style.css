@@ -962,6 +962,49 @@ textarea:focus {
   color: #475569;
 }
 
+/* ═════ ÖĞRENME DERECELENDİRMESİ & YILDIZLAR ═════ */
+.hf-star, .hf-knt-star {
+  transition: transform .1s, color .15s;
+  display: inline-block;
+  cursor: pointer;
+}
+.hf-star:hover, .hf-knt-star:hover {
+  transform: scale(1.25);
+}
+.hf-star.active, .hf-knt-star.active {
+  color: #f59e0b !important;
+}
+.star-display-inline {
+  display: inline-flex;
+  gap: 2px;
+  font-size: 13px;
+  line-height: 1;
+  color: #f59e0b;
+}
+.star-display-inline .star-empty {
+  color: #cbd5e1;
+}
+.star-clickable-row {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  transition: background .15s;
+}
+.star-clickable-row:hover {
+  background: #fef3c7;
+}
+.pillbad.orange {
+  background: #ffedd5;
+  color: #c2410c;
+}
+.pillbad.yellow {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
 @page {
   size: A4;
   margin: 8mm;

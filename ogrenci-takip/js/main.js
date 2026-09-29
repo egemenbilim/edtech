@@ -2,7 +2,7 @@
    Öğrenci Takip Sistemi — Ana Orkestrasyon (Main)
    ══════════════════════════════════════════════════════ */
 
-import { DB, loadDB, sinifAdi } from './state.js';
+import { DB, loadDB, saveDB, sinifAdi } from './state.js';
 import { $, toast, promptKopyala } from './utils.js';
 
 import { renderDashboard } from './modules/dashboard.js';
@@ -30,12 +30,15 @@ import {
   hfOgrenciSecildi, hfSinavTuruSecildi, hfDersSecildi, hfKonuSecildi,
   hfTurDegis, hfNetHesaplaLive, hfOdevDurumHizliDegis, hfFiltreTurSec,
   hfOzelRaporAc, hfOzelRaporKapat, hfOzelRaporRender, hfOzelRaporYazdir,
-  hfWhatsAppPaylas, seciliHfOgrenciId
+  hfWhatsAppPaylas, seciliHfOgrenciId,
+  hfYildizSec, hfKntYildizSec, hfHizliYildizAyarla,
+  hfFiltreSon1Hafta, hfFiltreTarihTemizle, hfFiltreDurumSec,
+  hfKontrolModalAc, hfKontrolModalKapat, hfKntNetHesapla, hfKontrolKaydet
 } from './modules/haftalik.js';
 import {
   doldurRaporFiltreleri, dersSecTumu, dersSecTemizle,
   ogrSecTumu, ogrSecTemizle, gelisimSec, gelisimTemizle,
-  renderRapor, renderDetayliAnaliz, raporPDF
+  renderRapor, renderDetayliAnaliz, raporPDF, raporSinifDegisti
 } from './modules/raporlar.js';
 import {
   disaAktar, iceriAktar, handleFile, tumunuSil,
@@ -122,6 +125,7 @@ export function doldurSelectler() {
   if ($('filtreHfOgrenci')) $('filtreHfOgrenci').innerHTML = '<option value="">Tüm Öğrenciler</option>' + oO;
 
   uypSelectleriGuncelle();
+  doldurRaporFiltreleri();
 }
 
 // Modüller arası callback bağlamaları
@@ -138,6 +142,7 @@ setBackupReloadCallback(() => {
 /* ═════ INLINE HTML ETKİLEŞİMLERİ İÇİN GLOBAL WINDOW BAĞLAMASI ═════ */
 window.$ = $;
 window.DB = DB;
+window.saveDB = saveDB;
 window.goto = goto;
 window.ogrTab = ogrTab;
 window.denTab = denTab;
@@ -232,7 +237,21 @@ window.hfOzelRaporRender = hfOzelRaporRender;
 window.hfOzelRaporYazdir = hfOzelRaporYazdir;
 window.hfWhatsAppPaylas = hfWhatsAppPaylas;
 
+// Haftalık Yeni Özellikler (Yıldızlar, Tarih/Durum Filtreleri, Kontrol Modalı)
+window.hfYildizSec = hfYildizSec;
+window.hfKntYildizSec = hfKntYildizSec;
+window.hfHizliYildizAyarla = hfHizliYildizAyarla;
+window.hfFiltreSon1Hafta = hfFiltreSon1Hafta;
+window.hfFiltreTarihTemizle = hfFiltreTarihTemizle;
+window.hfFiltreDurumSec = hfFiltreDurumSec;
+window.hfKontrolModalAc = hfKontrolModalAc;
+window.hfKontrolModalKapat = hfKontrolModalKapat;
+window.hfKntNetHesapla = hfKntNetHesapla;
+window.hfKontrolKaydet = hfKontrolKaydet;
+
 // Raporlar
+window.doldurRaporFiltreleri = doldurRaporFiltreleri;
+window.raporSinifDegisti = raporSinifDegisti;
 window.dersSecTumu = dersSecTumu;
 window.dersSecTemizle = dersSecTemizle;
 window.ogrSecTumu = ogrSecTumu;
