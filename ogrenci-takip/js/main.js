@@ -44,7 +44,8 @@ import {
 import {
   parsePdfFile, parseExamLines, renderPdfOnayPaneli,
   pdfSecTumuDegistir, pdfRowToggle, pdfTopluSinifUygula,
-  pdfTemizle, pdfOnaylaVeKaydet, setPdfSelectCallback
+  pdfTemizle, pdfOnaylaVeKaydet, setPdfSelectCallback,
+  pdfAdDegisti, pdfOgrenciSecildi, pdfFiltrele, pdfOzetSayaclariGuncelle
 } from './modules/pdfParser.js';
 import {
   uypSelectleriGuncelle, uypPlanSecildi, uypPlaniSinifaCek,
@@ -321,6 +322,10 @@ window.pdfRowToggle = pdfRowToggle;
 window.pdfTopluSinifUygula = pdfTopluSinifUygula;
 window.pdfTemizle = pdfTemizle;
 window.pdfOnaylaVeKaydet = pdfOnaylaVeKaydet;
+window.pdfAdDegisti = pdfAdDegisti;
+window.pdfOgrenciSecildi = pdfOgrenciSecildi;
+window.pdfFiltrele = pdfFiltrele;
+window.pdfOzetSayaclariGuncelle = pdfOzetSayaclariGuncelle;
 
 // Yedek
 window.disaAktar = disaAktar;

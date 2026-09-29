@@ -6,7 +6,10 @@
 import {
   DB, saveDB, nid, netHesapla, denemeBulVeyaOlustur
 } from '../state.js';
-import { $, toast, fmtTarih, ogrenciAdi, sinifAdi } from '../utils.js';
+import {
+  $, toast, fmtTarih, ogrenciAdi, sinifAdi,
+  trNormalize, enIyiOgrenciEslestir, ogrenciBenzerlikHesapla
+} from '../utils.js';
 import { renderDenemeler, dersListesiniOlustur } from './denemeler.js';
 
 let aktifPdfVerisi = null;
@@ -252,11 +255,9 @@ export function parseExamLines(lines) {
       ];
     }
 
-    // Sistemde kayıtlı öğrenci var mı?
-    const eslesenOgr = DB.ogrenciler.find(o =>
-      o.adSoyad.trim().toLowerCase() === adSoyad.toLowerCase() ||
-      o.adSoyad.replace(/\s+/g, '').toLowerCase() === adSoyad.replace(/\s+/g, '').toLowerCase()
-    );
+    // Sistemde kayıtlı öğrenci var mı? (Adında ve soyadında ayrı ayrı %60 benzerlik kuralı)
+    const match = enIyiOgrenciEslestir(adSoyad, DB.ogrenciler);
+    const eslesenOgr = match.eslesti ? match.ogrenci : null;
 
     ogrenciler.push({
       dahilEt: true,
@@ -268,6 +269,10 @@ export function parseExamLines(lines) {
       kitapcik,
       mevcutOgrenci: !!eslesenOgr,
       eslesenOgrenciId: eslesenOgr ? eslesenOgr.id : null,
+      eslesmeTuru: eslesenOgr ? 'auto' : 'none',
+      adSim: match.adSim,
+      soyadSim: match.soyadSim,
+      toplamSim: match.toplamSim,
       dersSonuclari,
       toplam,
       puan
@@ -363,9 +368,51 @@ export async function parsePdfFile(file) {
   return parseExamLines(allLines);
 }
 
+let aktifFiltreTur = 'all';
+
+/* ═════ ÖĞRENCİ ARAMA & SEÇENEK LİSTESİ OLUŞTURUCU ═════ */
+export function siraliOgrenciSecenekleri(o) {
+  if (!DB.ogrenciler || !DB.ogrenciler.length) return '';
+
+  const list = DB.ogrenciler.map(ogr => {
+    const sim = ogrenciBenzerlikHesapla(o.adSoyad, ogr.adSoyad);
+    return { ogr, sim };
+  });
+
+  list.sort((a, b) => {
+    // 1. Şu an seçili olan öğrenci en üstte
+    if (a.ogr.id === o.eslesenOgrenciId) return -1;
+    if (b.ogr.id === o.eslesenOgrenciId) return 1;
+    // 2. Benzerlik puanı yüksek olanlar önce
+    if (b.sim.toplamSim !== a.sim.toplamSim) return b.sim.toplamSim - a.sim.toplamSim;
+    // 3. İsim alfabetik
+    return a.ogr.adSoyad.localeCompare(b.ogr.adSoyad, 'tr');
+  });
+
+  return list.map(item => {
+    const isSelected = item.ogr.id === o.eslesenOgrenciId;
+    const simText = item.sim.toplamSim >= 50
+      ? ` (%${item.sim.toplamSim} Benzer - Ad:%${item.sim.adSim} Soyad:%${item.sim.soyadSim})`
+      : '';
+    return `<option value="${item.ogr.id}" ${isSelected ? 'selected' : ''}>👤 ${item.ogr.adSoyad} (${sinifAdi(item.ogr.sinifId)})${simText}</option>`;
+  }).join('');
+}
+
+export function durumBadgeHtml(o) {
+  if (o.eslesenOgrenciId) {
+    if (o.eslesmeTuru === 'manual') {
+      return `<span class="badge" style="background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:600">🔗 Manuel: ${ogrenciAdi(o.eslesenOgrenciId)}</span>`;
+    }
+    const tip = `Ad: %${o.adSim || 100} • Soyad: %${o.soyadSim || 100}`;
+    return `<span class="badge" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;font-size:11px;font-weight:600" title="${tip}">🎯 Eşleşti: ${ogrenciAdi(o.eslesenOgrenciId)} (%${o.toplamSim || 100})</span>`;
+  }
+  return `<span class="badge" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;font-size:11px">➕ Yeni Öğrenci</span>`;
+}
+
 /* ═════ ONAY VE ÖNİZLEME EKRANI RENDER ═════ */
 export function renderPdfOnayPaneli(parsed) {
   aktifPdfVerisi = parsed;
+  aktifFiltreTur = 'all';
   const panel = $('pdfOnayAlani');
   if (!panel) return;
 
@@ -385,13 +432,17 @@ export function renderPdfOnayPaneli(parsed) {
     ? ['Türkçe', 'İnkılap', 'Din K.', 'İngilizce', 'Matematik', 'Fen Bil.']
     : ['Türkçe', 'Sosyal', 'Matematik', 'Fen'];
 
+  const total = parsed.ogrenciler.length;
+  const matched = parsed.ogrenciler.filter(o => o.mevcutOgrenci).length;
+  const newCount = total - matched;
+
   const html = `
     <div class="card" style="background:#f8fafc;border:2px solid var(--indigo);margin-bottom:16px">
       <div class="flex" style="justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center;border-bottom:1px solid var(--border);padding-bottom:12px">
         <div>
-          <h2 style="margin:0;color:var(--indigo)">🔍 PDF Çözümleme Sonucu & Onay Ekranı</h2>
+          <h2 style="margin:0;color:var(--indigo)">🔍 PDF Çözümleme Sonucu & Öğrenci Tasnif Onayı</h2>
           <p class="muted" style="font-size:12px;margin-top:2px">
-            Belgeden <b>${parsed.ogrenciler.length} öğrenci</b> (${parsed.sinavTuru}) tespit edildi. Kaydetmeden önce sınıf, öğrenci adı veya sınav detaylarını düzenleyebilirsiniz.
+            PDF'ten <b>${total} öğrenci</b> tespit edildi. Tasnif <b>ad ve soyad %60 benzerlik kuralına göre</b> otomatik yapıldı. Eşleşmeyenleri tek tıkla mevcut öğrencilere bağlayabilir veya ismini düzeltebilirsiniz.
           </p>
         </div>
         <button class="btn gray sm" onclick="window.pdfTemizle()">🧹 İptal / Kapat</button>
@@ -417,11 +468,25 @@ export function renderPdfOnayPaneli(parsed) {
         </div>
       </div>
 
+      <!-- ÖZET İSTATİSTİK VE FİLTRELEME ÇUBUĞU -->
+      <div class="flex mt-3" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:#f1f5f9;padding:10px 14px;border-radius:8px">
+        <div class="flex" style="gap:12px;align-items:center;font-size:12.5px">
+          <span>👥 Toplam: <b id="pdfSayacToplam">${total}</b></span>
+          <span style="color:#047857">🎯 Eşleşen: <b id="pdfSayacEslesen">${matched}</b></span>
+          <span style="color:#64748b">➕ Yeni Öğrenci: <b id="pdfSayacYeni">${newCount}</b></span>
+        </div>
+        <div class="flex" style="gap:6px">
+          <button type="button" class="btn sm" id="pdfFiltre_all" onclick="window.pdfFiltrele('all')">Tümü (${total})</button>
+          <button type="button" class="btn sm gray" id="pdfFiltre_matched" onclick="window.pdfFiltrele('matched')">🎯 Eşleşenler (${matched})</button>
+          <button type="button" class="btn sm gray" id="pdfFiltre_new" onclick="window.pdfFiltrele('new')">➕ Yeni / Eşleşmeyenler (${newCount})</button>
+        </div>
+      </div>
+
       <!-- TOPLU SINIF BELİRLEME ÇUBUĞU -->
-      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin:14px 0">
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin:12px 0">
         <div class="flex" style="flex-wrap:wrap;gap:12px;align-items:center">
-          <span style="font-weight:600;color:var(--indigo);font-size:13px">🏫 Toplu Sınıf Belirle:</span>
-          <select id="pdfTopluSinifSecim" style="width:auto;min-width:180px">
+          <span style="font-weight:600;color:var(--indigo);font-size:12.5px">🏫 Toplu Sınıf Ata:</span>
+          <select id="pdfTopluSinifSecim" style="width:auto;min-width:180px;font-size:12px">
             <optgroup label="Sistemdeki Mevcut Sınıflar">
               ${sinifSecenekleriHtml}
             </optgroup>
@@ -430,12 +495,12 @@ export function renderPdfOnayPaneli(parsed) {
             </optgroup>
           </select>
           <button class="btn sm" onclick="window.pdfTopluSinifUygula()">Tümüne Uygula</button>
-          <span class="muted" style="font-size:11px">PDF'teki sınıf: <b>${pdfSiniflar.join(', ')}</b></span>
+          <span class="muted" style="font-size:11px">PDF'ten okunan sınıflar: <b>${pdfSiniflar.join(', ')}</b></span>
         </div>
       </div>
 
       <!-- ÖĞRENCİ ONAY TABLOSU -->
-      <div style="overflow-x:auto;max-height:480px;border:1px solid var(--border);border-radius:8px">
+      <div style="overflow-x:auto;max-height:500px;border:1px solid var(--border);border-radius:8px">
         <table class="table" style="margin:0;font-size:12.5px" id="pdfOgrenciTablosu">
           <thead style="position:sticky;top:0;background:#fff;z-index:10;box-shadow:0 1px 2px rgba(0,0,0,0.05)">
             <tr>
@@ -443,10 +508,10 @@ export function renderPdfOnayPaneli(parsed) {
                 <input type="checkbox" id="pdfSecTumu" checked onchange="window.pdfSecTumuDegistir(this.checked)">
               </th>
               <th style="width:38px">Sıra</th>
-              <th style="width:75px">Öğr No</th>
-              <th style="min-width:180px">Öğrenci Adı Soyadı (Düzenlenebilir)</th>
-              <th style="min-width:140px">Sınıf Seçimi</th>
-              <th style="width:85px">Durum</th>
+              <th style="width:70px">Öğr No</th>
+              <th style="min-width:180px">Öğrenci Adı Soyadı (PDF / Düzenlenebilir)</th>
+              <th style="min-width:210px">Sistem Eşleşmesi / Bağlanan Öğrenci</th>
+              <th style="min-width:130px">Sınıf Seçimi</th>
               ${dersBasliklari.map(d => `<th class="num">${d}</th>`).join('')}
               <th class="num" style="color:var(--indigo);font-weight:700">Toplam Net</th>
               <th class="num">${isLgs ? 'LGS Puanı' : 'Puan'}</th>
@@ -489,7 +554,7 @@ export function renderPdfOnayPaneli(parsed) {
               }
 
               return `
-                <tr id="pdf_row_${idx}">
+                <tr id="pdf_row_${idx}" style="${o.mevcutOgrenci ? 'background:#fafdfb' : ''}">
                   <td style="text-align:center">
                     <input type="checkbox" class="pdf-row-chk" id="pdf_chk_${idx}" ${o.dahilEt ? 'checked' : ''} onchange="window.pdfRowToggle(${idx})">
                   </td>
@@ -498,10 +563,23 @@ export function renderPdfOnayPaneli(parsed) {
                     <input id="pdf_no_${idx}" value="${o.ogrNo}" style="width:65px;padding:4px 6px;font-size:12px;text-align:center">
                   </td>
                   <td>
-                    <input id="pdf_ad_${idx}" value="${o.adSoyad}" style="width:100%;min-width:180px;padding:4px 8px;font-size:12.5px;font-weight:600">
+                    <input id="pdf_ad_${idx}" value="${o.adSoyad}" oninput="window.pdfAdDegisti(${idx}, this.value)" style="width:100%;min-width:170px;padding:4px 8px;font-size:12.5px;font-weight:600;border:1px solid #cbd5e1;border-radius:6px">
                   </td>
                   <td>
-                    <select id="pdf_sinif_${idx}" style="width:100%;min-width:130px;padding:4px 6px;font-size:12px">
+                    <div style="min-width:200px">
+                      <select id="pdf_ogrenci_${idx}" onchange="window.pdfOgrenciSecildi(${idx}, this.value)" style="width:100%;padding:4px 6px;font-size:12px;border:1.5px solid ${o.mevcutOgrenci ? '#10b981' : '#cbd5e1'};border-radius:6px;background:${o.mevcutOgrenci ? '#f0fdf4' : '#fff'}">
+                        <option value="NEW" ${!o.eslesenOgrenciId ? 'selected' : ''}>➕ Yeni Öğrenci Olarak Aç</option>
+                        <optgroup label="Sistemdeki Kayıtlı Öğrenciler">
+                          ${siraliOgrenciSecenekleri(o)}
+                        </optgroup>
+                      </select>
+                      <div id="pdf_durum_${idx}" style="margin-top:3px">
+                        ${durumBadgeHtml(o)}
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <select id="pdf_sinif_${idx}" style="width:100%;min-width:120px;padding:4px 6px;font-size:12px;border-radius:6px">
                       ${DB.siniflar.map(s => `
                         <option value="${s.id}" ${(o.seciliSinifId === s.id || (!o.seciliSinifId && s.ad === o.sinif)) ? 'selected' : ''}>
                           ${s.ad}
@@ -511,12 +589,6 @@ export function renderPdfOnayPaneli(parsed) {
                         ➕ Yeni: "${o.sinif}"
                       </option>
                     </select>
-                  </td>
-                  <td>
-                    ${o.mevcutOgrenci ?
-                      '<span class="badge" style="background:#ecfdf5;color:var(--emerald);font-size:11px">✅ Mevcut</span>' :
-                      '<span class="badge" style="background:#eff6ff;color:var(--indigo);font-size:11px">➕ Yeni</span>'
-                    }
                   </td>
                   ${dersHücreleriHtml}
                   <td class="num mono" style="font-weight:700;color:var(--indigo)">${topNet}</td>
@@ -536,8 +608,8 @@ export function renderPdfOnayPaneli(parsed) {
           </button>
           <button class="btn gray" onclick="window.pdfTemizle()">İptal Et</button>
         </div>
-        <div class="muted" style="font-size:11px;align-self:center">
-          💡 İsim veya numara alanına tıklayarak doğrudan düzenleme yapabilirsiniz.
+        <div class="muted" style="font-size:11.5px;align-self:center">
+          💡 İsim kutusuna yazarak adı düzeltebilir veya açılır kutudan dilediğiniz mevcut öğrenciye bağlayabilirsiniz.
         </div>
       </div>
     </div>
@@ -547,6 +619,160 @@ export function renderPdfOnayPaneli(parsed) {
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+/* ═════ ÖĞRENCİ ADI DEĞİŞİNCE GERÇEK ZAMANLI AKILLI EŞLEŞTİRME ═════ */
+export function pdfAdDegisti(idx, val) {
+  if (!aktifPdfVerisi || !aktifPdfVerisi.ogrenciler[idx]) return;
+  const o = aktifPdfVerisi.ogrenciler[idx];
+  o.adSoyad = val.trim();
+
+  // Adında ve soyadında ayrı ayrı %60 benzerlik kuralına göre ara
+  const match = enIyiOgrenciEslestir(o.adSoyad, DB.ogrenciler);
+
+  if (match.eslesti) {
+    o.eslesenOgrenciId = match.ogrenci.id;
+    o.mevcutOgrenci = true;
+    o.eslesmeTuru = 'auto';
+    o.adSim = match.adSim;
+    o.soyadSim = match.soyadSim;
+    o.toplamSim = match.toplamSim;
+    o.seciliSinifId = match.ogrenci.sinifId;
+
+    const sinifSel = $(`pdf_sinif_${idx}`);
+    if (sinifSel) sinifSel.value = match.ogrenci.sinifId;
+  } else {
+    if (o.eslesmeTuru !== 'manual') {
+      o.eslesenOgrenciId = null;
+      o.mevcutOgrenci = false;
+      o.eslesmeTuru = 'none';
+      o.adSim = 0;
+      o.soyadSim = 0;
+      o.toplamSim = 0;
+    }
+  }
+
+  // Dropdown ve badge'i güncelle
+  const selEl = $(`pdf_ogrenci_${idx}`);
+  if (selEl) {
+    selEl.innerHTML = `
+      <option value="NEW" ${!o.eslesenOgrenciId ? 'selected' : ''}>➕ Yeni Öğrenci Olarak Aç</option>
+      <optgroup label="Sistemdeki Kayıtlı Öğrenciler">
+        ${siraliOgrenciSecenekleri(o)}
+      </optgroup>
+    `;
+    selEl.value = o.eslesenOgrenciId ? String(o.eslesenOgrenciId) : 'NEW';
+    selEl.style.borderColor = o.mevcutOgrenci ? '#10b981' : '#cbd5e1';
+    selEl.style.background = o.mevcutOgrenci ? '#f0fdf4' : '#ffffff';
+  }
+
+  const durumEl = $(`pdf_durum_${idx}`);
+  if (durumEl) {
+    durumEl.innerHTML = durumBadgeHtml(o);
+  }
+
+  const rowEl = $(`pdf_row_${idx}`);
+  if (rowEl) {
+    rowEl.style.background = o.mevcutOgrenci ? '#fafdfb' : '';
+  }
+
+  pdfOzetSayaclariGuncelle();
+}
+
+/* ═════ ÖĞRENCİ AÇILIR KUTUSUNDAN MANUEL BAĞLAMA ═════ */
+export function pdfOgrenciSecildi(idx, val) {
+  if (!aktifPdfVerisi || !aktifPdfVerisi.ogrenciler[idx]) return;
+  const o = aktifPdfVerisi.ogrenciler[idx];
+
+  if (val === 'NEW') {
+    o.eslesenOgrenciId = null;
+    o.mevcutOgrenci = false;
+    o.eslesmeTuru = 'none';
+    o.adSim = 0;
+    o.soyadSim = 0;
+    o.toplamSim = 0;
+  } else {
+    const oid = Number(val);
+    const targetOgr = DB.ogrenciler.find(x => x.id === oid);
+    if (targetOgr) {
+      o.eslesenOgrenciId = oid;
+      o.mevcutOgrenci = true;
+      o.eslesmeTuru = 'manual';
+      o.seciliSinifId = targetOgr.sinifId;
+
+      const sinifSel = $(`pdf_sinif_${idx}`);
+      if (sinifSel) sinifSel.value = targetOgr.sinifId;
+      toast(`${o.adSoyad} ➔ ${targetOgr.adSoyad} ile eşlendi`, true);
+    }
+  }
+
+  const selEl = $(`pdf_ogrenci_${idx}`);
+  if (selEl) {
+    selEl.style.borderColor = o.mevcutOgrenci ? '#10b981' : '#cbd5e1';
+    selEl.style.background = o.mevcutOgrenci ? '#f0fdf4' : '#ffffff';
+  }
+
+  const durumEl = $(`pdf_durum_${idx}`);
+  if (durumEl) {
+    durumEl.innerHTML = durumBadgeHtml(o);
+  }
+
+  const rowEl = $(`pdf_row_${idx}`);
+  if (rowEl) {
+    rowEl.style.background = o.mevcutOgrenci ? '#fafdfb' : '';
+  }
+
+  pdfOzetSayaclariGuncelle();
+}
+
+/* ═════ FİLTRELEME İŞLEMİ (TÜMÜ / EŞLEŞENLER / YENİLER) ═════ */
+export function pdfFiltrele(tur) {
+  if (!aktifPdfVerisi) return;
+  aktifFiltreTur = tur;
+
+  ['all', 'matched', 'new'].forEach(t => {
+    const btn = $(`pdfFiltre_${t}`);
+    if (btn) {
+      btn.className = (t === tur) ? 'btn sm' : 'btn sm gray';
+    }
+  });
+
+  aktifPdfVerisi.ogrenciler.forEach((o, idx) => {
+    const tr = $(`pdf_row_${idx}`);
+    if (!tr) return;
+    if (tur === 'all') {
+      tr.style.display = '';
+    } else if (tur === 'matched') {
+      tr.style.display = o.mevcutOgrenci ? '' : 'none';
+    } else if (tur === 'new') {
+      tr.style.display = !o.mevcutOgrenci ? '' : 'none';
+    }
+  });
+}
+
+/* ═════ SAYAC GÜNCELLEMELERİ ═════ */
+export function pdfOzetSayaclariGuncelle() {
+  if (!aktifPdfVerisi) return;
+  const total = aktifPdfVerisi.ogrenciler.length;
+  const matched = aktifPdfVerisi.ogrenciler.filter(o => o.mevcutOgrenci).length;
+  const newCount = total - matched;
+  const selected = aktifPdfVerisi.ogrenciler.filter(o => o.dahilEt).length;
+
+  const elTot = $('pdfSayacToplam');
+  if (elTot) elTot.textContent = total;
+  const elMat = $('pdfSayacEslesen');
+  if (elMat) elMat.textContent = matched;
+  const elNew = $('pdfSayacYeni');
+  if (elNew) elNew.textContent = newCount;
+  const elSec = $('pdfSeciliSayac');
+  if (elSec) elSec.textContent = selected;
+
+  const btnAll = $('pdfFiltre_all');
+  if (btnAll) btnAll.textContent = `Tümü (${total})`;
+  const btnMat = $('pdfFiltre_matched');
+  if (btnMat) btnMat.textContent = `🎯 Eşleşenler (${matched})`;
+  const btnNew = $('pdfFiltre_new');
+  if (btnNew) btnNew.textContent = `➕ Yeni / Eşleşmeyenler (${newCount})`;
+}
+
 export function pdfSecTumuDegistir(secili) {
   if (!aktifPdfVerisi) return;
   aktifPdfVerisi.ogrenciler.forEach((o, idx) => {
@@ -554,7 +780,7 @@ export function pdfSecTumuDegistir(secili) {
     const chk = $(`pdf_chk_${idx}`);
     if (chk) chk.checked = secili;
   });
-  pdfSayaciGuncelle();
+  pdfOzetSayaclariGuncelle();
 }
 
 export function pdfRowToggle(idx) {
@@ -563,14 +789,7 @@ export function pdfRowToggle(idx) {
   if (chk) {
     aktifPdfVerisi.ogrenciler[idx].dahilEt = chk.checked;
   }
-  pdfSayaciGuncelle();
-}
-
-function pdfSayaciGuncelle() {
-  if (!aktifPdfVerisi) return;
-  const sayi = aktifPdfVerisi.ogrenciler.filter(o => o.dahilEt).length;
-  const el = $('pdfSeciliSayac');
-  if (el) el.textContent = sayi;
+  pdfOzetSayaclariGuncelle();
 }
 
 export function pdfTopluSinifUygula() {
@@ -606,7 +825,7 @@ export function pdfTemizle() {
   if (badge) badge.classList.add('hidden');
 }
 
-/* ═════ ONAY VE KAYIT MOTORU ═════ */
+/* ═════ ONAY VE KAYIT MOTORU (AKILLI ÖĞRENCİ TASNİFİ & EŞLEŞTİRME) ═════ */
 export function pdfOnaylaVeKaydet() {
   if (!aktifPdfVerisi || !aktifPdfVerisi.ogrenciler.length) {
     toast('Aktarılacak veri bulunamadı', false);
@@ -627,17 +846,20 @@ export function pdfOnaylaVeKaydet() {
     const adInput = $(`pdf_ad_${idx}`);
     const noInput = $(`pdf_no_${idx}`);
     const sinifSel = $(`pdf_sinif_${idx}`);
+    const ogrenciSel = $(`pdf_ogrenci_${idx}`);
 
     const guncelAd = adInput ? adInput.value.trim() : orig.adSoyad;
     const guncelNo = noInput ? noInput.value.trim() : orig.ogrNo;
     const guncelSinifVal = sinifSel ? sinifSel.value : (orig.seciliSinifId || `NEW_${orig.sinif}`);
+    const guncelOgrenciVal = ogrenciSel ? ogrenciSel.value : (orig.eslesenOgrenciId ? String(orig.eslesenOgrenciId) : 'NEW');
 
     if (guncelAd) {
       aktarilacaklar.push({
         ...orig,
         adSoyad: guncelAd,
         ogrNo: guncelNo,
-        sinifSecim: guncelSinifVal
+        sinifSecim: guncelSinifVal,
+        secilenOgrenciId: (guncelOgrenciVal && guncelOgrenciVal !== 'NEW') ? Number(guncelOgrenciVal) : null
       });
     }
   });
@@ -667,28 +889,50 @@ export function pdfOnaylaVeKaydet() {
     }
   });
 
-  // 2. Öğrencileri hazırla / oluştur
+  // 2. Öğrencileri hazırla / bağla / oluştur
   let yeniOgrSayisi = 0;
+  let baglananOgrSayisi = 0;
+
   aktarilacaklar.forEach(item => {
     const sid = sinifMap.get(item.sinifSecim) || (DB.siniflar[0] ? DB.siniflar[0].id : 1);
 
-    let ogr = DB.ogrenciler.find(o =>
-      o.adSoyad.trim().toLowerCase() === item.adSoyad.trim().toLowerCase()
-    );
+    let ogr = null;
 
-    if (!ogr) {
-      ogr = {
-        id: nid(),
-        adSoyad: item.adSoyad,
-        sinifId: sid,
-        alan: '',
-        veli: item.ogrNo ? `Öğr No: ${item.ogrNo}` : ''
-      };
-      DB.ogrenciler.push(ogr);
-      yeniOgrSayisi++;
-    } else {
-      ogr.sinifId = sid;
+    // A) Kullanıcı veya benzerlik motoru mevcut bir öğrenciye bağlamışsa:
+    if (item.secilenOgrenciId) {
+      ogr = DB.ogrenciler.find(o => o.id === item.secilenOgrenciId);
+      if (ogr) {
+        baglananOgrSayisi++;
+        if (sid && sid !== ogr.sinifId) {
+          ogr.sinifId = sid;
+        }
+      }
     }
+
+    // B) Eğer eşleşme seçilmediyse veya öğrenci bulunamadıysa:
+    if (!ogr) {
+      // Birebir aynı isimde öğrenci var mı?
+      const tamAyni = DB.ogrenciler.find(o => trNormalize(o.adSoyad) === trNormalize(item.adSoyad));
+      if (tamAyni) {
+        ogr = tamAyni;
+        baglananOgrSayisi++;
+        if (sid && sid !== ogr.sinifId) {
+          ogr.sinifId = sid;
+        }
+      } else {
+        // Yeni öğrenci oluştur
+        ogr = {
+          id: nid(),
+          adSoyad: item.adSoyad,
+          sinifId: sid,
+          alan: '',
+          veli: item.ogrNo ? `Öğr No: ${item.ogrNo}` : ''
+        };
+        DB.ogrenciler.push(ogr);
+        yeniOgrSayisi++;
+      }
+    }
+
     item.kaydedilenOgrenciId = ogr.id;
   });
 
@@ -727,9 +971,10 @@ export function pdfOnaylaVeKaydet() {
   saveDB();
   notifySelects();
 
-  let msg = `✅ ${aktarilacaklar.length - mukerrerSayisi} öğrenci ve ${kaydedilenDersSayisi} ders sonucu başarıyla sisteme aktarıldı!`;
+  let msg = `✅ ${aktarilacaklar.length - mukerrerSayisi} öğrenci ve ${kaydedilenDersSayisi} ders sonucu sisteme aktarıldı!`;
+  if (baglananOgrSayisi > 0) msg += ` (${baglananOgrSayisi} mevcut öğrenciye dahil edildi)`;
   if (yeniOgrSayisi > 0) msg += ` (${yeniOgrSayisi} yeni öğrenci açıldı)`;
-  if (mukerrerSayisi > 0) msg += ` • ${mukerrerSayisi} öğrenci zaten kayıtlı olduğu için atlandı`;
+  if (mukerrerSayisi > 0) msg += ` • ${mukerrerSayisi} mükerrer atlandı`;
 
   toast(msg, true);
 

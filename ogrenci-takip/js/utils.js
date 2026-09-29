@@ -34,6 +34,151 @@ export function sinifAdi(id) {
   return s ? s.ad : '—';
 }
 
+/* ═════ TÜRKÇE NORMALİZASYON & AD-SOYAD BENZERLİK MOTORU ═════ */
+export function trNormalize(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'ı')
+    .toLocaleLowerCase('tr-TR')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function splitAdSoyad(fullName) {
+  if (!fullName) return { ad: '', soyad: '' };
+  const tokens = String(fullName).trim().replace(/\s+/g, ' ').split(' ');
+  if (tokens.length <= 1) {
+    return { ad: tokens[0] || '', soyad: '' };
+  }
+  const soyad = tokens[tokens.length - 1];
+  const ad = tokens.slice(0, tokens.length - 1).join(' ');
+  return { ad, soyad };
+}
+
+export function levenshteinDistance(s1, s2) {
+  if (s1 === s2) return 0;
+  if (!s1 || !s1.length) return s2 ? s2.length : 0;
+  if (!s2 || !s2.length) return s1.length;
+
+  let v0 = Array.from({ length: s2.length + 1 }, (_, i) => i);
+  let v1 = new Array(s2.length + 1).fill(0);
+
+  for (let i = 0; i < s1.length; i++) {
+    v1[0] = i + 1;
+    for (let j = 0; j < s2.length; j++) {
+      const cost = s1[i] === s2[j] ? 0 : 1;
+      v1[j + 1] = Math.min(v1[j] + 1, v0[j + 1] + 1, v0[j] + cost);
+    }
+    v0 = [...v1];
+  }
+  return v0[s2.length];
+}
+
+export function metinBenzerligi(s1, s2) {
+  const n1 = trNormalize(s1);
+  const n2 = trNormalize(s2);
+  if (!n1 && !n2) return 1.0;
+  if (!n1 || !n2) return 0.0;
+  if (n1 === n2) return 1.0;
+
+  const maxLen = Math.max(n1.length, n2.length);
+  const levDist = levenshteinDistance(n1, n2);
+  const simLev = Math.max(0, 1.0 - levDist / maxLen);
+
+  // Kelime/token bazlı karşılaştırma (özellikle çift isimler için: örn. 'Ali Efe' vs 'Ali')
+  const words1 = n1.split(' ');
+  const words2 = n2.split(' ');
+  let simToken = 0;
+
+  if (words1.length > 1 || words2.length > 1) {
+    const [shortWords, longWords] = words1.length <= words2.length ? [words1, words2] : [words2, words1];
+    const matchScores = shortWords.map(sw => {
+      return Math.max(...longWords.map(lw => {
+        const mx = Math.max(sw.length, lw.length);
+        return 1.0 - levenshteinDistance(sw, lw) / mx;
+      }));
+    });
+    if (matchScores.length) {
+      const avgScore = matchScores.reduce((a, b) => a + b, 0) / matchScores.length;
+      const shortCharLen = shortWords.join('').length;
+      const longCharLen = longWords.join('').length;
+      const lenRatio = shortCharLen / Math.max(1, longCharLen);
+      simToken = avgScore * (0.5 + 0.5 * lenRatio);
+    }
+  }
+
+  return Math.max(simLev, simToken);
+}
+
+export function ogrenciBenzerlikHesapla(name1, name2) {
+  const p1 = splitAdSoyad(name1);
+  const p2 = splitAdSoyad(name2);
+
+  const adSim = metinBenzerligi(p1.ad, p2.ad);
+  const soyadSim = metinBenzerligi(p1.soyad, p2.soyad);
+
+  // Adında ve soyadında ayrı ayrı en az %60 (0.60) benzerlik aranır
+  const eslesti = (adSim >= 0.60) && (soyadSim >= 0.60);
+  const toplamSim = (adSim + soyadSim) / 2.0;
+
+  return {
+    eslesti,
+    adSim: Math.round(adSim * 100),
+    soyadSim: Math.round(soyadSim * 100),
+    toplamSim: Math.round(toplamSim * 100)
+  };
+}
+
+export function enIyiOgrenciEslestir(pdfAdSoyad, ogrenciListesi = (DB.ogrenciler || [])) {
+  if (!pdfAdSoyad || !ogrenciListesi || !ogrenciListesi.length) {
+    return { eslesti: false, ogrenci: null, adSim: 0, soyadSim: 0, toplamSim: 0 };
+  }
+
+  // 1. Önce tam veya normalize birebir eşleşme kontrolü
+  const nPdf = trNormalize(pdfAdSoyad);
+  const tam = ogrenciListesi.find(o => trNormalize(o.adSoyad) === nPdf);
+  if (tam) {
+    return {
+      eslesti: true,
+      ogrenci: tam,
+      adSim: 100,
+      soyadSim: 100,
+      toplamSim: 100
+    };
+  }
+
+  // 2. Ayrı ayrı %60 benzerlik kuralına göre en yüksek ad+soyad puanına sahip adayı bul
+  let best = null;
+  let bestScore = -1;
+
+  for (const o of ogrenciListesi) {
+    const res = ogrenciBenzerlikHesapla(pdfAdSoyad, o.adSoyad);
+    if (res.eslesti && res.toplamSim > bestScore) {
+      bestScore = res.toplamSim;
+      best = {
+        eslesti: true,
+        ogrenci: o,
+        adSim: res.adSim,
+        soyadSim: res.soyadSim,
+        toplamSim: res.toplamSim
+      };
+    }
+  }
+
+  if (best) return best;
+
+  return { eslesti: false, ogrenci: null, adSim: 0, soyadSim: 0, toplamSim: 0 };
+}
+
+
 /* ═════ PROMPT KOPYALAMA ═════ */
 export function promptKopyala(elId, btn) {
   const target = $(elId);

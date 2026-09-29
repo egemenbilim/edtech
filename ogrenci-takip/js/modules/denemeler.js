@@ -6,7 +6,7 @@ import {
   DB, saveDB, nid, netHesapla, DERS_TANIM,
   ALAN_ADI, dersMax, denemeBulVeyaOlustur, denemeSinifOrt
 } from '../state.js';
-import { $, toast, fmtTarih, ogrenciAdi } from '../utils.js';
+import { $, toast, fmtTarih, ogrenciAdi, enIyiOgrenciEslestir, trNormalize } from '../utils.js';
 
 export let AKTIF_DERSLER = [];
 let topluDurum = null;
@@ -330,9 +330,16 @@ export function topluKaydet() {
   const ad = denAd || `${tur} Deneme - ${fmtTarih(tarih)}`;
   const { deneme, yeni } = denemeBulVeyaOlustur(ad, tur, tarih);
 
-  let yeniOgr = 0, total = 0, atlanan = 0;
+  let yeniOgr = 0, total = 0, atlanan = 0, eslesenOgr = 0;
   for (const st of ogrenciler) {
-    let o = DB.ogrenciler.find(x => x.adSoyad.toLowerCase() === st.ogrenci.toLowerCase());
+    let o = DB.ogrenciler.find(x => trNormalize(x.adSoyad) === trNormalize(st.ogrenci));
+    if (!o) {
+      const match = enIyiOgrenciEslestir(st.ogrenci, DB.ogrenciler);
+      if (match.eslesti) {
+        o = match.ogrenci;
+        eslesenOgr++;
+      }
+    }
     if (!o) {
       if (!DB.siniflar.length) { toast('Önce sınıf ekleyin', false); return; }
       o = { id: nid(), adSoyad: st.ogrenci, sinifId: DB.siniflar[0].id, alan: '', veli: '' };
