@@ -853,8 +853,10 @@ Yanlış Sayısı: 3"></textarea>
           </div>
           <div>
             <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:2px">Kapsam</label>
-            <select id="hfRaporFiltreTip" style="width:140px;font-size:12px" onchange="hfOzelRaporRender()">
-              <option value="hepsi">Hepsi (Soru & Ödev)</option>
+            <select id="hfRaporFiltreTip" style="width:150px;font-size:12px" onchange="hfOzelRaporRender()">
+              <option value="hepsi">Tümü (Soru & Ödev)</option>
+              <option value="tamamlanan">✅ Tam Yapılanlar</option>
+              <option value="bekleyen">⏳ Kontrol Bekleyenler</option>
               <option value="soru">Sadece Soru Çözümü</option>
               <option value="odev">Sadece Ödevler</option>
             </select>

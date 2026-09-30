@@ -33,7 +33,8 @@ import {
   hfWhatsAppPaylas, seciliHfOgrenciId,
   hfYildizSec, hfKntYildizSec, hfHizliYildizAyarla,
   hfFiltreSon1Hafta, hfFiltreTarihTemizle, hfFiltreDurumSec,
-  hfKontrolModalAc, hfKontrolModalKapat, hfKntNetHesapla, hfKontrolKaydet
+  hfKontrolModalAc, hfKontrolModalKapat, hfKntNetHesapla, hfKontrolKaydet,
+  getRecordSoruSayisi
 } from './modules/haftalik.js';
 import {
   doldurRaporFiltreleri, dersSecTumu, dersSecTemizle,
@@ -248,6 +249,7 @@ window.hfKontrolModalAc = hfKontrolModalAc;
 window.hfKontrolModalKapat = hfKontrolModalKapat;
 window.hfKntNetHesapla = hfKntNetHesapla;
 window.hfKontrolKaydet = hfKontrolKaydet;
+window.getRecordSoruSayisi = getRecordSoruSayisi;
 
 // Raporlar
 window.doldurRaporFiltreleri = doldurRaporFiltreleri;

@@ -34,6 +34,20 @@ export const YILDIZ_METINLERI = [
   '⭐⭐⭐⭐⭐ 5 - Çok İyi Öğrenildi'
 ];
 
+/**
+ * Bir ödev / soru kaydındaki soru adedini belirler.
+ * Soru ve ödev aynı amaca hizmet ettiğinden çözülen, hedeflenen veya mevcut soru miktarını döner.
+ */
+export function getRecordSoruSayisi(k) {
+  if (!k) return 0;
+  if (typeof k.soruSayisi === 'number' && k.soruSayisi > 0) return k.soruSayisi;
+  if (typeof k.hedef === 'number' && k.hedef > 0) return k.hedef;
+  if (typeof k.miktar === 'number' && k.miktar > 0) return k.miktar;
+  const dyb = (Number(k.dogru) || 0) + (Number(k.yanlis) || 0) + (Number(k.bos) || 0);
+  if (dyb > 0) return dyb;
+  return 0;
+}
+
 /* ═════ ÖĞRENCİ SEÇİMİ VE KADEME UYARLAMASI ═════ */
 
 /**
@@ -95,8 +109,8 @@ function renderOgrenciProfilKarti(kademeBilgi) {
 
   // İstatistikler
   const kayitlar = DB.haftalik.filter(h => h.ogrenciId === seciliHfOgrenciId);
-  const toplamSoru = kayitlar.reduce((a, b) => a + (b.soruSayisi || 0), 0);
-  const toplamNet = kayitlar.reduce((a, b) => a + (b.net || 0), 0);
+  const toplamSoru = kayitlar.reduce((a, b) => a + getRecordSoruSayisi(b), 0);
+  const toplamNet = kayitlar.reduce((a, b) => a + (Number(b.net) || 0), 0);
   const bekleyenOdev = kayitlar.filter(h => h.durum === 'Verildi').length;
   const tamamlananOdev = kayitlar.filter(h => h.durum === 'Tamamlandı').length;
   const toplamOdev = kayitlar.length;
@@ -729,7 +743,15 @@ export function hfOzelRaporRender() {
   let kayitlar = DB.haftalik.filter(h => h.ogrenciId === seciliHfOgrenciId);
   if (basTarih) kayitlar = kayitlar.filter(h => h.haftaBas >= basTarih);
   if (bitTarih) kayitlar = kayitlar.filter(h => h.haftaBas <= bitTarih);
-  if (tipFiltre !== 'hepsi') kayitlar = kayitlar.filter(h => (h.tur || 'soru') === tipFiltre);
+  if (tipFiltre === 'tamamlanan') {
+    kayitlar = kayitlar.filter(h => h.durum === 'Tamamlandı');
+  } else if (tipFiltre === 'bekleyen') {
+    kayitlar = kayitlar.filter(h => h.durum === 'Verildi');
+  } else if (tipFiltre === 'soru') {
+    kayitlar = kayitlar.filter(h => h.tur === 'soru' || (h.soruSayisi && h.soruSayisi > 0) || (h.dogru && h.dogru > 0));
+  } else if (tipFiltre === 'odev') {
+    kayitlar = kayitlar.filter(h => h.tur === 'odev' || h.durum === 'Verildi' || (h.hedef && h.hedef > 0) || h.baslik);
+  }
 
   kayitlar.sort((a, b) => a.haftaBas.localeCompare(b.haftaBas));
 
@@ -744,52 +766,55 @@ export function hfOzelRaporRender() {
     return;
   }
 
-  // İstatistikler
-  const soruKayitlari = kayitlar.filter(h => (h.tur || 'soru') === 'soru');
-  const odevKayitlari = kayitlar.filter(h => h.tur === 'odev');
+  // İstatistikler — Ödev ve Soru aynı anlama gelir ve tek havuzda hesaplanır
+  const toplamSoru = kayitlar.reduce((a, b) => a + getRecordSoruSayisi(b), 0);
+  const toplamDogru = kayitlar.reduce((a, b) => a + (Number(b.dogru) || 0), 0);
+  const toplamYanlis = kayitlar.reduce((a, b) => a + (Number(b.yanlis) || 0), 0);
+  const toplamBos = kayitlar.reduce((a, b) => a + (Number(b.bos) || 0), 0);
+  const toplamNet = kayitlar.reduce((a, b) => a + (Number(b.net) || 0), 0);
 
-  const toplamSoru = soruKayitlari.reduce((a, b) => a + (b.soruSayisi || 0), 0);
-  const toplamDogru = soruKayitlari.reduce((a, b) => a + (b.dogru || 0), 0);
-  const toplamYanlis = soruKayitlari.reduce((a, b) => a + (b.yanlis || 0), 0);
-  const toplamBos = soruKayitlari.reduce((a, b) => a + (b.bos || 0), 0);
-  const toplamNet = soruKayitlari.reduce((a, b) => a + (b.net || 0), 0);
-  const dogrulukOrani = toplamSoru > 0 ? Math.round((toplamDogru / toplamSoru) * 100) : 0;
+  const dyToplam = toplamDogru + toplamYanlis;
+  const dogrulukOrani = dyToplam > 0 
+    ? Math.round((toplamDogru / dyToplam) * 100) 
+    : (toplamSoru > 0 && toplamDogru > 0 ? Math.round((toplamDogru / toplamSoru) * 100) : 0);
 
-  const toplamOdev = odevKayitlari.length;
-  const tamamlananOdev = odevKayitlari.filter(h => h.durum === 'Tamamlandı').length;
-  const kismiOdev = odevKayitlari.filter(h => h.durum === 'Kısmi').length;
-  const yapilmayanOdev = odevKayitlari.filter(h => h.durum === 'Yapılmadı').length;
-  const odevBasariOrani = toplamOdev > 0 ? Math.round((tamamlananOdev / toplamOdev) * 100) : 100;
+  const toplamOdev = kayitlar.length;
+  const tamamlananOdev = kayitlar.filter(h => h.durum === 'Tamamlandı').length;
+  const bekleyenOdev = kayitlar.filter(h => h.durum === 'Verildi').length;
+  const kismiOdev = kayitlar.filter(h => h.durum === 'Kısmi').length;
+  const yapilmayanOdev = kayitlar.filter(h => h.durum === 'Yapılmadı').length;
+  const odevBasariOrani = toplamOdev > 0 ? Math.round((tamamlananOdev / toplamOdev) * 100) : 0;
 
   // Ders Dağılım Map
   const dersMap = new Map();
   kayitlar.forEach(k => {
-    if (!dersMap.has(k.ders)) {
-      dersMap.set(k.ders, {
-        ders: k.ders,
+    const dersAdi = k.ders || 'Genel';
+    if (!dersMap.has(dersAdi)) {
+      dersMap.set(dersAdi, {
+        ders: dersAdi,
         soru: 0,
         dogru: 0,
         yanlis: 0,
         bos: 0,
         net: 0,
-        konular: new Set(),
-        odevSayisi: 0
+        toplamKayit: 0,
+        konular: new Set()
       });
     }
-    const m = dersMap.get(k.ders);
-    if ((k.tur || 'soru') === 'soru') {
-      m.soru += k.soruSayisi || 0;
-      m.dogru += k.dogru || 0;
-      m.yanlis += k.yanlis || 0;
-      m.bos += k.bos || 0;
-      m.net += k.net || 0;
-    } else {
-      m.odevSayisi += 1;
-    }
+    const m = dersMap.get(dersAdi);
+    m.soru += getRecordSoruSayisi(k);
+    m.dogru += Number(k.dogru) || 0;
+    m.yanlis += Number(k.yanlis) || 0;
+    m.bos += Number(k.bos) || 0;
+    m.net += Number(k.net) || 0;
+    m.toplamKayit += 1;
     if (k.konu) m.konular.add(k.konu);
   });
 
-  const dersListesi = [...dersMap.values()].sort((a, b) => b.soru - a.soru);
+  const dersListesi = [...dersMap.values()].sort((a, b) => {
+    if (b.soru !== a.soru) return b.soru - a.soru;
+    return b.toplamKayit - a.toplamKayit;
+  });
 
   // Tarih Başlığı
   let tarihMetni = 'Tüm Kayıtlar';
@@ -890,7 +915,11 @@ export function hfOzelRaporRender() {
         <!-- PASTA GRAFİK -->
         <div style="flex:0.8;min-width:220px;background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;text-align:center">
           <h4 style="font-size:13px;color:#0f172a;margin-bottom:6px">Ders Soru Dağılımı</h4>
-          ${toplamSoru > 0 ? pastaGrafik(dersListesi.filter(d => d.soru > 0).map(d => ({ ad: d.ders, deger: d.soru }))) : '<div class="muted" style="padding:40px 0">Soru verisi yok</div>'}
+          ${toplamSoru > 0 
+            ? pastaGrafik(dersListesi.filter(d => d.soru > 0).map(d => ({ ad: d.ders, deger: d.soru }))) 
+            : (kayitlar.length > 0 
+                ? pastaGrafik(dersListesi.filter(d => d.toplamKayit > 0).map(d => ({ ad: d.ders, deger: d.toplamKayit }))) 
+                : '<div class="muted" style="padding:40px 0">Soru verisi yok</div>')}
         </div>
       </div>
 
@@ -1015,26 +1044,25 @@ export function hfWhatsAppPaylas() {
   if (basTarih) kayitlar = kayitlar.filter(h => h.haftaBas >= basTarih);
   if (bitTarih) kayitlar = kayitlar.filter(h => h.haftaBas <= bitTarih);
 
-  const soruKayitlari = kayitlar.filter(h => (h.tur || 'soru') === 'soru');
-  const odevKayitlari = kayitlar.filter(h => h.tur === 'odev');
-  const toplamSoru = soruKayitlari.reduce((a, b) => a + (b.soruSayisi || 0), 0);
-  const toplamNet = soruKayitlari.reduce((a, b) => a + (b.net || 0), 0);
-  const tamamlananOdev = odevKayitlari.filter(h => h.durum === 'Tamamlandı').length;
+  const toplamSoru = kayitlar.reduce((a, b) => a + getRecordSoruSayisi(b), 0);
+  const toplamNet = kayitlar.reduce((a, b) => a + (Number(b.net) || 0), 0);
+  const tamamlananOdev = kayitlar.filter(h => h.durum === 'Tamamlandı').length;
 
   let msg = `🎓 *ÖĞRENCİ HAFTALIK SORU & ÖDEV BİLGİLENDİRMESİ*\n`;
   msg += `👤 *Öğrenci:* ${ogr.adSoyad} (${sinifAdi(ogr.sinifId)})\n`;
   msg += `📅 *Dönem:* ${basTarih && bitTarih ? `${fmtTarih(basTarih)} - ${fmtTarih(bitTarih)}` : 'Haftalık Değerlendirme'}\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  msg += `📊 *Çözülen Toplam Soru:* ${toplamSoru} Adet\n`;
-  msg += `🎯 *Toplam Net:* ${toplamNet.toFixed(2)}\n`;
-  if (odevKayitlari.length > 0) {
-    msg += `📝 *Ödev Takibi:* ${tamamlananOdev}/${odevKayitlari.length} Ödev Tamamlandı\n`;
+  msg += `📊 *Toplam Soru:* ${toplamSoru} Adet\n`;
+  if (toplamNet > 0) {
+    msg += `🎯 *Toplam Net:* ${toplamNet.toFixed(2)}\n`;
   }
+  msg += `📝 *Ödev/Görev Takibi:* ${tamamlananOdev}/${kayitlar.length} Tamamlandı\n`;
   msg += `\n*Ders Detayları:*\n`;
 
   const dersMap = new Map();
-  soruKayitlari.forEach(k => {
-    dersMap.set(k.ders, (dersMap.get(k.ders) || 0) + (k.soruSayisi || 0));
+  kayitlar.forEach(k => {
+    const s = getRecordSoruSayisi(k);
+    dersMap.set(k.ders, (dersMap.get(k.ders) || 0) + s);
   });
   dersMap.forEach((soru, ders) => {
     msg += `• ${ders}: ${soru} soru\n`;
