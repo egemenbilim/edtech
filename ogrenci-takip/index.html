@@ -644,30 +644,34 @@ Yanlış Sayısı: 3"></textarea>
   </div>
   <div class="card" id="raporFiltreKart">
     <h2>🔍 Rapor Filtresi</h2>
-    <div style="margin-bottom:14px;padding:12px;background:#eff6ff;border-radius:10px;border:1px solid var(--border)">
-      <label style="font-size:13px;font-weight:700;color:var(--indigo);margin-bottom:8px">📌 Sınav Türü (tüm rapor bu türe göre filtrelenecektir)</label>
-      <select id="raporTur" style="margin-top:6px"><option value="">Tümü</option><option value="TYT">TYT</option><option value="AYT">AYT</option><option value="LGS">LGS</option></select>
+    <!-- 🏫 Sınıf Seçimi (Sınav Türünün Hemen Üstüne Taşındı) -->
+    <div style="margin-bottom:12px;padding:12px;background:#f8fafc;border-radius:10px;border:1.5px solid var(--indigo)">
+      <label style="font-size:13px;font-weight:700;color:var(--indigo);display:block;margin-bottom:6px">🏫 Sınıf Seçimi <span style="color:var(--red);font-weight:700">* (Zorunlu)</span></label>
+      <select id="raporSinifSelect" onchange="raporSinifDegisti(this.value)" style="width:100%;padding:9px 12px;font-size:13.5px;font-weight:600;border:1.5px solid var(--border);border-radius:8px">
+        <option value="">Lütfen Bir Sınıf Seçin</option>
+      </select>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.4">
+        💡 <b>Not:</b> İlgili sınıf seçilmeden öğrenci seçilemez. Rapor sonuçları seçilen sınıftaki öğrencilere göre hesaplanır.
+      </div>
     </div>
+
+    <!-- 📌 Sınav Türü -->
+    <div style="margin-bottom:14px;padding:12px;background:#eff6ff;border-radius:10px;border:1px solid var(--border)">
+      <label style="font-size:13px;font-weight:700;color:var(--indigo);display:block;margin-bottom:6px">📌 Sınav Türü (tüm rapor bu türe göre filtrelenecektir)</label>
+      <select id="raporTur" onchange="raporTurDegisti()" style="width:100%;margin-top:2px"><option value="">Tümü</option><option value="TYT">TYT</option><option value="AYT">AYT</option><option value="LGS">LGS</option></select>
+    </div>
+
     <div class="grid-3" style="grid-template-columns:1fr 1fr">
       <div class="field" style="grid-column:1/-1"><label>📚 Ders Seçimi (Ctrl ile çoklu — boş = tümü)</label><select id="raporDersSelect" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="dersSecTumu()">Tümünü Seç</button><button class="btn gray sm" onclick="dersSecTemizle()">Temizle</button></div></div>
-      <div class="field"><label>📈 Gelişim Analizi — TYT Denemeleri</label><select id="raporGelisimTYT" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="gelisimSec('TYT')">Son 10</button><button class="btn gray sm" onclick="gelisimTemizle('TYT')">Temizle</button></div></div>
+      <div class="field"><label id="raporGelisimBaslik">📈 Gelişim Analizi</label><select id="raporGelisimSelect" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="gelisimSec()">Son 10</button><button class="btn gray sm" onclick="gelisimTemizle()">Temizle</button></div></div>
       <div class="field">
         <label>👩‍🎓 Öğrenci (Ctrl ile çoklu — boş = seçili sınıftaki tümü)</label>
         <select id="raporOgrenciSelect" class="sel-multi" multiple size="5" disabled>
-          <option disabled selected value="">⚠️ Lütfen önce sağ taraftan sınıf seçin</option>
+          <option disabled selected value="">⚠️ Lütfen önce yukarıdan sınıf seçin</option>
         </select>
         <div class="flex mt-3">
           <button class="btn gray sm" id="btnRaporOgrTumu" onclick="ogrSecTumu()" disabled>Tümünü Seç</button>
           <button class="btn gray sm" id="btnRaporOgrTemizle" onclick="ogrSecTemizle()" disabled>Temizle</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>🏫 Sınıf Seçimi <span style="color:var(--red);font-weight:700">* (Zorunlu)</span></label>
-        <select id="raporSinifSelect" onchange="raporSinifDegisti(this.value)" style="padding:9px 12px;font-size:13.5px;font-weight:600;border:1.5px solid var(--indigo);border-radius:8px">
-          <option value="">Lütfen Bir Sınıf Seçin</option>
-        </select>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.4;background:#f8fafc;padding:8px 10px;border-radius:6px;border:1px solid #e2e8f0">
-          💡 <b>Not:</b> İlgili sınıf seçilmeden öğrenci seçilemez. Rapor sonuçları seçilen sınıftaki öğrencilere göre hesaplanır.
         </div>
       </div>
       <div class="field" style="grid-column:1/-1"><label>&nbsp;</label><div class="flex"><button class="btn" style="flex:1" onclick="renderRapor()">🔍 Rapor Oluştur</button><button class="btn green" onclick="raporPDF()">📄 PDF İndir</button></div></div>
@@ -830,6 +834,61 @@ Yanlış Sayısı: 3"></textarea>
     <div class="flex" style="justify-content:flex-end;gap:8px">
       <button type="button" class="btn gray" onclick="hfKontrolModalKapat()">Vazgeç</button>
       <button type="button" class="btn green" onclick="hfKontrolKaydet()" style="font-weight:600">💾 Güncelle ve Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF MANUEL ÖĞRENCİ EŞLEŞTİRME MODALI -->
+<div id="pdfManuelEslestirModal" class="modal hidden">
+  <div class="modal-inner" style="max-width:680px">
+    <button class="modal-close" onclick="pdfManuelEsleModalKapat()">×</button>
+    
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;border-bottom:1.5px solid #e2e8f0;padding-bottom:12px">
+      <div style="width:40px;height:40px;border-radius:10px;background:#e0e7ff;color:var(--indigo);display:flex;align-items:center;justify-content:center;font-size:22px">
+        🎯
+      </div>
+      <div>
+        <h3 style="margin:0;font-size:16px;color:var(--indigo)">Öğrenci Eşleme & Manuel Bağlama</h3>
+        <p class="muted" style="margin:2px 0 0 0;font-size:11.5px">PDF'ten okunan sınav sonucunu sistemdeki kayıtlı bir öğrenciye bağlayın.</p>
+      </div>
+    </div>
+
+    <!-- PDF'TEN OKUNAN BİLGİ KARTI -->
+    <div id="pdfModalOgrBilgi" style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:12px;margin-bottom:14px">
+      <!-- Dinamik doldurulur -->
+    </div>
+
+    <!-- ARAMA VE SINIF FİLTRESİ -->
+    <div class="grid-2" style="grid-template-columns: 1fr 180px; gap:10px; margin-bottom:12px">
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:3px">🔍 Öğrenci Ara (Ad / Soyad / No):</label>
+        <input type="text" id="pdfModalOgrAra" placeholder="Öğrenci adı veya numarası yazın..." oninput="pdfManuelEsleFiltrele()" style="width:100%;font-size:13px;padding:8px 10px;border-radius:8px;border:1.5px solid #cbd5e1">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:3px">🏫 Sınıf Filtresi:</label>
+        <select id="pdfModalSinifFiltre" onchange="pdfManuelEsleFiltrele()" style="width:100%;font-size:12.5px;padding:8px;border-radius:8px;border:1.5px solid #cbd5e1">
+          <!-- Sınıflar dinamik doldurulur -->
+        </select>
+      </div>
+    </div>
+
+    <!-- AKILLI ÖNERİLER (EN YÜKSEK BENZERLİK) -->
+    <div id="pdfModalOnerilenlerAlani">
+      <!-- Benzer aday kartları -->
+    </div>
+
+    <!-- ÖĞRENCİ LİSTESİ -->
+    <div style="font-size:11.5px;font-weight:700;color:#334155;margin:8px 0 6px 0">📋 Sistemdeki Kayıtlı Öğrenciler:</div>
+    <div id="pdfModalOgrListesi" style="max-height:260px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;background:#fff">
+      <!-- Öğrenci satırları -->
+    </div>
+
+    <!-- MODAL ALT AKSİYONLARI -->
+    <div class="flex mt-3" style="justify-content:space-between;align-items:center;border-top:1px solid #e2e8f0;padding-top:12px">
+      <button type="button" class="btn sm" onclick="pdfManuelEsleKaldirAction()" style="background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;font-weight:600">
+        ➕ Eşleşmeyi Kaldır (Yeni Öğrenci Olarak Aç)
+      </button>
+      <button type="button" class="btn gray" onclick="pdfManuelEsleModalKapat()">Kapat</button>
     </div>
   </div>
 </div>

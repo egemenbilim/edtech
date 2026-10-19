@@ -398,15 +398,29 @@ export function siraliOgrenciSecenekleri(o) {
   }).join('');
 }
 
-export function durumBadgeHtml(o) {
+export function durumBadgeHtml(o, idx = -1) {
   if (o.eslesenOgrenciId) {
+    const ogr = DB.ogrenciler.find(x => x.id === o.eslesenOgrenciId);
+    const ogrAd = ogr ? ogr.adSoyad : ogrenciAdi(o.eslesenOgrenciId);
+    const ogrSinif = ogr ? ` (${sinifAdi(ogr.sinifId)})` : '';
+
     if (o.eslesmeTuru === 'manual') {
-      return `<span class="badge" style="background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:600">🔗 Manuel: ${ogrenciAdi(o.eslesenOgrenciId)}</span>`;
+      return `
+        <span class="pillbad" style="background:#eff6ff;color:#1e40af;border:1.5px solid #bfdbfe;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:3px 8px">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔗 Manuel: <b>${ogrAd}</b>${ogrSinif}</span>
+          ${idx >= 0 ? `<button type="button" class="btn gray sm" onclick="window.pdfManuelEsleKaldir(${idx})" title="Eşleşmeyi kaldır, yeni öğrenci yap" style="padding:0 5px;font-size:10px;line-height:1.2;border-radius:4px;border:none;background:#dbeafe;color:#1e40af;cursor:pointer">✕</button>` : ''}
+        </span>
+      `;
     }
     const tip = `Ad: %${o.adSim || 100} • Soyad: %${o.soyadSim || 100}`;
-    return `<span class="badge" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;font-size:11px;font-weight:600" title="${tip}">🎯 Eşleşti: ${ogrenciAdi(o.eslesenOgrenciId)} (%${o.toplamSim || 100})</span>`;
+    return `
+      <span class="pillbad" style="background:#ecfdf5;color:#047857;border:1.5px solid #a7f3d0;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:3px 8px" title="${tip}">
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎯 Eşleşti: <b>${ogrAd}</b>${ogrSinif} (%${o.toplamSim || 100})</span>
+        ${idx >= 0 ? `<button type="button" class="btn gray sm" onclick="window.pdfManuelEsleKaldir(${idx})" title="Eşleşmeyi kaldır, yeni öğrenci yap" style="padding:0 5px;font-size:10px;line-height:1.2;border-radius:4px;border:none;background:#d1fae5;color:#047857;cursor:pointer">✕</button>` : ''}
+      </span>
+    `;
   }
-  return `<span class="badge" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;font-size:11px">➕ Yeni Öğrenci</span>`;
+  return `<span class="pillbad" style="background:#fef3c7;color:#92400e;border:1.5px solid #fde68a;font-size:11px;font-weight:600;display:inline-block;padding:3px 8px">➕ Yeni Öğrenci Açılacak</span>`;
 }
 
 /* ═════ ONAY VE ÖNİZLEME EKRANI RENDER ═════ */
@@ -510,7 +524,7 @@ export function renderPdfOnayPaneli(parsed) {
               <th style="width:38px">Sıra</th>
               <th style="width:70px">Öğr No</th>
               <th style="min-width:180px">Öğrenci Adı Soyadı (PDF / Düzenlenebilir)</th>
-              <th style="min-width:210px">Sistem Eşleşmesi / Bağlanan Öğrenci</th>
+              <th style="min-width:260px">Sistem Eşleşmesi & "Şu Öğrenci Olarak İşaretle"</th>
               <th style="min-width:130px">Sınıf Seçimi</th>
               ${dersBasliklari.map(d => `<th class="num">${d}</th>`).join('')}
               <th class="num" style="color:var(--indigo);font-weight:700">Toplam Net</th>
@@ -566,15 +580,20 @@ export function renderPdfOnayPaneli(parsed) {
                     <input id="pdf_ad_${idx}" value="${o.adSoyad}" oninput="window.pdfAdDegisti(${idx}, this.value)" style="width:100%;min-width:170px;padding:4px 8px;font-size:12.5px;font-weight:600;border:1px solid #cbd5e1;border-radius:6px">
                   </td>
                   <td>
-                    <div style="min-width:200px">
-                      <select id="pdf_ogrenci_${idx}" onchange="window.pdfOgrenciSecildi(${idx}, this.value)" style="width:100%;padding:4px 6px;font-size:12px;border:1.5px solid ${o.mevcutOgrenci ? '#10b981' : '#cbd5e1'};border-radius:6px;background:${o.mevcutOgrenci ? '#f0fdf4' : '#fff'}">
-                        <option value="NEW" ${!o.eslesenOgrenciId ? 'selected' : ''}>➕ Yeni Öğrenci Olarak Aç</option>
-                        <optgroup label="Sistemdeki Kayıtlı Öğrenciler">
-                          ${siraliOgrenciSecenekleri(o)}
-                        </optgroup>
-                      </select>
-                      <div id="pdf_durum_${idx}" style="margin-top:3px">
-                        ${durumBadgeHtml(o)}
+                    <div style="min-width:250px;display:flex;flex-direction:column;gap:5px">
+                      <div id="pdf_durum_${idx}" style="display:flex;align-items:center;justify-content:space-between;gap:4px;flex-wrap:wrap">
+                        ${durumBadgeHtml(o, idx)}
+                      </div>
+                      <div style="display:flex;gap:4px;align-items:center">
+                        <select id="pdf_ogrenci_${idx}" onchange="window.pdfOgrenciSecildi(${idx}, this.value)" style="flex:1;min-width:130px;padding:4px 6px;font-size:11.5px;border:1.5px solid ${o.mevcutOgrenci ? (o.eslesmeTuru === 'manual' ? 'var(--indigo)' : '#10b981') : '#cbd5e1'};border-radius:6px;background:${o.mevcutOgrenci ? (o.eslesmeTuru === 'manual' ? '#eff6ff' : '#f0fdf4') : '#fff'}">
+                          <option value="NEW" ${!o.eslesenOgrenciId ? 'selected' : ''}>➕ Yeni Öğrenci Olarak Aç</option>
+                          <optgroup label="Sistemdeki Kayıtlı Öğrenciler">
+                            ${siraliOgrenciSecenekleri(o)}
+                          </optgroup>
+                        </select>
+                        <button type="button" class="btn sm" onclick="window.pdfManuelEsleModalAc(${idx})" title="Öğrenci Arama & Manuel Eşleme Modalı Aç" style="padding:4px 8px;font-size:11.5px;font-weight:700;white-space:nowrap;background:${o.mevcutOgrenci ? '#eff6ff' : 'var(--indigo)'};color:${o.mevcutOgrenci ? 'var(--indigo)' : '#fff'};border:1.5px solid ${o.mevcutOgrenci ? '#bfdbfe' : 'var(--indigo)'};border-radius:6px">
+                          🎯 ${o.mevcutOgrenci ? 'Değiştir' : 'İşaretle'}
+                        </button>
                       </div>
                     </div>
                   </td>
@@ -666,7 +685,7 @@ export function pdfAdDegisti(idx, val) {
 
   const durumEl = $(`pdf_durum_${idx}`);
   if (durumEl) {
-    durumEl.innerHTML = durumBadgeHtml(o);
+    durumEl.innerHTML = durumBadgeHtml(o, idx);
   }
 
   const rowEl = $(`pdf_row_${idx}`);
@@ -677,50 +696,302 @@ export function pdfAdDegisti(idx, val) {
   pdfOzetSayaclariGuncelle();
 }
 
-/* ═════ ÖĞRENCİ AÇILIR KUTUSUNDAN MANUEL BAĞLAMA ═════ */
+/* ═════ ÖĞRENCİ AÇILIR KUTUSUNDAN HIZLI MANUEL BAĞLAMA ═════ */
 export function pdfOgrenciSecildi(idx, val) {
+  if (val === 'NEW') {
+    pdfManuelEsleKaldir(idx);
+  } else {
+    pdfManuelEsleSec(idx, Number(val));
+  }
+}
+
+/* ═════ MANUEL ÖĞRENCİ EŞLEŞTİRME MODAL YÖNETİMİ ═════ */
+export let aktifSeciliSatirIdx = null;
+
+export function pdfManuelEsleModalAc(idx) {
   if (!aktifPdfVerisi || !aktifPdfVerisi.ogrenciler[idx]) return;
+  aktifSeciliSatirIdx = idx;
+  window.aktifPdfSatirIdx = idx;
   const o = aktifPdfVerisi.ogrenciler[idx];
 
-  if (val === 'NEW') {
-    o.eslesenOgrenciId = null;
-    o.mevcutOgrenci = false;
-    o.eslesmeTuru = 'none';
-    o.adSim = 0;
-    o.soyadSim = 0;
-    o.toplamSim = 0;
-  } else {
-    const oid = Number(val);
-    const targetOgr = DB.ogrenciler.find(x => x.id === oid);
-    if (targetOgr) {
-      o.eslesenOgrenciId = oid;
-      o.mevcutOgrenci = true;
-      o.eslesmeTuru = 'manual';
-      o.seciliSinifId = targetOgr.sinifId;
+  // 1. Bilgi Kartını Doldur
+  const bilgiEl = $('pdfModalOgrBilgi');
+  if (bilgiEl) {
+    const curOgr = o.eslesenOgrenciId ? DB.ogrenciler.find(x => x.id === o.eslesenOgrenciId) : null;
+    bilgiEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+        <div>
+          <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">PDF'ten Okunan Satır (#${o.sira}):</span>
+          <div style="font-size:16px;font-weight:700;color:#0f172a;margin-top:2px">
+            📄 ${o.adSoyad}
+          </div>
+          <div style="font-size:12px;color:#475569;margin-top:4px;display:flex;gap:12px;flex-wrap:wrap">
+            <span>Öğr No: <b>${o.ogrNo || '—'}</b></span>
+            <span>PDF Sınıfı: <b>${o.sinif || '—'}</b></span>
+            <span>Toplam Net: <b style="color:var(--indigo)">${o.toplam.net.toFixed(2)}</b></span>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <span style="font-size:11px;color:#64748b;display:block">Şu Anki Eşleşme:</span>
+          <div style="margin-top:4px">
+            ${curOgr ? `
+              <span class="badge" style="background:#eff6ff;color:#1e40af;border:1.5px solid #bfdbfe;font-weight:700;padding:4px 8px">
+                🔗 ${curOgr.adSoyad} (${sinifAdi(curOgr.sinifId)})
+              </span>
+            ` : `
+              <span class="badge" style="background:#fef3c7;color:#92400e;border:1.5px solid #fde68a;font-weight:600;padding:4px 8px">
+                ➕ Yeni Öğrenci Açılacak
+              </span>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
-      const sinifSel = $(`pdf_sinif_${idx}`);
-      if (sinifSel) sinifSel.value = targetOgr.sinifId;
-      toast(`${o.adSoyad} ➔ ${targetOgr.adSoyad} ile eşlendi`, true);
+  // 2. Arama kutusunu sıfırla
+  const araEl = $('pdfModalOgrAra');
+  if (araEl) araEl.value = '';
+
+  // 3. Sınıf Filtresi Seçeneklerini Doldur
+  const sinifSel = $('pdfModalSinifFiltre');
+  if (sinifSel) {
+    let optHtml = `<option value="ALL">Tüm Sınıflar (${DB.ogrenciler.length} Öğrenci)</option>`;
+    DB.siniflar.forEach(s => {
+      const sayi = DB.ogrenciler.filter(ogr => ogr.sinifId === s.id).length;
+      optHtml += `<option value="${s.id}">${s.ad} (${sayi} Öğrenci)</option>`;
+    });
+    sinifSel.innerHTML = optHtml;
+
+    // Sınıf ön seçimi: Halihazırda bağlı sınıf varsa veya PDF sınıf adına uyan varsa
+    if (o.seciliSinifId && DB.siniflar.some(s => s.id === o.seciliSinifId)) {
+      sinifSel.value = String(o.seciliSinifId);
+    } else {
+      const sinifMatch = DB.siniflar.find(s => s.ad.toLowerCase() === (o.sinif || '').toLowerCase());
+      if (sinifMatch) sinifSel.value = String(sinifMatch.id);
+      else sinifSel.value = 'ALL';
     }
   }
 
-  const selEl = $(`pdf_ogrenci_${idx}`);
-  if (selEl) {
-    selEl.style.borderColor = o.mevcutOgrenci ? '#10b981' : '#cbd5e1';
-    selEl.style.background = o.mevcutOgrenci ? '#f0fdf4' : '#ffffff';
+  // 4. Listeyi filtrele ve doldur
+  pdfManuelEsleFiltrele();
+
+  // 5. Modalı Aç ve arama kutusuna odaklan
+  const modal = $('pdfManuelEslestirModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      if (araEl) araEl.focus();
+    }, 50);
+  }
+}
+
+export function pdfManuelEsleModalKapat() {
+  const modal = $('pdfManuelEslestirModal');
+  if (modal) modal.classList.add('hidden');
+  aktifSeciliSatirIdx = null;
+  window.aktifPdfSatirIdx = null;
+}
+
+export function pdfManuelEsleKaldirAction() {
+  if (aktifSeciliSatirIdx !== null) {
+    pdfManuelEsleKaldir(aktifSeciliSatirIdx);
+  }
+}
+
+export function pdfManuelEsleFiltrele() {
+  if (aktifSeciliSatirIdx === null || !aktifPdfVerisi || !aktifPdfVerisi.ogrenciler[aktifSeciliSatirIdx]) return;
+  const o = aktifPdfVerisi.ogrenciler[aktifSeciliSatirIdx];
+
+  const q = ($('pdfModalOgrAra')?.value || '').trim();
+  const sinifF = $('pdfModalSinifFiltre')?.value || 'ALL';
+
+  const tumAdaylar = (DB.ogrenciler || []).map(ogr => {
+    const sim = ogrenciBenzerlikHesapla(o.adSoyad, ogr.adSoyad);
+    const digerSatir = aktifPdfVerisi.ogrenciler.find((x, rIdx) => rIdx !== aktifSeciliSatirIdx && x.eslesenOgrenciId === ogr.id);
+    return { ogr, sim, digerSatir };
+  });
+
+  // 1. Akıllı Öneriler (En benzer ilk 3 kayıt)
+  const oneriler = tumAdaylar
+    .filter(x => x.sim.toplamSim >= 50 || (x.sim.adSim >= 60 && x.sim.soyadSim >= 40))
+    .sort((a, b) => b.sim.toplamSim - a.sim.toplamSim)
+    .slice(0, 3);
+
+  const oneriAlani = $('pdfModalOnerilenlerAlani');
+  if (oneriAlani) {
+    if (oneriler.length > 0) {
+      oneriAlani.innerHTML = `
+        <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:10px 14px;margin-bottom:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--indigo);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            💡 <span>Akıllı Eşleşme Önerisi</span> <span style="font-weight:400;color:#64748b">(İsim benzerliği en yüksek kayıtlı öğrenciler)</span>:
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${oneriler.map(item => `
+              <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;padding:8px 12px;border-radius:8px;border:1px solid #dbeafe;gap:8px">
+                <div>
+                  <b style="font-size:13px;color:#0f172a">${item.ogr.adSoyad}</b>
+                  <span style="font-size:11.5px;color:#64748b">(${sinifAdi(item.ogr.sinifId)})</span>
+                  <span class="badge" style="background:#ecfdf5;color:#047857;font-size:10.5px;margin-left:6px">%${item.sim.toplamSim} Benzerlik</span>
+                  ${item.digerSatir ? `<span class="badge" style="background:#fef3c7;color:#92400e;font-size:10px;margin-left:4px">⚠️ Satır #${item.digerSatir.sira}'de de var</span>` : ''}
+                </div>
+                <button type="button" class="btn sm ${item.ogr.id === o.eslesenOgrenciId ? 'gray' : 'green'}" onclick="window.pdfManuelEsleSec(${aktifSeciliSatirIdx}, ${item.ogr.id})" style="font-size:11.5px;padding:4px 12px;font-weight:700">
+                  ${item.ogr.id === o.eslesenOgrenciId ? '✓ Şu an Seçili' : '✅ Bu Öğrenci Olarak İşaretle'}
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } else {
+      oneriAlani.innerHTML = '';
+    }
   }
 
+  // 2. Filtreli Öğrenci Listesi
+  let filtrelenenler = tumAdaylar;
+  if (sinifF !== 'ALL') {
+    const sId = Number(sinifF);
+    filtrelenenler = filtrelenenler.filter(x => x.ogr.sinifId === sId);
+  }
+
+  if (q) {
+    const nq = trNormalize(q);
+    filtrelenenler = filtrelenenler.filter(x =>
+      trNormalize(x.ogr.adSoyad).includes(nq) ||
+      (x.ogr.veli && x.ogr.veli.toLowerCase().includes(q.toLowerCase()))
+    );
+  }
+
+  // Sıralama: Seçili olan en başta, sonra benzerlik puanına göre, sonra alfabetik
+  filtrelenenler.sort((a, b) => {
+    if (a.ogr.id === o.eslesenOgrenciId) return -1;
+    if (b.ogr.id === o.eslesenOgrenciId) return 1;
+    if (b.sim.toplamSim !== a.sim.toplamSim) return b.sim.toplamSim - a.sim.toplamSim;
+    return a.ogr.adSoyad.localeCompare(b.ogr.adSoyad, 'tr');
+  });
+
+  const listeEl = $('pdfModalOgrListesi');
+  if (listeEl) {
+    if (filtrelenenler.length === 0) {
+      listeEl.innerHTML = `
+        <div style="padding:24px;text-align:center;color:#64748b">
+          <p style="font-size:24px;margin:0 0 6px 0">🔍</p>
+          <div style="font-weight:600">Aramanıza uygun öğrenci bulunamadı</div>
+          <p style="font-size:11.5px;margin:4px 0 0 0">Farklı bir sınıf seçebilir veya yeni öğrenci olarak bırakabilirsiniz.</p>
+        </div>
+      `;
+    } else {
+      listeEl.innerHTML = filtrelenenler.map(item => {
+        const isSelected = item.ogr.id === o.eslesenOgrenciId;
+        const simBadge = item.sim.toplamSim >= 40
+          ? `<span class="badge" style="background:#f1f5f9;color:#475569;font-size:10px;margin-left:4px">%${item.sim.toplamSim} Benzer</span>`
+          : '';
+        const digerUyari = item.digerSatir
+          ? `<span class="badge" style="background:#fef3c7;color:#92400e;font-size:10px;margin-left:4px">⚠️ Satır #${item.digerSatir.sira}'de de var</span>`
+          : '';
+
+        return `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid #f1f5f9;background:${isSelected ? '#eff6ff' : '#fff'};gap:10px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:32px;height:32px;border-radius:50%;background:${isSelected ? 'var(--indigo)' : '#e2e8f0'};color:${isSelected ? '#fff' : '#475569'};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">
+                ${item.ogr.adSoyad.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a">
+                  ${item.ogr.adSoyad}
+                  ${isSelected ? '<span class="badge" style="background:#10b981;color:#fff;font-size:10px;margin-left:6px">Şu an Seçili</span>' : ''}
+                  ${simBadge}
+                  ${digerUyari}
+                </div>
+                <div style="font-size:11px;color:#64748b;margin-top:1px">
+                  🏫 Sınıf: <b>${sinifAdi(item.ogr.sinifId)}</b> ${item.ogr.veli ? `• ${item.ogr.veli}` : ''}
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn sm ${isSelected ? 'gray' : 'green'}" onclick="window.pdfManuelEsleSec(${aktifSeciliSatirIdx}, ${item.ogr.id})" style="font-weight:600;font-size:11.5px;padding:5px 12px;white-space:nowrap">
+              ${isSelected ? '✓ Seçili' : '✅ Bu Öğrenci Olarak İşaretle'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+}
+
+export function pdfManuelEsleSec(idx, ogrenciId) {
+  if (!aktifPdfVerisi || !aktifPdfVerisi.ogrenciler[idx]) return;
+  const o = aktifPdfVerisi.ogrenciler[idx];
+  const targetOgr = DB.ogrenciler.find(x => x.id === ogrenciId);
+  if (!targetOgr) return;
+
+  o.eslesenOgrenciId = targetOgr.id;
+  o.mevcutOgrenci = true;
+  o.eslesmeTuru = 'manual';
+  o.seciliSinifId = targetOgr.sinifId;
+
+  // UI Güncelle
   const durumEl = $(`pdf_durum_${idx}`);
-  if (durumEl) {
-    durumEl.innerHTML = durumBadgeHtml(o);
+  if (durumEl) durumEl.innerHTML = durumBadgeHtml(o, idx);
+
+  const selEl = $(`pdf_ogrenci_${idx}`);
+  if (selEl) {
+    selEl.innerHTML = `
+      <option value="NEW">➕ Yeni Öğrenci Olarak Aç</option>
+      <optgroup label="Sistemdeki Kayıtlı Öğrenciler">
+        ${siraliOgrenciSecenekleri(o)}
+      </optgroup>
+    `;
+    selEl.value = String(targetOgr.id);
+    selEl.style.borderColor = 'var(--indigo)';
+    selEl.style.background = '#eff6ff';
+  }
+
+  const sinifSel = $(`pdf_sinif_${idx}`);
+  if (sinifSel) sinifSel.value = targetOgr.sinifId;
+
+  const rowEl = $(`pdf_row_${idx}`);
+  if (rowEl) rowEl.style.background = '#fafdfb';
+
+  pdfOzetSayaclariGuncelle();
+  pdfManuelEsleModalKapat();
+  toast(`✅ "${o.adSoyad}" ➔ "${targetOgr.adSoyad}" (${sinifAdi(targetOgr.sinifId)}) olarak işaretlendi!`, true);
+}
+
+export function pdfManuelEsleKaldir(idx) {
+  if (!aktifPdfVerisi || !aktifPdfVerisi.ogrenciler[idx]) return;
+  const o = aktifPdfVerisi.ogrenciler[idx];
+
+  o.eslesenOgrenciId = null;
+  o.mevcutOgrenci = false;
+  o.eslesmeTuru = 'none';
+  o.adSim = 0;
+  o.soyadSim = 0;
+  o.toplamSim = 0;
+
+  // UI Güncelle
+  const durumEl = $(`pdf_durum_${idx}`);
+  if (durumEl) durumEl.innerHTML = durumBadgeHtml(o, idx);
+
+  const selEl = $(`pdf_ogrenci_${idx}`);
+  if (selEl) {
+    selEl.innerHTML = `
+      <option value="NEW" selected>➕ Yeni Öğrenci Olarak Aç</option>
+      <optgroup label="Sistemdeki Kayıtlı Öğrenciler">
+        ${siraliOgrenciSecenekleri(o)}
+      </optgroup>
+    `;
+    selEl.value = 'NEW';
+    selEl.style.borderColor = '#cbd5e1';
+    selEl.style.background = '#ffffff';
   }
 
   const rowEl = $(`pdf_row_${idx}`);
-  if (rowEl) {
-    rowEl.style.background = o.mevcutOgrenci ? '#fafdfb' : '';
-  }
+  if (rowEl) rowEl.style.background = '';
 
   pdfOzetSayaclariGuncelle();
+  pdfManuelEsleModalKapat();
+  toast(`ℹ️ "${o.adSoyad}" yeni öğrenci olarak ayarlandı.`);
 }
 
 /* ═════ FİLTRELEME İŞLEMİ (TÜMÜ / EŞLEŞENLER / YENİLER) ═════ */

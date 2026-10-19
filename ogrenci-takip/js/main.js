@@ -39,7 +39,7 @@ import {
 import {
   doldurRaporFiltreleri, dersSecTumu, dersSecTemizle,
   ogrSecTumu, ogrSecTemizle, gelisimSec, gelisimTemizle,
-  renderRapor, renderDetayliAnaliz, raporPDF, raporSinifDegisti
+  renderRapor, renderDetayliAnaliz, raporPDF, raporSinifDegisti, raporTurDegisti
 } from './modules/raporlar.js';
 import {
   disaAktar, iceriAktar, handleFile, tumunuSil,
@@ -49,7 +49,9 @@ import {
   parsePdfFile, parseExamLines, renderPdfOnayPaneli,
   pdfSecTumuDegistir, pdfRowToggle, pdfTopluSinifUygula,
   pdfTemizle, pdfOnaylaVeKaydet, setPdfSelectCallback,
-  pdfAdDegisti, pdfOgrenciSecildi, pdfFiltrele, pdfOzetSayaclariGuncelle
+  pdfAdDegisti, pdfOgrenciSecildi, pdfFiltrele, pdfOzetSayaclariGuncelle,
+  pdfManuelEsleModalAc, pdfManuelEsleModalKapat, pdfManuelEsleFiltrele,
+  pdfManuelEsleSec, pdfManuelEsleKaldir, pdfManuelEsleKaldirAction
 } from './modules/pdfParser.js';
 import {
   uypSelectleriGuncelle, uypPlanSecildi, uypPlaniSinifaCek,
@@ -253,6 +255,7 @@ window.getRecordSoruSayisi = getRecordSoruSayisi;
 
 // Raporlar
 window.doldurRaporFiltreleri = doldurRaporFiltreleri;
+window.raporTurDegisti = raporTurDegisti;
 window.raporSinifDegisti = raporSinifDegisti;
 window.dersSecTumu = dersSecTumu;
 window.dersSecTemizle = dersSecTemizle;
@@ -338,6 +341,7 @@ window.pdfMetinCozumle = function() {
   }
 };
 
+window.renderPdfOnayPaneli = renderPdfOnayPaneli;
 window.pdfSecTumuDegistir = pdfSecTumuDegistir;
 window.pdfRowToggle = pdfRowToggle;
 window.pdfTopluSinifUygula = pdfTopluSinifUygula;
@@ -347,6 +351,12 @@ window.pdfAdDegisti = pdfAdDegisti;
 window.pdfOgrenciSecildi = pdfOgrenciSecildi;
 window.pdfFiltrele = pdfFiltrele;
 window.pdfOzetSayaclariGuncelle = pdfOzetSayaclariGuncelle;
+window.pdfManuelEsleModalAc = pdfManuelEsleModalAc;
+window.pdfManuelEsleModalKapat = pdfManuelEsleModalKapat;
+window.pdfManuelEsleFiltrele = pdfManuelEsleFiltrele;
+window.pdfManuelEsleSec = pdfManuelEsleSec;
+window.pdfManuelEsleKaldir = pdfManuelEsleKaldir;
+window.pdfManuelEsleKaldirAction = pdfManuelEsleKaldirAction;
 
 // Yedek
 window.disaAktar = disaAktar;

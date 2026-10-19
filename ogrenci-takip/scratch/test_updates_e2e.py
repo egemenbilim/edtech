@@ -158,9 +158,10 @@ def run_tests():
         print("Gelisim Analiz rendered.")
         # Ahmet should be in gelisen
         assert "Ahmet Yılmaz" in gelisim_html, "Ahmet Yılmaz should be in gelişim analizi"
-        # Ayşe should NOT be in gelişim analizi because she didn't take Deneme 1!
-        assert "Ayşe Kaya" not in gelisim_html, "Ayşe Kaya must NOT be in gelişim analizi because she was absent in the first exam!"
-        print("CONFIRMED: Ayşe Kaya (absent in first exam) was correctly excluded and not given a fake +100% boost!")
+        # Ayşe should be visible in the report, showing that she was absent in the first exam
+        assert "Ayşe Kaya" in gelisim_html, "Ayşe Kaya must be visible in report per new requirement!"
+        assert "İlk Sınava Girmedi" in gelisim_html, "Ayşe Kaya must show 'İlk Sınava Girmedi'!"
+        print("CONFIRMED: Ayşe Kaya is visible with 'İlk Sınava Girmedi' and not given a fake +100% boost!")
 
         # Take screenshot for visual verification
         page.screenshot(path="ogrenci-takip/scratch/test_report_and_weekly_verified.png", full_page=True)

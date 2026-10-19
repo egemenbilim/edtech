@@ -243,7 +243,8 @@ export function cizgiGrafik(data, keys, opt = {}) {
       if (seg.length >= 2) {
         pl += `<polyline points="${seg.join(' ')}" fill="none" stroke="${cO(i)}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`;
       } else if (seg.length === 1) {
-        pl += `<line x1="${seg[0].split(',')[0]}" y1="${seg[0].split(',')[1]}" x2="${seg[0].split(',')[0]}" y2="${seg[0].split(',')[1]}" stroke="${cO(i)}" stroke-width="0"/>`;
+        const [x, y] = seg[0].split(',');
+        pl += `<circle cx="${x}" cy="${y}" r="4.5" fill="${cO(i)}" stroke="#ffffff" stroke-width="1.5"/>`;
       }
       seg = [];
     };
@@ -251,7 +252,7 @@ export function cizgiGrafik(data, keys, opt = {}) {
     data.forEach((r, xi) => {
       if (typeof r[k] === 'number') {
         seg.push(`${(pL + xi * xs).toFixed(1)},${yF(r[k]).toFixed(1)}`);
-        dt += `<circle cx="${pL + xi * xs}" cy="${yF(r[k])}" r="3" fill="${cO(i)}"/>`;
+        dt += `<circle cx="${(pL + xi * xs).toFixed(1)}" cy="${yF(r[k]).toFixed(1)}" r="3.5" fill="${cO(i)}" stroke="#ffffff" stroke-width="1"/>`;
       } else {
         flush();
       }
@@ -261,7 +262,17 @@ export function cizgiGrafik(data, keys, opt = {}) {
     if (endLabels && valid.length) {
       const lastR = valid[valid.length - 1];
       const xi = data.indexOf(lastR);
-      endPts.push({ key: k, color: cO(i), x: pL + xi * xs, y: yF(lastR[k]), val: lastR[k] });
+      const isSon = (xi === data.length - 1);
+      const lastExamName = lastR.__denemeAd || `${xi + 1}. Deneme`;
+      endPts.push({
+        key: k,
+        color: cO(i),
+        x: pL + xi * xs,
+        y: yF(lastR[k]),
+        val: lastR[k],
+        isSon,
+        lastExamName
+      });
     }
 
     if (!endLabels) {
@@ -289,10 +300,11 @@ export function cizgiGrafik(data, keys, opt = {}) {
 
     const lblX = W - pR + 16;
     sorted.forEach(p => {
-      const isim = p.key.length > 22 ? p.key.slice(0, 21) + '…' : p.key;
-      endLbl += `<path d="M ${p.x.toFixed(1)} ${p.y.toFixed(1)} L ${(lblX - 4).toFixed(1)} ${p.labelY.toFixed(1)}" fill="none" stroke="${p.color}" stroke-width="1" opacity="0.3" stroke-dasharray="2 2"/>`;
-      endLbl += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="${p.color}"/>`;
-      endLbl += `<text x="${lblX}" y="${(p.labelY + 3).toFixed(1)}" font-size="10" font-weight="600" fill="${p.color}">${isim} (${p.val.toFixed(1)})</text>`;
+      const isim = p.key.length > 20 ? p.key.slice(0, 19) + '…' : p.key;
+      const sonEtiket = p.isSon ? '' : ` • Son: ${p.lastExamName}`;
+      endLbl += `<path d="M ${p.x.toFixed(1)} ${p.y.toFixed(1)} L ${(lblX - 4).toFixed(1)} ${p.labelY.toFixed(1)}" fill="none" stroke="${p.color}" stroke-width="1.2" opacity="0.4" stroke-dasharray="2 2"/>`;
+      endLbl += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="${p.color}" stroke="#ffffff" stroke-width="1.5"/>`;
+      endLbl += `<text x="${lblX}" y="${(p.labelY + 3).toFixed(1)}" font-size="10" font-weight="600" fill="${p.color}">${isim} (${p.val.toFixed(1)}${sonEtiket})</text>`;
     });
   }
 
