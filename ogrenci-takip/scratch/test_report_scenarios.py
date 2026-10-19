@@ -12,7 +12,7 @@ def run():
         page = context.new_page()
 
         console_errors = []
-        page.on("pageerror", lambda err: print("PAGE ERROR:", err))
+        page.on("pageerror", lambda err: console_errors.append(str(err)))
         page.on("console", lambda msg: print(f"CONSOLE ({msg.type}):", msg.text))
 
         page.goto("file:///c:/Users/egeme/OneDrive/Desktop/CODEX/EdTech/ogrenci-takip/index.html")
@@ -21,158 +21,179 @@ def run():
         page.evaluate("() => goto('rapor')")
         page.wait_for_timeout(400)
 
+        # 1. Verify "Ders Seçimi (Ctrl ile çoklu — boş = tümü)" was completely removed!
+        ders_select_exists = page.evaluate("() => document.getElementById('raporDersSelect') !== null")
+        print("raporDersSelect exists:", ders_select_exists)
+        assert not ders_select_exists, "raporDersSelect MUST BE REMOVED!"
+        print("CONFIRMED: Ders Seçimi dropdown is completely removed!")
+
         # Setup mock DB with:
-        # Class 1: 8-A (LGS) and Class 2: 12-A (TYT)
-        # Students in Class 2 (12-A):
-        # 1: Ahmet Yilmaz (entered trials 1, 2, 3 - missed trial 4)
-        # 2: Mehmet Demir (missed trials 1, 2 - entered trials 3, 4)
-        # 3: Ayse Kaya (entered trials 1, 2, 3, 4)
-        # 4: Fatma Celik (entered none)
-        # Also test LGS trial exams!
+        # Class 1: 8-D (LGS, 10 students like user's exact case)
+        # Students:
+        # 1: HÜSEYİN TUĞRA TUNÇEL (entered exams 1, 2, 3, 4)
+        # 2: ADA BENSEL (entered exams 1, 2, 3, 4)
+        # 3: EMİRHAN ÖZÇELİK (entered exams 1, 2, 3, 4)
+        # 4: CAN KAYA (entered exams 1, 2, 3 - missed exam 4)
+        # 5: BORA DEMİR (entered exams 1, 2 - missed exams 3, 4)
+        # 6: DENİZ ARSLAN (entered ONLY exam 1)
+        # 7: EGE YILDIZ (entered exams 2, 3, 4 - missed exam 1)
+        # 8: İREM GÜNEŞ (entered ONLY exam 4)
+        # 9: KAAN ÖZTÜRK (entered exams 2, 3 - missed exams 1, 4)
+        # 10: LEYLA YILMAZ (entered NO exams)
         mock_setup = """
         () => {
             DB.siniflar = [
-                { id: 1, ad: "12-A Sayısal" },
-                { id: 2, ad: "8-A LGS" }
+                { id: 1, ad: "8-D" },
+                { id: 2, ad: "12-A" }
             ];
             DB.ogrenciler = [
-                { id: 101, adSoyad: "Ahmet Yılmaz", sinifId: 1, no: "101" },
-                { id: 102, adSoyad: "Mehmet Demir", sinifId: 1, no: "102" },
-                { id: 103, adSoyad: "Ayşe Kaya", sinifId: 1, no: "103" },
-                { id: 104, adSoyad: "Fatma Çelik", sinifId: 1, no: "104" },
-                { id: 201, adSoyad: "Ali Can", sinifId: 2, no: "201" },
-                { id: 202, adSoyad: "Zeynep Nur", sinifId: 2, no: "202" }
+                { id: 1, adSoyad: "HÜSEYİN TUĞRA TUNÇEL", sinifId: 1, no: "1" },
+                { id: 2, adSoyad: "ADA BENSEL", sinifId: 1, no: "2" },
+                { id: 3, adSoyad: "EMİRHAN ÖZÇELİK", sinifId: 1, no: "3" },
+                { id: 4, adSoyad: "CAN KAYA", sinifId: 1, no: "4" },
+                { id: 5, adSoyad: "BORA DEMİR", sinifId: 1, no: "5" },
+                { id: 6, adSoyad: "DENİZ ARSLAN", sinifId: 1, no: "6" },
+                { id: 7, adSoyad: "EGE YILDIZ", sinifId: 1, no: "7" },
+                { id: 8, adSoyad: "İREM GÜNEŞ", sinifId: 1, no: "8" },
+                { id: 9, adSoyad: "KAAN ÖZTÜRK", sinifId: 1, no: "9" },
+                { id: 10, adSoyad: "LEYLA YILMAZ", sinifId: 1, no: "10" }
             ];
             DB.denemeler = [
-                { id: 1, ad: "1. TYT Denemesi", tur: "TYT", tarih: "2026-09-01" },
-                { id: 2, ad: "2. TYT Denemesi", tur: "TYT", tarih: "2026-09-15" },
-                { id: 3, ad: "3. TYT Denemesi", tur: "TYT", tarih: "2026-10-01" },
-                { id: 4, ad: "4. TYT Denemesi", tur: "TYT", tarih: "2026-10-15" },
-                { id: 10, ad: "1. LGS Denemesi", tur: "LGS", tarih: "2026-09-10" },
-                { id: 11, ad: "2. LGS Denemesi", tur: "LGS", tarih: "2026-10-10" }
+                { id: 101, ad: "1. Deneme (TDP HBS)", tur: "LGS", tarih: "2026-09-12" },
+                { id: 102, ad: "2. Deneme (ÖZDEBİR)", tur: "LGS", tarih: "2026-09-27" },
+                { id: 103, ad: "3. Deneme (İŞLER)", tur: "LGS", tarih: "2026-10-03" },
+                { id: 104, ad: "4. Deneme (STARTFEN)", tur: "LGS", tarih: "2026-10-10" },
+                { id: 201, ad: "12-A TYT Denemesi", tur: "TYT", tarih: "2026-10-12" }
             ];
-            DB.sonuclar = [
-                // Ahmet (101): Deneme 1, 2, 3 (missed 4)
-                { id: 1, ogrenciId: 101, denemeId: 1, ders: "Türkçe", dogru: 30, yanlis: 10, net: 27.5 },
-                { id: 2, ogrenciId: 101, denemeId: 1, ders: "Matematik", dogru: 25, yanlis: 5, net: 23.75 },
-                { id: 3, ogrenciId: 101, denemeId: 2, ders: "Türkçe", dogru: 32, yanlis: 8, net: 30.0 },
-                { id: 4, ogrenciId: 101, denemeId: 2, ders: "Matematik", dogru: 28, yanlis: 4, net: 27.0 },
-                { id: 5, ogrenciId: 101, denemeId: 3, ders: "Türkçe", dogru: 34, yanlis: 6, net: 32.5 },
-                { id: 6, ogrenciId: 101, denemeId: 3, ders: "Matematik", dogru: 30, yanlis: 5, net: 28.75 },
+            DB.sonuclar = [];
+            const addRes = (oid, did, net) => {
+                DB.sonuclar.push({ id: DB.sonuclar.length + 1, ogrenciId: oid, denemeId: did, ders: "Türkçe", dogru: Math.round(net), yanlis: 0, net: net });
+            };
 
-                // Mehmet (102): Missed 1, 2 - Entered 3, 4
-                { id: 7, ogrenciId: 102, denemeId: 3, ders: "Türkçe", dogru: 25, yanlis: 10, net: 22.5 },
-                { id: 8, ogrenciId: 102, denemeId: 3, ders: "Matematik", dogru: 20, yanlis: 10, net: 17.5 },
-                { id: 9, ogrenciId: 102, denemeId: 4, ders: "Türkçe", dogru: 28, yanlis: 8, net: 26.0 },
-                { id: 10, ogrenciId: 102, denemeId: 4, ders: "Matematik", dogru: 24, yanlis: 6, net: 22.5 },
+            // 1, 2, 3 took 101, 102, 103, 104
+            [1, 2, 3].forEach(oid => {
+                addRes(oid, 101, 32.0 + oid);
+                addRes(oid, 102, 30.0 + oid * 2);
+                addRes(oid, 103, 34.0 + oid * 1.5);
+                addRes(oid, 104, 40.0 + oid * 2);
+            });
 
-                // Ayse (103): Entered 1, 2, 3, 4
-                { id: 11, ogrenciId: 103, denemeId: 1, ders: "Türkçe", dogru: 35, yanlis: 5, net: 33.75 },
-                { id: 12, ogrenciId: 103, denemeId: 1, ders: "Matematik", dogru: 32, yanlis: 4, net: 31.0 },
-                { id: 13, ogrenciId: 103, denemeId: 2, ders: "Türkçe", dogru: 36, yanlis: 4, net: 35.0 },
-                { id: 14, ogrenciId: 103, denemeId: 2, ders: "Matematik", dogru: 34, yanlis: 3, net: 33.25 },
-                { id: 15, ogrenciId: 103, denemeId: 3, ders: "Türkçe", dogru: 37, yanlis: 3, net: 36.25 },
-                { id: 16, ogrenciId: 103, denemeId: 3, ders: "Matematik", dogru: 35, yanlis: 2, net: 34.5 },
-                { id: 17, ogrenciId: 103, denemeId: 4, ders: "Türkçe", dogru: 38, yanlis: 2, net: 37.5 },
-                { id: 18, ogrenciId: 103, denemeId: 4, ders: "Matematik", dogru: 36, yanlis: 2, net: 35.5 },
+            // 4 (CAN KAYA): took 101, 102, 103 (missed 104)
+            addRes(4, 101, 25.0);
+            addRes(4, 102, 28.0);
+            addRes(4, 103, 31.0);
 
-                // LGS results
-                { id: 19, ogrenciId: 201, denemeId: 10, ders: "Türkçe", dogru: 18, yanlis: 2, net: 17.33 },
-                { id: 20, ogrenciId: 201, denemeId: 11, ders: "Türkçe", dogru: 19, yanlis: 1, net: 18.67 }
-            ];
+            // 5 (BORA DEMİR): took 101, 102 (missed 103, 104)
+            addRes(5, 101, 20.0);
+            addRes(5, 102, 22.0);
+
+            // 6 (DENİZ ARSLAN): took ONLY 101
+            addRes(6, 101, 18.0);
+
+            // 7 (EGE YILDIZ): took 102, 103, 104 (missed 101)
+            addRes(7, 102, 29.0);
+            addRes(7, 103, 32.0);
+            addRes(7, 104, 35.0);
+
+            // 8 (İREM GÜNEŞ): took ONLY 104
+            addRes(8, 104, 30.0);
+
+            // 9 (KAAN ÖZTÜRK): took 102, 103 (missed 101, 104)
+            addRes(9, 102, 22.0);
+            addRes(9, 103, 24.0);
+
+            // 10 (LEYLA YILMAZ): entered 0 exams
+
             saveDB();
             doldurRaporFiltreleri();
         }
         """
         page.evaluate(mock_setup)
 
-        # 1. Test UI Layout Requirement:
-        # "Sınıf Seçimi seçim kısmını, Sınav Türü seçiminin hemen üstüne taşı"
+        # 2. Test Sınıf Seçimi position above Sınav Türü
         sinif_top = page.evaluate("() => document.getElementById('raporSinifSelect').getBoundingClientRect().top")
         tur_top = page.evaluate("() => document.getElementById('raporTur').getBoundingClientRect().top")
-        print(f"raporSinifSelect top: {sinif_top}, raporTur top: {tur_top}")
         assert sinif_top < tur_top, "raporSinifSelect must be positioned above raporTur!"
         print("CONFIRMED: Sınıf Seçimi is located ABOVE Sınav Türü!")
 
-        # 2. Test Gelişim Analizi header and LGS support:
-        gelisim_label = page.evaluate("() => document.getElementById('raporGelisimBaslik').textContent.trim()")
-        print(f"Gelişim Analizi Header: '{gelisim_label}'")
-        assert gelisim_label == "📈 Gelişim Analizi", f"Header should be '📈 Gelişim Analizi', got '{gelisim_label}'"
-
-        # Switch to LGS and verify LGS exams appear in Gelişim Analizi!
-        page.select_option("#raporTur", "LGS")
-        lgs_options = page.evaluate("() => Array.from(document.getElementById('raporGelisimSelect').options).map(o => o.text)")
-        print(f"LGS Gelişim options: {lgs_options}")
-        assert any("LGS" in opt for opt in lgs_options), "LGS exams must appear when LGS is selected!"
-        print("CONFIRMED: LGS exams appear properly in Gelişim Analizi!")
-
-        # Switch back to TYT for Class 1 (12-A)
-        page.select_option("#raporTur", "TYT")
+        # 3. Select Class "8-D"
         page.select_option("#raporSinifSelect", "1")
+        page.wait_for_timeout(300)
 
-        # Verify students in class 1
-        ogr_options = page.evaluate("() => Array.from(document.getElementById('raporOgrenciSelect').options).map(o => o.text)")
-        print(f"Students in Class 1: {ogr_options}")
-        assert len(ogr_options) == 4, "Must have 4 students in 12-A"
+        # 4. Check that Gelişim Analizi list populated with 8-D's 4 denemeler (and NOT 12-A's TYT denemesi!)
+        gelisim_options = page.evaluate("() => Array.from(document.getElementById('raporGelisimSelect').options).map(o => o.text)")
+        print("Gelişim Analizi options for 8-D:", gelisim_options)
+        assert len(gelisim_options) == 4, f"Should have 4 LGS exams for 8-D, got {len(gelisim_options)}"
+        assert not any("TYT" in opt for opt in gelisim_options), "12-A TYT exam must NOT appear for 8-D!"
+        print("CONFIRMED: Gelişim Analizi deneme selection correctly scopes to class exams!")
 
-        # Click Rapor Olustur
-        page.click("button:has-text('Rapor Oluştur')")
-        page.wait_for_timeout(500)
+        # 5. Test "Tümünü Seç" button
+        page.evaluate("() => gelisimSecTumu()")
+        selected_count = page.evaluate("() => Array.from(document.getElementById('raporGelisimSelect').selectedOptions).length")
+        print("Selected exams after 'Tümünü Seç':", selected_count)
+        assert selected_count == 4, f"All 4 exams should be selected, got {selected_count}"
 
-        # Check line chart
+        # 6. Click "Rapor Oluştur"
+        page.evaluate("() => renderRapor()")
+        page.wait_for_timeout(600)
+
+        # 7. Check Gelişim Analizi SVG and student representation
         chart_svg = page.evaluate("() => document.querySelector('#raporGelisimAnaliz svg') ? true : false")
         assert chart_svg, "Line chart SVG must exist!"
-        
-        # Check end labels on chart
+
         chart_text = page.evaluate("() => document.querySelector('#raporGelisimAnaliz svg').textContent")
-        print("Chart text excerpt:", chart_text[:200])
-        # Ahmet Yılmaz should show with 'Son: 3. TYT Denemesi' or similar because he did not take Deneme 4!
-        assert "Ahmet Yılmaz" in chart_text, "Ahmet Yılmaz must appear on the line chart!"
-        assert "Son:" in chart_text, "Ahmet Yılmaz must indicate his last entered exam on the line chart!"
-        print("CONFIRMED: Line chart displays Ahmet Yılmaz with his last entered exam!")
+        print("Chart text content snippet:", chart_text[:300])
 
-        # Check Tüm Öğrenciler Sınav Katılım ve Gelişim Tablosu
-        katilim_table_html = page.evaluate("() => document.querySelector('#raporGelisimAnaliz').innerHTML")
-        assert "Sınıf Katılım ve Gelişim Tablosu (Tüm Öğrenciler)" in katilim_table_html
-        
-        # Verify Ahmet Yılmaz: took 1, 2, 3 - missed 4:
-        # Should show 'Girmedi' for Son Sınav and 'Son Sınava Girmedi' badge!
-        assert "Son Sınava Girmedi" in katilim_table_html, "Ahmet Yılmaz must have 'Son Sınava Girmedi' badge!"
-        
-        # Verify Mehmet Demir: missed 1, 2 - took 3, 4:
-        # Should show 'İlk Sınava Girmedi'
-        assert "İlk Sınava Girmedi" in katilim_table_html, "Mehmet Demir must have 'İlk Sınava Girmedi' badge!"
+        # All 9 students who entered at least 1 exam must appear in the chart!
+        expected_students = [
+            "HÜSEYİN TUĞRA TUNÇEL",
+            "ADA BENSEL",
+            "EMİRHAN ÖZÇELİK",
+            "CAN KAYA",
+            "BORA DEMİR",
+            "DENİZ ARSLAN",
+            "EGE YILDIZ",
+            "İREM GÜNEŞ",
+            "KAAN ÖZTÜRK"
+        ]
+        for name in expected_students:
+            assert name in chart_text, f"Student '{name}' must appear in the line chart!"
+        print("CONFIRMED: ALL 9 students with >= 1 exam appear on the line chart!")
 
-        # Verify Fatma Çelik: entered none:
-        assert "Fatma Çelik" in katilim_table_html, "Fatma Çelik must appear even if she took no exams!"
-        assert "Sınavlara Katılmadı" in katilim_table_html, "Fatma Çelik must show 'Sınavlara Katılmadı'!"
+        # Leyla Yilmaz entered 0 exams, should NOT be in chartKeys
+        assert "LEYLA YILMAZ" not in chart_text, "Student with 0 exams must not be in line chart"
 
-        # Check Sınıf Sıralama Tablosu (🏆 Tüm Katılımcılar — Sıralama)
+        # Check that students who missed the 4th exam have their last exam indicated!
+        # CAN KAYA, BORA DEMİR, DENİZ ARSLAN, KAAN ÖZTÜRK missed exam 4
+        assert "CAN KAYA" in chart_text and "Son:" in chart_text
+        print("CONFIRMED: Students who missed subsequent exams have lines ending at their last taken exam!")
+
+        # 8. Check Katılım ve Gelişim Tablosu
+        katilim_html = page.evaluate("() => document.querySelector('#raporGelisimAnaliz').innerHTML")
+        assert "Sınıf Katılım ve Gelişim Tablosu (Tüm Öğrenciler)" in katilim_html
+        assert "Son Sınava Girmedi" in katilim_html  # CAN KAYA, BORA DEMİR, DENİZ ARSLAN, KAAN ÖZTÜRK
+        assert "İlk Sınava Girmedi" in katilim_html  # EGE YILDIZ, İREM GÜNEŞ, KAAN ÖZTÜRK
+        assert "Sınavlara Katılmadı" in katilim_html  # LEYLA YILMAZ
+        print("CONFIRMED: All 10 students (including non-participants) are accurately shown in participation table!")
+
+        # 9. Check Sınıf Sıralama Tablosu
         siralama_html = page.evaluate("() => document.querySelector('#raporSinifSiralama').innerHTML")
         assert "Tüm Katılımcılar — Sıralama" in siralama_html
-        assert "Son Sınav Neti" in siralama_html
-        assert "Ahmet Yılmaz" in siralama_html
-        assert "Mehmet Demir" in siralama_html
-        assert "Ayşe Kaya" in siralama_html
-        assert "Fatma Çelik" in siralama_html
-        print("CONFIRMED: All 4 students are listed in the ranking table, including those who missed exams!")
+        assert "LEYLA YILMAZ" in siralama_html
+        assert "Girmedi" in siralama_html
+        print("CONFIRMED: Ranking table accurately includes all students!")
 
-        # Check Ders Bazlı İlerleyiş
-        assert "Ders Bazlı İlerleyiş" in katilim_table_html
-        assert "Girmedi" in katilim_table_html
-
-        # Open all details to capture all tables and chart in screenshot
+        # Open all details to capture all elements
         page.evaluate("() => document.querySelectorAll('details').forEach(d => d.open = true)")
         page.wait_for_timeout(300)
 
-        # Capture visual screenshot
         screenshot_path = os.path.join(os.path.dirname(__file__), "test_all_report_features.png")
         page.screenshot(path=screenshot_path, full_page=True)
         print(f"Screenshot saved to {screenshot_path}")
 
         print("Console errors:", console_errors)
         assert len(console_errors) == 0, f"Found console errors: {console_errors}"
-        print("ALL REPORT TESTS PASSED SUCCESSFULLY!")
+        print("ALL TESTS PASSED WITH 100% SUCCESS!")
         browser.close()
 
 if __name__ == "__main__":

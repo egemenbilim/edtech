@@ -661,20 +661,33 @@ Yanlış Sayısı: 3"></textarea>
       <select id="raporTur" onchange="raporTurDegisti()" style="width:100%;margin-top:2px"><option value="">Tümü</option><option value="TYT">TYT</option><option value="AYT">AYT</option><option value="LGS">LGS</option></select>
     </div>
 
-    <div class="grid-3" style="grid-template-columns:1fr 1fr">
-      <div class="field" style="grid-column:1/-1"><label>📚 Ders Seçimi (Ctrl ile çoklu — boş = tümü)</label><select id="raporDersSelect" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="dersSecTumu()">Tümünü Seç</button><button class="btn gray sm" onclick="dersSecTemizle()">Temizle</button></div></div>
-      <div class="field"><label id="raporGelisimBaslik">📈 Gelişim Analizi</label><select id="raporGelisimSelect" class="sel-multi" multiple size="5"></select><div class="flex mt-3"><button class="btn gray sm" onclick="gelisimSec()">Son 10</button><button class="btn gray sm" onclick="gelisimTemizle()">Temizle</button></div></div>
+    <div class="grid-2">
+      <div class="field">
+        <label id="raporGelisimBaslik">📈 Gelişim Analizi — İncelenecek Denemeler (Ctrl ile çoklu — boş = tümü)</label>
+        <select id="raporGelisimSelect" class="sel-multi" multiple size="5"></select>
+        <div class="flex mt-3">
+          <button type="button" class="btn gray sm" onclick="gelisimSecTumu()">Tümünü Seç</button>
+          <button type="button" class="btn gray sm" onclick="gelisimSec()">Son 10</button>
+          <button type="button" class="btn gray sm" onclick="gelisimTemizle()">Temizle</button>
+        </div>
+      </div>
       <div class="field">
         <label>👩‍🎓 Öğrenci (Ctrl ile çoklu — boş = seçili sınıftaki tümü)</label>
         <select id="raporOgrenciSelect" class="sel-multi" multiple size="5" disabled>
           <option disabled selected value="">⚠️ Lütfen önce yukarıdan sınıf seçin</option>
         </select>
         <div class="flex mt-3">
-          <button class="btn gray sm" id="btnRaporOgrTumu" onclick="ogrSecTumu()" disabled>Tümünü Seç</button>
-          <button class="btn gray sm" id="btnRaporOgrTemizle" onclick="ogrSecTemizle()" disabled>Temizle</button>
+          <button type="button" class="btn gray sm" id="btnRaporOgrTumu" onclick="ogrSecTumu()" disabled>Tümünü Seç</button>
+          <button type="button" class="btn gray sm" id="btnRaporOgrTemizle" onclick="ogrSecTemizle()" disabled>Temizle</button>
         </div>
       </div>
-      <div class="field" style="grid-column:1/-1"><label>&nbsp;</label><div class="flex"><button class="btn" style="flex:1" onclick="renderRapor()">🔍 Rapor Oluştur</button><button class="btn green" onclick="raporPDF()">📄 PDF İndir</button></div></div>
+      <div class="field" style="grid-column:1/-1">
+        <label>&nbsp;</label>
+        <div class="flex">
+          <button type="button" class="btn" style="flex:1" onclick="renderRapor()">🔍 Rapor Oluştur</button>
+          <button type="button" class="btn green" onclick="raporPDF()">📄 PDF İndir</button>
+        </div>
+      </div>
     </div>
     <div style="margin-top:12px;padding:10px;background:#f8fafc;border:1px solid var(--border);border-radius:8px">
       <b style="font-size:12px;color:var(--indigo)">⚙️ Rapor İçeriği (PDF'te Gözükecek):</b>

@@ -15,44 +15,51 @@ export function doldurRaporFiltreleri() {
       <option value="${s.id}" ${String(s.id) === String(curVal) ? 'selected' : ''}>${s.ad}</option>
     `).join('');
     raporSinifDegisti(sinifSel.value);
+  } else {
+    doldurGelisimSecimi();
   }
-
-  const ds = new Set();
-  DB.sonuclar.forEach(s => ds.add(s.ders));
-  (DB.konular || []).forEach(k => { if (k.ders) ds.add(k.ders); });
-
-  const dersSel = $('raporDersSelect');
-  if (dersSel) {
-    dersSel.innerHTML = [...ds].sort().map(d => `<option value="${d}">${d}</option>`).join('');
-  }
-
-  doldurGelisimSecimi();
 }
 
 export function raporTurDegisti() {
-  doldurGelisimSecimi();
+  const sinifSel = $('raporSinifSelect');
+  doldurGelisimSecimi(sinifSel ? sinifSel.value : 0);
 }
 
-export function doldurGelisimSecimi() {
-  const turF = $('raporTur') ? $('raporTur').value : '';
+export function doldurGelisimSecimi(sinifIdOverride) {
+  const sinifSel = $('raporSinifSelect');
+  const sinifId = Number(sinifIdOverride !== undefined ? sinifIdOverride : (sinifSel ? sinifSel.value : 0)) || 0;
+  const turF = $('raporTur')?.value || '';
+
   let gelisimPool = [...DB.denemeler];
-  if (turF) gelisimPool = gelisimPool.filter(d => d.tur === turF);
+
+  // Sınıf seçiliyse, bu sınıftaki öğrencilerin girdiği denemeleri bul
+  if (sinifId) {
+    const sinifOgrIds = new Set(DB.ogrenciler.filter(o => o.sinifId === sinifId).map(o => o.id));
+    const sinifDenemeIds = new Set(DB.sonuclar.filter(s => sinifOgrIds.has(s.ogrenciId)).map(s => s.denemeId));
+    if (sinifDenemeIds.size > 0) {
+      gelisimPool = gelisimPool.filter(d => sinifDenemeIds.has(d.id));
+    }
+  }
+
+  if (turF) {
+    gelisimPool = gelisimPool.filter(d => d.tur === turF);
+  }
+
+  // Seçim kolaylığı için yeni denemeler üstte listelenir
   gelisimPool.sort((a, b) => b.tarih.localeCompare(a.tarih));
 
   const baslikEl = $('raporGelisimBaslik');
   if (baslikEl) {
-    baslikEl.textContent = '📈 Gelişim Analizi';
+    baslikEl.textContent = '📈 Gelişim Analizi — İncelenecek Denemeler (Ctrl ile çoklu — boş = tümü)';
   }
 
-  const gSel = $('raporGelisimSelect') || $('raporGelisimTYT');
+  const gSel = $('raporGelisimSelect');
   if (gSel) {
-    gSel.innerHTML = gelisimPool.map(d => `<option value="${d.id}">${fmtTarih(d.tarih)} • [${d.tur}] ${d.ad}</option>`).join('');
-  }
-
-  const gAyt = $('raporGelisimAYT');
-  if (gAyt) {
-    const aytPool = gelisimPool.filter(d => d.tur === 'AYT');
-    gAyt.innerHTML = aytPool.map(d => `<option value="${d.id}">${fmtTarih(d.tarih)} • ${d.ad}</option>`).join('');
+    if (!gelisimPool.length) {
+      gSel.innerHTML = '<option disabled value="">Bu sınıfa/türe ait deneme bulunamadı</option>';
+    } else {
+      gSel.innerHTML = gelisimPool.map(d => `<option value="${d.id}">${fmtTarih(d.tarih)} • [${d.tur}] ${d.ad}</option>`).join('');
+    }
   }
 }
 
@@ -60,9 +67,12 @@ export function raporSinifDegisti(sinifId) {
   const ogrSel = $('raporOgrenciSelect');
   const btnTumu = $('btnRaporOgrTumu');
   const btnTemizle = $('btnRaporOgrTemizle');
-  if (!ogrSel) return;
 
   const parsedSinifId = Number(sinifId) || 0;
+  doldurGelisimSecimi(parsedSinifId);
+
+  if (!ogrSel) return;
+
   if (!parsedSinifId) {
     ogrSel.disabled = true;
     ogrSel.innerHTML = '<option disabled selected value="">⚠️ Lütfen önce yukarıdan sınıf seçin</option>';
@@ -85,45 +95,62 @@ export function raporSinifDegisti(sinifId) {
   }
 }
 
-export function dersSecTumu() {
-  [...$('raporDersSelect').options].forEach(o => o.selected = true);
-}
-export function dersSecTemizle() {
-  [...$('raporDersSelect').options].forEach(o => o.selected = false);
-}
 export function ogrSecTumu() {
   if (!$('raporOgrenciSelect') || $('raporOgrenciSelect').disabled) return;
-  [...$('raporOgrenciSelect').options].forEach(o => o.selected = true);
+  [...$('raporOgrenciSelect').options].forEach(o => { if (!o.disabled) o.selected = true; });
 }
+
 export function ogrSecTemizle() {
   if (!$('raporOgrenciSelect') || $('raporOgrenciSelect').disabled) return;
   [...$('raporOgrenciSelect').options].forEach(o => o.selected = false);
 }
-export function gelisimSec(tur) {
-  const gSel = $('raporGelisimSelect') || (tur ? $('raporGelisim' + tur) : $('raporGelisimTYT'));
+
+export function gelisimSecTumu() {
+  const gSel = $('raporGelisimSelect');
   if (gSel) {
-    [...gSel.options].forEach((o, i) => o.selected = i < 10);
+    [...gSel.options].forEach(o => { if (!o.disabled) o.selected = true; });
   }
 }
-export function gelisimTemizle(tur) {
-  const gSel = $('raporGelisimSelect') || (tur ? $('raporGelisim' + tur) : $('raporGelisimTYT'));
+
+export function gelisimSec() {
+  const gSel = $('raporGelisimSelect');
+  if (gSel) {
+    let count = 0;
+    [...gSel.options].forEach(o => {
+      if (!o.disabled && count < 10) {
+        o.selected = true;
+        count++;
+      } else {
+        o.selected = false;
+      }
+    });
+  }
+}
+
+export function gelisimTemizle() {
+  const gSel = $('raporGelisimSelect');
   if (gSel) {
     [...gSel.options].forEach(o => o.selected = false);
   }
 }
 
-export function seciliGelisimDenemeleri() {
+export function seciliGelisimDenemeleri(sinifIdGirdi) {
+  const sinifId = Number(sinifIdGirdi !== undefined ? sinifIdGirdi : ($('raporSinifSelect')?.value || 0)) || 0;
   const turF = $('raporTur')?.value || '';
-  let denPool = DB.denemeler.slice();
-  if (turF) denPool = denPool.filter(d => d.tur === turF);
 
-  const gSel = $('raporGelisimSelect') || $('raporGelisimTYT');
+  const gSel = $('raporGelisimSelect');
   let ids = [...(gSel?.selectedOptions || [])].map(o => Number(o.value)).filter(Boolean);
-  if ($('raporGelisimAYT')) {
-    ids.push(...[...($('raporGelisimAYT')?.selectedOptions || [])].map(o => Number(o.value)).filter(Boolean));
-  }
 
   if (ids.length === 0) {
+    let denPool = [...DB.denemeler];
+    if (sinifId) {
+      const sinifOgrIds = new Set(DB.ogrenciler.filter(o => o.sinifId === sinifId).map(o => o.id));
+      const sinifDenemeIds = new Set(DB.sonuclar.filter(s => sinifOgrIds.has(s.ogrenciId)).map(s => s.denemeId));
+      if (sinifDenemeIds.size > 0) {
+        denPool = denPool.filter(d => sinifDenemeIds.has(d.id));
+      }
+    }
+    if (turF) denPool = denPool.filter(d => d.tur === turF);
     ids = [...denPool].sort((a, b) => b.tarih.localeCompare(a.tarih)).slice(0, 20).map(d => d.id);
   }
 
@@ -135,19 +162,35 @@ export function seciliGelisimDenemeleri() {
   return ids.map(id => DB.denemeler.find(d => d.id === id)).filter(Boolean).sort((a, b) => a.tarih.localeCompare(b.tarih));
 }
 
-export function renderGelisimAnalizi(ogrIds, dersF) {
+export function renderGelisimAnalizi(ogrIds, denemelerGirdi) {
   const el = $('raporGelisimAnaliz');
   if (!el) return;
 
   el.innerHTML = '';
   el.classList.add('hidden');
 
-  const denemeler = seciliGelisimDenemeleri();
-  if (denemeler.length < 2) return;
+  let denemeler = denemelerGirdi;
+  if (!denemeler || !denemeler.length) {
+    denemeler = seciliGelisimDenemeleri();
+  }
+  if (!denemeler || denemeler.length < 2) {
+    if (denemeler && denemeler.length === 1) {
+      el.innerHTML = `
+        <div class="card" style="padding:14px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;margin-bottom:12px;font-size:13px;color:var(--muted)">
+          ℹ️ Gelişim / Düşüş grafiği ve analizi için <b>en az 2 deneme sınavı</b> gereklidir. Şu anda 1 deneme (${denemeler[0].ad}) seçili veya mevcut.
+        </div>
+      `;
+      el.classList.remove('hidden');
+    }
+    return;
+  }
+
+  // Kronolojik sıra (Eski -> Yeni)
+  denemeler = [...denemeler].sort((a, b) => a.tarih.localeCompare(b.tarih));
 
   const denIds = new Set(denemeler.map(d => d.id));
-  let ogrenciIds = ogrIds.length ? ogrIds : [...new Set(DB.sonuclar.filter(s => denIds.has(s.denemeId)).map(s => s.ogrenciId))];
-  let dersler = dersF.length ? dersF : [...new Set(DB.sonuclar.filter(s => denIds.has(s.denemeId)).map(s => s.ders))].sort();
+  let ogrenciIds = (ogrIds && ogrIds.length) ? ogrIds : [...new Set(DB.sonuclar.filter(s => denIds.has(s.denemeId)).map(s => s.ogrenciId))];
+  let dersler = [...new Set(DB.sonuclar.filter(s => denIds.has(s.denemeId) && ogrenciIds.includes(s.ogrenciId)).map(s => s.ders))].sort();
 
   const ilk = denemeler[0], son = denemeler[denemeler.length - 1];
   const analiz = [];
@@ -582,26 +625,26 @@ export function renderRapor() {
   if (!ogrIds.length) {
     ogrIds = DB.ogrenciler.filter(o => o.sinifId === sinifId).map(o => o.id);
   }
-  const dersF = [...($('raporDersSelect')?.selectedOptions || [])].map(o => o.value).filter(Boolean);
   const siralamaGoster = $('raporSiralama') && $('raporSiralama').checked;
 
-  const seciliGelisimIds = [
-    ...[...($('raporGelisimSelect')?.selectedOptions || [])].map(o => Number(o.value)),
-    ...[...($('raporGelisimTYT')?.selectedOptions || [])].map(o => Number(o.value)),
-    ...[...($('raporGelisimAYT')?.selectedOptions || [])].map(o => Number(o.value))
-  ].filter(Boolean);
+  const seciliGelisimIds = [...($('raporGelisimSelect')?.selectedOptions || [])].map(o => Number(o.value)).filter(Boolean);
 
   let denemeler;
   if (seciliGelisimIds.length) {
     denemeler = seciliGelisimIds.map(id => DB.denemeler.find(d => d.id === id)).filter(Boolean);
   } else {
-    denemeler = DB.denemeler.slice();
-    if (turF) denemeler = denemeler.filter(d => d.tur === turF);
+    const sinifOgrIds = new Set(DB.ogrenciler.filter(o => o.sinifId === sinifId).map(o => o.id));
+    const sinifDenemeIds = new Set(DB.sonuclar.filter(s => sinifOgrIds.has(s.ogrenciId)).map(s => s.denemeId));
+    let pool = DB.denemeler.filter(d => sinifDenemeIds.has(d.id));
+    if (turF) pool = pool.filter(d => d.tur === turF);
+    denemeler = pool;
   }
+
+  // Kronolojik sıralama (Eski -> Yeni)
+  denemeler.sort((a, b) => a.tarih.localeCompare(b.tarih));
   const denIds = new Set(denemeler.map(d => d.id));
 
   let sonuc = DB.sonuclar.filter(s => denIds.has(s.denemeId) && ogrIds.includes(s.ogrenciId));
-  if (dersF.length) sonuc = sonuc.filter(s => dersF.includes(s.ders));
 
   if (!sonuc.length) {
     el.innerHTML = '<div class="empty mt-6"><p style="font-size:36px">📭</p><p>Seçilen sınıfa ve filtrelere uygun veri yok.</p></div>';
@@ -613,7 +656,7 @@ export function renderRapor() {
     printTarih.textContent = `Oluşturma: ${new Date().toLocaleString('tr-TR')} • ${sonuc.length} kayıt`;
   }
 
-  renderGelisimAnalizi(ogrIds, dersF);
+  renderGelisimAnalizi(ogrIds, denemeler);
 
   if (siralamaGoster) {
     const rows = sonuc;
@@ -759,7 +802,7 @@ export function renderRapor() {
   });
   map.forEach(v => v.denemeler.sort((a, b) => a.tarih.localeCompare(b.tarih)));
 
-  RAPOR_DURUM = { map, ogrIds, dersF };
+  RAPOR_DURUM = { map, ogrIds };
 
   let html = '';
   const detayliGoster = !$('raporDetayli') || $('raporDetayli').checked;

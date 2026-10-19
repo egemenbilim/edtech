@@ -37,8 +37,8 @@ import {
   getRecordSoruSayisi
 } from './modules/haftalik.js';
 import {
-  doldurRaporFiltreleri, dersSecTumu, dersSecTemizle,
-  ogrSecTumu, ogrSecTemizle, gelisimSec, gelisimTemizle,
+  doldurRaporFiltreleri,
+  ogrSecTumu, ogrSecTemizle, gelisimSec, gelisimSecTumu, gelisimTemizle,
   renderRapor, renderDetayliAnaliz, raporPDF, raporSinifDegisti, raporTurDegisti
 } from './modules/raporlar.js';
 import {
@@ -257,10 +257,9 @@ window.getRecordSoruSayisi = getRecordSoruSayisi;
 window.doldurRaporFiltreleri = doldurRaporFiltreleri;
 window.raporTurDegisti = raporTurDegisti;
 window.raporSinifDegisti = raporSinifDegisti;
-window.dersSecTumu = dersSecTumu;
-window.dersSecTemizle = dersSecTemizle;
 window.ogrSecTumu = ogrSecTumu;
 window.ogrSecTemizle = ogrSecTemizle;
+window.gelisimSecTumu = gelisimSecTumu;
 window.gelisimSec = gelisimSec;
 window.gelisimTemizle = gelisimTemizle;
 window.renderRapor = renderRapor;
